@@ -1,0 +1,9 @@
+{
+  "name": "gsmv-interactive-bg",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test state.test.mjs screens.test.mjs motion.test.mjs",
+    "start": "python serve.py --open"
+  }
+}

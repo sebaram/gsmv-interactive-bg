@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+media/
+*.mp4
+*.mov
+*.webm
+previews/qa-*
+previews/studio-initial.png
+.session*.json
