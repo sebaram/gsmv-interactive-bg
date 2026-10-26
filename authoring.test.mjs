@@ -120,3 +120,26 @@ test('whole MV copies own their animation geometry and preserve independently ed
  assert.ok(author.manifest.find(e=>e.id==='object-1').mv);assert.equal(author.manifest.find(e=>e.id==='object-1-part-1').mv,false);
  author.apply(patchElement(state,'object-1-part-1',{visible:false}));assert.equal(copyFacet.parent.visible,false);assert.equal(originalFacet.parent.visible,true);
 });
+
+test('deleting a preset part removes it from the editable scene and persists in the URL',()=>{
+ const f=fixture(),author=makeAuthor(f),part=author.manifest.find(e=>e.parentId==='preset-main');
+ let state={...f.state,activeElement:part.id};state=removeElement(state,part.id);
+ assert.equal(state.authored[1].edits[part.id].deleted,true);assert.equal(state.activeElement,null);
+ author.apply(state);assert.ok(!author.manifest.some(e=>e.id===part.id));assert.ok(author.manifest.some(e=>e.id==='preset-main'));
+ assert.equal(decodeLook(encodeLook(state)).authored[1].edits[part.id].deleted,true);
+ author.apply(resetElement(state,part.id));assert.ok(author.manifest.some(e=>e.id===part.id));
+});
+test('deleting a preset group removes its descendants while independent copies survive',()=>{
+ const f=fixture();let state=addElement(f.state,'copy',{screen:'left'},'preset-main');
+ const author=makeAuthor(f,state);state=removeElement({...state,activeElement:'object-1'},'preset-main');author.apply(state);author.draw();
+ assert.ok(!author.manifest.some(e=>e.id==='preset-main'||e.id.startsWith('preset-main-part-')));assert.ok(author.manifest.some(e=>e.id==='object-1'));
+ assert.equal(state.activeElement,'object-1');
+});
+test('deleting another custom element preserves the current selection',()=>{
+ let state=addElement(sanitize(),'sphere');state=addElement(state,'arch');state={...state,activeElement:'object-1'};
+ assert.equal(removeElement(state,'object-2').activeElement,'object-1');
+});
+test('repeated custom deletion cannot hide a later object reusing that ID',()=>{
+ let state=addElement(sanitize(),'sphere');state=removeElement(state,'object-1');state=removeElement(state,'object-1');state=addElement(state,'arch');
+ assert.equal(state.authored[4].objects[0].id,'object-1');assert.equal(authoringTools.isElementDeleted(state,'object-1'),false);
+});

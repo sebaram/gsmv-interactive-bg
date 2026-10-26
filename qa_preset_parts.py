@@ -38,15 +38,16 @@ with sync_playwright() as p:
  front=next(frame for frame in page.frames if 'view=front' in frame.url)
  front.locator('.element-handle').wait_for(state='visible')
  assert 'Interwoven ribbon' in front.locator('.element-handle-label').inner_text()
- page.locator('.preview-room').scroll_into_view_if_needed();handle=front.locator('.element-handle');box=handle.bounding_box();before=page.evaluate('window.METAStudio.state.authored[1].edits["object-2-part-2"].x')
- page.mouse.move(box['x']+box['width']*.5,box['y']+box['height']*.5);page.mouse.down();page.mouse.move(box['x']+box['width']*.5+15,box['y']+box['height']*.5+6,steps=4);page.mouse.up()
+ page.locator('.preview-room').scroll_into_view_if_needed();handle=front.locator('.element-handle');box=handle.locator('.element-handle-label').bounding_box();before=page.evaluate('window.METAStudio.state.authored[1].edits["object-2-part-2"].x')
+ page.mouse.move(box['x']+8,box['y']+5);page.mouse.down();page.mouse.move(box['x']+23,box['y']+11,steps=4);page.mouse.up()
  page.wait_for_function('(x)=>window.METAStudio.state.authored[1].edits["object-2-part-2"].x!==x',arg=before)
  print('PASS Copied group parts stay independent and their selection handles drag in the monitor',flush=True)
  page.locator('#pause-btn').click();front.wait_for_function('window.META.state.paused')
  page.locator('#author-element').select_option('preset-main');page.locator('#author-size').fill('1.4');page.locator('#author-rotation').fill('35')
  page.locator('#author-element').select_option('preset-main-part-3');page.locator('.preview-room').scroll_into_view_if_needed();page.wait_for_timeout(150)
  box=front.locator('.element-handle').bounding_box();start_x=box['x']+box['width']/2;start_y=box['y']+box['height']/2
- page.mouse.move(start_x,start_y);page.mouse.down();page.mouse.move(start_x+20,start_y,steps=4);page.mouse.up();page.wait_for_timeout(100)
+ label=front.locator('.element-handle-label').bounding_box();pointer_x=label['x']+8;pointer_y=label['y']+5
+ page.mouse.move(pointer_x,pointer_y);page.mouse.down();page.mouse.move(pointer_x+20,pointer_y,steps=4);page.mouse.up();page.wait_for_timeout(100)
  after=front.locator('.element-handle').bounding_box();dx=after['x']+after['width']/2-start_x;dy=after['y']+after['height']/2-start_y
  assert abs(dx-20)<3 and abs(dy)<3,(dx,dy)
  print('PASS Part dragging follows the pointer after its parent is resized and rotated',flush=True)

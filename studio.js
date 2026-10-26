@@ -38,9 +38,18 @@ function paint(){
  $('#resolution-label').textContent=state.screens.length+' screens / '+state.screens.map(sc=>sc.width+' × '+sc.height).join(' + ');
  const ids=state.screens.map(sc=>sc.id).join('/');
  if(ids!==previewIds){previewIds=ids;$('.paired').innerHTML='';for(const sc of state.screens){const wrap=document.createElement('div');wrap.className='screen-preview';wrap.dataset.preview=sc.id;const iframe=document.createElement('iframe');iframe.src=`wall.html?view=${encodeURIComponent(sc.id)}&preview=1`+(buildVersion?'&v='+buildVersion:'');iframe.title=sc.name+' live preview';iframe.tabIndex=-1;const label=document.createElement('span');label.className='screen-label';wrap.append(iframe,label);$('.paired').append(wrap);}}
- for(const sc of state.screens){const wrap=document.querySelector(`[data-preview="${sc.id}"]`);wrap.style.flex=screenAspect(sc);wrap.style.aspectRatio=screenAspect(sc);wrap.querySelector('.screen-label').textContent=sc.name;}
+ for(const sc of state.screens){const wrap=document.querySelector(`[data-preview="${sc.id}"]`);wrap.style.aspectRatio=screenAspect(sc);wrap.querySelector('.screen-label').textContent=sc.name;}
+ layoutPreviews();
  editor.paint();library.paint();layers.paint();author.paint();paintOutputs();updateAddress();
 }
+function layoutPreviews(){
+ const paired=$('.paired'),room=$('.preview-room'),total=state.screens.reduce((sum,sc)=>sum+screenAspect(sc),0),style=getComputedStyle(paired),padding=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
+ const chrome=room.offsetHeight-paired.offsetHeight,maxHeight=Math.max(28,innerHeight*.46-chrome-padding),height=Math.min(paired.clientWidth/total,maxHeight);
+ paired.style.height=(height+padding)+'px';
+ for(const sc of state.screens){const wrap=paired.querySelector(`[data-preview="${sc.id}"]`);if(wrap)wrap.style.flex='0 1 '+height*screenAspect(sc)+'px';}
+ document.documentElement.style.setProperty('--preview-height',(room.offsetHeight+20)+'px');
+}
+window.addEventListener('resize',layoutPreviews);
 function paintOutputs(){
  const outputs=$('#output-links'),net=$('#network-links');outputs.innerHTML='';net.innerHTML='';
  const ordered=[...state.screens].sort((a,b)=>(b.id==='front')-(a.id==='front'));

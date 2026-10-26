@@ -43,3 +43,9 @@ Expose nested preset Mesh/Line/Group parts as stable semantic hierarchy paths. P
 Give whole MV roots independent geometry and reproducible seed-based timing, trajectories and soft forms while retaining exact assembled facets and classic randomness0. Newly added and duplicated MVs get distinct seeds; provide per-root seed/randomness/New variation controls and persist them in look URLs. Keep facet editing and copies of other object types intact.
 
 Add a searchable expandable element list with current selection, per-row visibility and contextual add/duplicate/hide/remove/reset controls. Preserve focus through frequent preview updates, support clear selection and reveal canvas-picked descendants, and keep the list bounded on narrow displays. Verify distinct rendered instances, one-instance changes leaving another unchanged, hierarchy CRUD, pause, fresh-storage URLs and deployment.
+
+## Follow-up: direct preview editing and real list Delete
+
+Make preview elements hit-testable without a prior mode toggle, select and move on the same pointer gesture, show hover/selection feedback, synchronize list selections, and support group/part and DOM identity dragging. Keep monitor playback controls visible while authoring and fit previews without distorting physical ratios. Refresh deformed geometry hit bounds, skip invisible links, preserve pointer capture/cancel semantics and keep output pages clean.
+
+Add Delete to every element row, distinct from Hide/Show. Remove preset nodes and descendants from authored lists/rendering via persisted template tombstones; remove added objects while retaining copy provenance when necessary. Restore through Reset preset, retain unrelated selections and copies, and make repeated deletion/ID reuse safe. Verify gestures, responsive/portrait layouts, CRUD, saved-address restoration and published behavior.

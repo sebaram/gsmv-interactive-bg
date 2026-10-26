@@ -1,6 +1,6 @@
 import * as T from './vendor/three.module.js';
 import {panorama,screenAspect} from './state.js';
-import {presetEdits,objectTypes} from './authoring.js';
+import {presetEdits,objectTypes,isElementDeleted} from './authoring.js';
 
 // Animation remains inside a wrapper; authored transforms never overwrite it.
 export function authoringScene(group,camera,state,{background,hero,secondary,createObject,view,preview}){
@@ -50,11 +50,11 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   const sc=p.screens.find(sc=>sc.id===r.screen)||p.screens[0],x=(sc.x+sc.width*r.x/100)/p.width*2-1,y=1-r.y/50;
   const near=new T.Vector3(x,y,-1).unproject(full),far=new T.Vector3(x,y,1).unproject(full),direction=far.sub(near);return near.addScaledVector(direction,(z-near.z)/direction.z);
  }
- function applyDom(entry){const r=resolved(entry);if(entry.defaults.screen!==view)return;const el=document.getElementById(entry.domId),edited=presetEdits(current).edits[entry.id],sc=current.screens.find(s=>s.id===view)||current.screens[0],correction=(innerWidth/innerHeight)/screenAspect(sc);el.style.left=edited?r.x+'%':'';el.style.top=edited?r.y+'%':'';el.style.bottom=edited?'auto':'';el.style.transform=`scaleX(${correction}) scale(${r.size}) rotate(${r.rotation}deg)`;el.style.transformOrigin='left top';el.style.display=(entry.domId==='headline'?current.headlines:current.branding)&&r.visible?'':'none';}
+ function applyDom(entry){const r=resolved(entry);if(entry.defaults.screen!==view)return;const el=document.getElementById(entry.domId),edited=presetEdits(current).edits[entry.id],sc=current.screens.find(s=>s.id===view)||current.screens[0],correction=(innerWidth/innerHeight)/screenAspect(sc);el.style.left=edited?r.x+'%':'';el.style.top=edited?r.y+'%':'';el.style.bottom=edited?'auto':'';el.style.transform=`scaleX(${correction}) scale(${r.size}) rotate(${r.rotation}deg)`;el.style.transformOrigin='left top';el.style.display=(entry.domId==='headline'?current.headlines:current.branding)&&r.visible&&!r.deleted?'':'none';}
  function apply(next){current=next;for(const entry of entries){if(entry.domId){applyDom(entry);continue;}const r=resolved(entry),rotation=r.rotation*Math.PI/180;
   if(entry.kind==='logo'&&!entry.parentId)entry.object.userData.mvSettings={seed:r.seed||0,randomness:r.randomness||0};
   const position=r.x===entry.defaults.x&&r.y===entry.defaults.y&&r.screen===entry.defaults.screen?entry.localAnchor.clone():target(r,entry.anchor.z).applyMatrix4(entry.parentMatrix.clone().invert());
-  const anchor=entry.localAnchor.clone().multiplyScalar(r.size).applyAxisAngle(new T.Vector3(0,0,1),rotation);entry.wrap.scale.setScalar(r.size);entry.wrap.rotation.z=rotation;entry.wrap.position.copy(position.sub(anchor));entry.wrap.visible=r.visible;
+  const anchor=entry.localAnchor.clone().multiplyScalar(r.size).applyAxisAngle(new T.Vector3(0,0,1),rotation);entry.wrap.scale.setScalar(r.size);entry.wrap.rotation.z=rotation;entry.wrap.position.copy(position.sub(anchor));entry.wrap.visible=r.visible&&!r.deleted;
  }}
  function draw(){for(const {pairs,source,clone} of copies){for(const [a,b] of pairs){b.position.copy(a.position);b.quaternion.copy(a.quaternion);b.scale.copy(a.scale);b.visible=a.visible;}baseWorld(source).decompose(clone.position,clone.quaternion,clone.scale);}drawHandle();}
  function dragOrigin(entry){if(entry.domId)return null;group.updateMatrixWorld(true);return {world:entry.localAnchor.clone().applyMatrix4(entry.wrap.matrixWorld),inverseParent:entry.wrap.parent.matrixWorld.clone().invert()};}
@@ -64,24 +64,66 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   const baseline=near.addScaledVector(direction,(origin.world.z-near.z)/direction.z).applyMatrix4(origin.inverseParent).applyMatrix4(entry.parentMatrix).project(full),screen=p.screens.find(sc=>sc.id===r.screen)||p.screens[0];
   return {x:((baseline.x+1)/2*p.width-screen.x)/screen.width*100,y:(1-baseline.y)/2*100};
  }
- let handle,pickAt;
+ let handle,hover,pickAt,hovered=null,dragging=false,pointerPosition=null;
+ function visibleRect(entry){
+  if(!entry||!resolved(entry).visible)return null;
+  if(entry.domId){if(entry.defaults.screen!==view)return null;const r=document.getElementById(entry.domId).getBoundingClientRect();return r.width&&r.height?{left:r.left,top:r.top,right:r.right,bottom:r.bottom}:null;}
+  for(let object=entry.object;object;object=object.parent)if(!object.visible)return null;
+  group.updateMatrixWorld(true);entry.object.traverse(object=>object.geometry?.computeBoundingBox());
+  const box=new T.Box3().setFromObject(entry.object),points=[];
+  for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z])points.push(new T.Vector3(x,y,z).project(camera));
+  const xs=points.map(v=>(v.x+1)/2*innerWidth),ys=points.map(v=>(1-v.y)/2*innerHeight);
+  const left=Math.max(0,Math.min(...xs)),top=Math.max(0,Math.min(...ys)),right=Math.min(innerWidth,Math.max(...xs)),bottom=Math.min(innerHeight,Math.max(...ys));
+  return right>=left&&bottom>=top?{left,top,right,bottom}:null;
+ }
+ function paintMarker(marker,entry,selected=false){
+  const r=visibleRect(entry);marker.hidden=!r;if(!r)return;
+  const width=Math.min(innerWidth,Math.max(selected?42:12,r.right-r.left)),height=Math.min(innerHeight,Math.max(selected?36:12,r.bottom-r.top));
+  const left=Math.max(0,Math.min(innerWidth-width,(r.left+r.right-width)/2)),top=Math.max(0,Math.min(innerHeight-height,(r.top+r.bottom-height)/2));
+  Object.assign(marker.style,{left:left+'px',top:top+'px',width:width+'px',height:height+'px'});marker.dataset.elementId=entry.id;marker.querySelector('span').textContent=entry.name;
+ }
+ function selectEntry(entry){
+  const id=entry?.id||null;current={...current,activeElement:id,editElements:!!entry||current.editElements,editVideos:entry?false:current.editVideos};
+  parent.METAStudio?.selectElement(id);
+ }
  if(preview){
-  handle=document.createElement('div');handle.className='element-handle';handle.hidden=true;handle.tabIndex=0;handle.setAttribute('role','group');handle.setAttribute('aria-label','Selected element. Use arrow keys to move.');const title=document.createElement('span'),resize=document.createElement('button');title.className='element-handle-label';resize.className='element-resize';resize.type='button';resize.setAttribute('aria-label','Resize selected element');handle.append(title,resize);document.querySelector('#element-handles').replaceChildren(handle);
-  handle.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();const entry=entries.find(e=>e.id===current.activeElement);if(!entry)return;const r=resolved(entry),start={x:e.clientX,y:e.clientY},origin=dragOrigin(entry),bounds=handle.getBoundingClientRect(),resizing=!!e.target.closest('.element-resize')||(e.clientX>=bounds.right-20&&e.clientY>=bounds.bottom-20),width=bounds.width;let moved=false;handle.setPointerCapture(e.pointerId);handle.onpointermove=event=>{const dx=event.clientX-start.x,dy=event.clientY-start.y;moved=moved||Math.hypot(dx,dy)>=3;if(moved)parent.METAStudio?.updateElement(entry.id,resizing?{size:r.size*Math.max(.1,1+dx*2/Math.max(20,width))}:dragPatch(entry,r,dx,dy,origin));};const finish=event=>{if(handle.hasPointerCapture(e.pointerId))handle.releasePointerCapture(e.pointerId);handle.onpointermove=null;handle.onpointerup=null;handle.onpointercancel=null;if(event.type==='pointerup'&&!moved&&!resizing&&!entry.domId)pickAt(event.clientX,event.clientY);};handle.onpointerup=finish;handle.onpointercancel=finish;};
-  handle.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const entry=entries.find(e=>e.id===current.activeElement);if(!entry)return;const r=resolved(entry),step=e.shiftKey?5:1;parent.METAStudio?.updateElement(entry.id,dragPatch(entry,r,(e.key==='ArrowLeft'?-step:e.key==='ArrowRight'?step:0)*innerWidth/100,(e.key==='ArrowUp'?-step:e.key==='ArrowDown'?step:0)*innerHeight/100,dragOrigin(entry)));};
-  const canvas=document.querySelector('#scene'),raycaster=new T.Raycaster();raycaster.params.Line.threshold=.09;
-  pickAt=(x,y)=>{if(!current.editElements)return;group.updateMatrixWorld(true);const rect=canvas.getBoundingClientRect();raycaster.setFromCamera(new T.Vector2((x-rect.left)/rect.width*2-1,1-(y-rect.top)/rect.height*2),camera);const hit=raycaster.intersectObjects(entries.filter(entry=>entry.object?.geometry).map(entry=>entry.object),false).find(hit=>{for(let o=hit.object;o;o=o.parent)if(!o.visible)return false;return true;});const entry=hit&&entries.find(entry=>entry.object===hit.object);if(entry)parent.METAStudio?.selectElement?.(entry.id);};
-  canvas.onpointerdown=e=>{if(e.button===0)pickAt(e.clientX,e.clientY);};
+  const canvas=document.querySelector('#scene'),layer=document.querySelector('#element-handles');
+  handle=document.createElement('div');handle.className='element-handle';handle.hidden=true;handle.tabIndex=0;handle.setAttribute('role','group');handle.setAttribute('aria-label','Selected element. Drag its label to move the whole selection, or use arrow keys.');
+  const title=document.createElement('span'),resize=document.createElement('button');title.className='element-handle-label';title.title='Drag this label to move the whole selection';resize.className='element-resize';resize.type='button';resize.setAttribute('aria-label','Resize selected element');handle.append(title,resize);
+  hover=document.createElement('div');hover.className='element-hover';hover.hidden=true;hover.setAttribute('aria-hidden','true');hover.append(document.createElement('span'));layer.replaceChildren(hover,handle);
+  const raycaster=new T.Raycaster(),boxVersions=new WeakMap(),objectEntries=new Map(entries.filter(e=>e.object?.geometry).map(e=>[e.object,e]));
+  pickAt=(x,y)=>{
+   group.updateMatrixWorld(true);for(const object of objectEntries.keys()){const g=object.geometry,version=g.attributes.position?.version||0;if(boxVersions.get(g)!==version){g.computeBoundingBox();boxVersions.set(g,version);}}const rect=canvas.getBoundingClientRect();raycaster.params.Line.threshold=Math.max(.09,50/Math.max(1,rect.height));
+   raycaster.setFromCamera(new T.Vector2((x-rect.left)/rect.width*2-1,1-(y-rect.top)/rect.height*2),camera);
+   const hits=raycaster.intersectObjects([...objectEntries.keys()],false).filter(hit=>{for(let o=hit.object;o;o=o.parent)if(!o.visible)return false;const materials=Array.isArray(hit.object.material)?hit.object.material:[hit.object.material];return materials.some(m=>m.visible!==false&&(!m.transparent||m.opacity>.03));});
+   const main=hits.find(hit=>!['Soft shadow','Stage floor'].includes(objectEntries.get(hit.object).label));return objectEntries.get((main||hits[0])?.object)||null;
+  };
+  function beginGesture(event,entry,resizing,owner){
+   if(event.button!==0||!entry)return;event.preventDefault();event.stopPropagation();selectEntry(entry);owner.focus?.({preventScroll:true});
+   const r=resolved(entry),origin=dragOrigin(entry),start={x:event.clientX,y:event.clientY},width=Math.max(30,visibleRect(entry)?.right-visibleRect(entry)?.left||30);
+   let moved=false,pending=null,frame=null;dragging=true;hover.hidden=true;owner.setPointerCapture(event.pointerId);
+   const flush=()=>{if(!pending)return;const patch=pending;pending=null;parent.METAStudio?.updateElement(entry.id,patch);if(parent.METAStudio)apply(parent.METAStudio.state);};
+   const move=e=>{const dx=e.clientX-start.x,dy=e.clientY-start.y;moved=moved||Math.hypot(dx,dy)>=3;if(!moved)return;pending=resizing?{size:r.size*Math.max(.1,1+dx*2/width)}:dragPatch(entry,r,dx,dy,origin);if(frame===null)frame=requestAnimationFrame(()=>{frame=null;flush();});};
+   const finish=()=>{if(frame!==null)cancelAnimationFrame(frame);flush();if(owner.hasPointerCapture(event.pointerId))owner.releasePointerCapture(event.pointerId);owner.removeEventListener('pointermove',move);owner.removeEventListener('pointerup',finish);owner.removeEventListener('pointercancel',finish);dragging=false;pointerPosition=null;};
+   owner.addEventListener('pointermove',move);owner.addEventListener('pointerup',finish);owner.addEventListener('pointercancel',finish);
+  }
+  handle.onpointerdown=event=>{
+   const selected=entries.find(e=>e.id===current.activeElement);if(!selected)return;
+   const bounds=handle.getBoundingClientRect(),resizing=!!event.target.closest('.element-resize')||(event.clientX>=bounds.right-14&&event.clientY>=bounds.bottom-14);
+   const label=!!event.target.closest('.element-handle-label'),border=Math.min(event.clientX-bounds.left,bounds.right-event.clientX,event.clientY-bounds.top,bounds.bottom-event.clientY)<5;
+   const entry=resizing||label||border||selected.domId?selected:pickAt(event.clientX,event.clientY)||selected;beginGesture(event,entry,resizing,handle);
+  };
+  const keys=event=>{if(event.key==='Escape'){event.preventDefault();selectEntry(null);return;}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;const entry=entries.find(e=>e.id===current.activeElement);if(!entry)return;event.preventDefault();const r=resolved(entry),step=event.shiftKey?5:1;parent.METAStudio?.updateElement(entry.id,dragPatch(entry,r,(event.key==='ArrowLeft'?-step:event.key==='ArrowRight'?step:0)*innerWidth/100,(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0)*innerHeight/100,dragOrigin(entry)));};
+  handle.onpointermove=e=>{if(!dragging)pointerPosition={x:e.clientX,y:e.clientY};};handle.onpointerleave=()=>{if(!dragging){pointerPosition=null;hovered=null;hover.hidden=true;}};handle.onkeydown=keys;canvas.onkeydown=keys;canvas.tabIndex=0;canvas.setAttribute('aria-label','Interactive background preview. Click and drag an element to move it. Escape clears selection.');
+  canvas.onpointerdown=event=>{if(event.button!==0)return;const entry=pickAt(event.clientX,event.clientY);if(entry)beginGesture(event,entry,false,canvas);else if(current.activeElement)selectEntry(null);};
+  canvas.onpointermove=event=>{if(!dragging)pointerPosition={x:event.clientX,y:event.clientY};};canvas.onpointerleave=()=>{pointerPosition=null;hovered=null;hover.hidden=true;canvas.style.cursor='default';};
+  for(const entry of entries.filter(e=>e.domId&&e.defaults.screen===view)){const el=document.getElementById(entry.domId);el.onpointerdown=e=>beginGesture(e,entry,false,el);el.tabIndex=0;el.onkeydown=keys;el.onpointerenter=()=>{pointerPosition=null;hovered=entry;};el.onpointerleave=()=>{hovered=null;};for(const image of el.querySelectorAll('img'))image.draggable=false;}
  }
  function drawHandle(){
-  if(!handle)return;const entry=entries.find(e=>e.id===current.activeElement),r=entry&&resolved(entry);
-  handle.hidden=!current.editElements||!entry||!r.visible;if(handle.hidden)return;
-  if(entry.domId){if(entry.defaults.screen!==view){handle.hidden=true;return;}const el=document.getElementById(entry.domId),rect=el.getBoundingClientRect();if(!rect.width||!rect.height){handle.hidden=true;return;}Object.assign(handle.style,{left:rect.left/innerWidth*100+'%',top:rect.top/innerHeight*100+'%',width:rect.width/innerWidth*100+'%',height:rect.height/innerHeight*100+'%'});handle.querySelector('span').textContent=entry.name;return;}
-  for(let object=entry.object;object;object=object.parent)if(!object.visible){handle.hidden=true;return;}
-  group.updateMatrixWorld(true);entry.object.traverse(object=>object.geometry?.computeBoundingBox());const box=new T.Box3().setFromObject(entry.object),points=[];for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z])points.push(new T.Vector3(x,y,z).project(camera));
-  const xs=points.map(v=>(v.x+1)*50),ys=points.map(v=>(1-v.y)*50),left=Math.max(0,Math.min(...xs)),top=Math.max(0,Math.min(...ys)),right=Math.min(100,Math.max(...xs)),bottom=Math.min(100,Math.max(...ys));
-  if(right<0||left>100||bottom<0||top>100||right<left||bottom<top){handle.hidden=true;return;}
-  Object.assign(handle.style,{left:left+'%',top:top+'%',width:Math.max(5,right-left)+'%',height:Math.max(5,bottom-top)+'%'});handle.querySelector('span').textContent=entry.name;
+  if(!handle)return;
+  const selected=entries.find(e=>e.id===current.activeElement);if(current.editElements&&selected)paintMarker(handle,selected,true);else handle.hidden=true;
+  if(!dragging&&pointerPosition){hovered=pickAt(pointerPosition.x,pointerPosition.y);document.querySelector('#scene').style.cursor=hovered?'grab':'default';}
+  if(!dragging&&hovered&&hovered.id!==current.activeElement)paintMarker(hover,hovered);else hover.hidden=true;
  }
- apply(state);return {apply,draw,get manifest(){return entries.filter(entry=>!resolved(entry).archived&&(!entry.owner||!presetEdits(current).objects.find(o=>o.id===entry.owner)?.archived)).map(entry=>({id:entry.id,name:entry.name,parentId:entry.parentId,rootId:entry.rootId,depth:entry.depth||0,owner:entry.owner,custom:entry.custom,dom:!!entry.domId,mv:entry.kind==='logo'&&!entry.parentId,base:entry.defaults,...resolved(entry)}));}};
+ apply(state);return {apply,draw,pick(x,y){const entry=pickAt?.(x,y);return entry?{id:entry.id,name:entry.name}:null;},get manifest(){return entries.filter(entry=>!isElementDeleted(current,entry.id)).map(entry=>({id:entry.id,name:entry.name,parentId:entry.parentId,rootId:entry.rootId,depth:entry.depth||0,owner:entry.owner,custom:entry.custom,dom:!!entry.domId,mv:entry.kind==='logo'&&!entry.parentId,base:entry.defaults,...resolved(entry)}));}};
 }
