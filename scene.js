@@ -21,6 +21,8 @@ const moving=[],videos=[];
 let hero,secondary,background,layout,videoMesh,videoMaterial,currentClip,video,videoTexture,cueText;
 let lastConfig='',pointer={x:0,y:0},lastFrame=-1,lastVideoSync=0;
 let frames=0,fps=0,statsEpoch=performance.now(),videoBlocked=false;
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+const motionAllowed=()=>!reducedMotion.matches||state.motionConsent;
 const clipList=await fetch('./clips.json').then(r=>r.json());
 
 // A locally generated studio environment supplies soft reflected highlights.
@@ -159,12 +161,12 @@ async function loadVideo(id){
  videoMaterial.map=videoTexture;videoMaterial.color.set('#ffffff');videoMaterial.needsUpdate=true;
  v.addEventListener('loadedmetadata',()=>{if(video!==v)return;const actual=v.videoWidth/v.videoHeight,target=videoMesh.userData.aspect||16/9;if(actual>target)videoMesh.scale.y=target/actual;else videoMesh.scale.x=actual/target;syncVideo(true);});
  v.addEventListener('error',()=>{if(video!==v)return;videoMaterial.map=null;videoMaterial.color.set('#234755');videoMaterial.needsUpdate=true;document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='Research clip could not load. Keep the backgrounds folder beside the original output folder and run START.bat.';});
- if(!state.paused&&state.speed>0)v.play().then(()=>videoBlocked=false).catch(()=>videoBlocked=true);
+ if(!state.paused&&state.speed>0&&motionAllowed())v.play().then(()=>videoBlocked=false).catch(()=>videoBlocked=true);
 }
 function syncVideo(force=false){
  if(!video||video.readyState<1||!Number.isFinite(video.duration))return;
  const t=timeline(state)%video.duration,drift=Math.abs(video.currentTime-t);if(force||drift>.28)video.currentTime=t;
- if(state.paused||state.speed===0)video.pause();else{video.playbackRate=Math.max(.0625,state.speed);if(video.paused)video.play().then(()=>videoBlocked=false).catch(()=>videoBlocked=true);}
+ if(state.paused||state.speed===0||!motionAllowed())video.pause();else{video.playbackRate=Math.max(.0625,state.speed);if(video.paused)video.play().then(()=>videoBlocked=false).catch(()=>videoBlocked=true);}
 }
 function rebuild(){
  clear();document.querySelector('#error').hidden=true;layout=positions();
@@ -217,7 +219,7 @@ const sync=params.has('capture')||preview?{send(){}}:connectSync(update);
 function draw(now){
  requestAnimationFrame(draw);if(now-lastFrame<1000/(preview?25:60)-1)return;lastFrame=now;
  if(preview&&!params.has('capture')&&parent!==window&&parent.METAStudio)setClockOffset(parent.METAStudio.now()-Date.now());
- const t=timeline(state),slow=t*.24;
+ const t=motionAllowed()?timeline(state):0,slow=t*.24;
  if(background)background.material.uniforms.uTime.value=t*state.motionAmount;
  for(const m of moving){const o=m.o;
   const pose=motionPose(m.type,t,m.phase||0,state.motionAmount);
@@ -237,4 +239,4 @@ function draw(now){
 }
 requestAnimationFrame(draw);
 // Deterministic phase and ready state are useful for on-set stills and visual QA.
-window.META={get state(){return state;},get time(){return timeline(state);},get stats(){return {fps,videoBlocked,movingObjects:moving.length};},get video(){return video?{time:video.currentTime,paused:video.paused,muted:video.muted,ready:video.readyState}:null;},renderAt(seconds){state={...state,paused:true,offset:seconds};syncVideo(true);},get renderer(){return renderer;}};
+window.META={get state(){return state;},get time(){return timeline(state);},get stats(){return {fps,videoBlocked,reducedMotion:!motionAllowed(),movingObjects:moving.length};},get video(){return video?{time:video.currentTime,paused:video.paused,muted:video.muted,ready:video.readyState}:null;},renderAt(seconds){state={...state,paused:true,offset:seconds};syncVideo(true);},get renderer(){return renderer;}};

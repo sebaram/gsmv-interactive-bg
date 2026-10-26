@@ -45,7 +45,7 @@ with sync_playwright() as p:
     controller.add_init_script('const nativeNow=Date.now.bind(Date);Date.now=()=>nativeNow()+120000;')
     page=controller.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(BASE+'/backgrounds/')
-    wait(page,"document.querySelector('#network-status').textContent==='NETWORK READY'")
+    wait(page,"document.querySelector('#network-status').textContent.toLowerCase()==='network ready'")
     check('All five directions are selectable',page.locator('[data-variant]').count()==5)
     clients=[]
     for view,skew,width,height in [('front',-90000,960,540),('left',70000,960,360)]:
@@ -69,7 +69,7 @@ with sync_playwright() as p:
     preview=page.frames[1]
     pt=preview.evaluate('window.META.time')
     check('Preview inherits the corrected clock from skewed controller',abs(pt-front.evaluate('window.META.time'))<.4)
-    wait(page,"document.querySelector('#playback-status').textContent.includes('LIVE')")
+    wait(page,"document.querySelector('#playback-status').textContent.includes('Playing')")
     check('Live playback indicator reports rendering', 'fps' in page.locator('#playback-status').inner_text())
     for style in [1,3,4]:
         page.locator(f'[data-variant="{style}"]').click()

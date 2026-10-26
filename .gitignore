@@ -6,6 +6,9 @@ media/
 *.mp4
 *.mov
 *.webm
+!previews/demo-motion.mp4
+_site/
 previews/qa-*
 previews/studio-initial.png
+previews/studio-v2-initial.png
 .session*.json

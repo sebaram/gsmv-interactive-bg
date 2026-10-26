@@ -1,0 +1,15 @@
+{
+  "scanned": "2026-10-26",
+  "findings": {
+    "fonts": "System sans in studio.css; supplied identity artwork in assets/identity.svg",
+    "palette": "Official SVG #0066b3 and #ed1c24, plus existing graphite editor surfaces",
+    "motion": "Actual Three.js wall renderer in scene.js; state and timeline tests in motion.test.mjs and state.test.mjs",
+    "framework": "Native HTML/CSS/modules and Python LAN server",
+    "material": "User's two scenario decks, original logo and local research footage; actual app screenshots in previews/",
+    "audience": "Interview shoot operator",
+    "use": "Choose and run a background on individually configured display outputs"
+  },
+  "preserve": ["all field IDs and handlers", "screen configuration and output URLs", "original logo", "red real / blue virtual", "live renderer"],
+  "introduce": ["Console material", "stage-first composition", "local type assets", "accessible focus and readable labels", "public browser mode"],
+  "files": {"edit": ["index.html", "studio.css", "studio.js", "screens-ui.js"], "create": ["tokens.css", "base.css"], "delete": []}
+}

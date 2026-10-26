@@ -1,0 +1,22 @@
+[
+  {
+    "date": "2026-10-26",
+    "mode": "redesign",
+    "depth": "full",
+    "scope": "app",
+    "theme": "console",
+    "deal": "1/3, kaist-metaverse-interview-video-b1be62f2a458",
+    "shape": "app screen",
+    "axes": "dark/grotesk-sans/brand-blue",
+    "hero": "not applicable to app scope",
+    "nav": "compact studio bar",
+    "footer": "department and source repository",
+    "imagery": "actual product renders and live WebGL",
+    "signature": "live panorama with per-screen projection",
+    "preserved": {"links": "5/5", "fields": "32/32", "scriptHooks": "1/1"},
+    "waived": [{"gate": "39b", "reason": "Scene selection filmstrip needs larger actual preview images than a normal button"}],
+    "review": {"type": "fresh-context subagent", "verdict": "ship", "materialFindings": 0},
+    "sweep": {"floorFailures": 0, "openReflex": 0, "warnings": 0},
+    "prompt": "Improve the multi-screen interview background monitor editor with Hallmark, preserving KAIST identity and all controls."
+  }
+]

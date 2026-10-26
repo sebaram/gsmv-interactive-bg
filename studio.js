@@ -5,22 +5,22 @@ let state=read();save(state);
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
 let previewIds='',networkOrigin=location.origin;
 const editor=screenEditor($('#screen-configs'),()=>state,next=>{state=next;publish();},toast);
-$('.style-grid').innerHTML=variants.map((v,i)=>`<button class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg);background-color:${['#102447','#533743','#d0c9bb','#17343a','#393a55'][i]}"><span class="num">0${i+1}</span><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag}</small></div></button>`).join('');
-$('.cue-grid').innerHTML=cues.map((v,i)=>`<button class="cue" data-cue="${i}" aria-pressed="false"><small>0${i+1}</small>${v.name}</button>`).join('');
+$('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
+$('.cue-grid').innerHTML=cues.map((v,i)=>`<button type="button" class="cue" data-cue="${i}" aria-pressed="false">${v.name}</button>`).join('');
 function publish(){state=sanitize(state);save(state);channel.postMessage(state);paint();sync.send(state);}
 function paint(){
  document.querySelectorAll('[data-variant]').forEach(el=>{const on=+el.dataset.variant===state.variant;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);el.querySelector('.chosen').textContent=on?'✓':'';});
  document.querySelectorAll('[data-cue]').forEach(el=>{const on=+el.dataset.cue===state.cue;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);});
- $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=variants[state.variant].desc;
+ $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=staticMode&&!state.customClip&&[3,4].includes(state.variant)?'Preview the moving gallery, then choose a research video from your computer. Your file stays local.':variants[state.variant].desc;
  $('#swatch').style.background=['#101d35','#874453','#ded9c9','#143e46','#565b93'][state.variant];
  $('#preview-caption').textContent=['Orbital motion','Real ↔ virtual · flowing ribbons','Floating architecture','Research footage · '+cues[state.cue].name,'Real + virtual + research · '+cues[state.cue].name][state.variant];
  for(const k of ['brightness','speed','motionAmount'])$('#'+k).value=state[k];
  $('#brightness-value').textContent=state.brightness+'%';$('#speed-value').textContent=state.speed.toFixed(2)+'×';$('#motionAmount-value').textContent=state.motionAmount.toFixed(2)+'×';
  for(const k of ['branding','headlines','interactive','calibration'])$('#'+k).checked=state[k];
- $('#pause-btn').textContent=state.paused?'▶ Resume':'Ⅱ Pause';$('#guide-btn').classList.toggle('active',state.guide);
- $('#resolution-label').textContent=state.screens.length+' SCREENS · '+state.screens.map(sc=>sc.width+' × '+sc.height).join(' + ');
+ $('#pause-btn').textContent=state.paused?'Resume':'Pause';$('#guide-btn').classList.toggle('active',state.guide);
+ $('#resolution-label').textContent=state.screens.length+' screens / '+state.screens.map(sc=>sc.width+' × '+sc.height).join(' + ');
  const ids=state.screens.map(sc=>sc.id).join('/');
- if(ids!==previewIds){previewIds=ids;$('.paired').innerHTML='';for(const sc of state.screens){const wrap=document.createElement('div');wrap.className='screen-preview';wrap.dataset.preview=sc.id;const iframe=document.createElement('iframe');iframe.src=`wall.html?view=${encodeURIComponent(sc.id)}&preview=1`;iframe.title=sc.name+' live preview';const label=document.createElement('span');label.className='screen-label';wrap.append(iframe,label);$('.paired').append(wrap);}}
+ if(ids!==previewIds){previewIds=ids;$('.paired').innerHTML='';for(const sc of state.screens){const wrap=document.createElement('div');wrap.className='screen-preview';wrap.dataset.preview=sc.id;const iframe=document.createElement('iframe');iframe.src=`wall.html?view=${encodeURIComponent(sc.id)}&preview=1`;iframe.title=sc.name+' live preview';iframe.tabIndex=-1;const label=document.createElement('span');label.className='screen-label';wrap.append(iframe,label);$('.paired').append(wrap);}}
  for(const sc of state.screens){const wrap=document.querySelector(`[data-preview="${sc.id}"]`);wrap.style.flex=screenAspect(sc);wrap.style.aspectRatio=screenAspect(sc);wrap.querySelector('.screen-label').textContent=sc.name;}
  $('#cue-note').textContent=[3,4].includes(state.variant)&&state.cue===5?'Society cue uses a conceptual connection network. No dedicated economics research clip is included.':'Cues set the accent and optional titles. Research styles play the selected footage on every screen.';
  editor.paint();paintOutputs();
@@ -37,7 +37,7 @@ for(const k of ['brightness','motionAmount'])$('#'+k).oninput=e=>{state[k]=+e.ta
 $('#speed').oninput=e=>{state=setSpeed(state,+e.target.value);publish();};
 $('#pause-btn').onclick=()=>{state=setPaused(state,!state.paused);publish();};
 $('#guide-btn').onclick=()=>{state.guide=!state.guide;publish();};
-$('#motion-demo').onclick=()=>{state=setPaused(state,false);state=setSpeed(state,1);state.motionAmount=1.3;publish();toast('Visible motion · 1× speed · 1.3× movement');};
+$('#motion-demo').onclick=()=>{state=setPaused(state,false);state=setSpeed(state,1);state.motionAmount=1.3;state.motionConsent=true;publish();};
 $('#add-screen').onclick=()=>editor.add();
 $('#clean-btn').onclick=()=>{Object.assign(state,{guide:false,calibration:false,interactive:false,bezel:0,screens:state.screens.map(sc=>({...sc,grid:false}))});publish();toast('Clean take ready · all screen overlays off');};
 $('#save-look').onclick=()=>{const blob=new Blob([JSON.stringify({...state,customClip:undefined,offset:timeline(state),epoch:currentTime(),savedAt:new Date().toISOString(),styleName:variants[state.variant].name},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='META-'+variants[state.variant].name.toLowerCase().replaceAll(' ','-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Look and screen setup saved');};
@@ -57,10 +57,10 @@ setInterval(()=>{
  const frames=[...document.querySelectorAll('.paired iframe')].map(f=>{try{return f.contentWindow.META;}catch{return null;}}).filter(Boolean),first=frames[0];
  if(!first){$('#playback-status').textContent='Starting renderers…';return;}
  const time=first.time,advancing=previousTime!==null&&time>previousTime+.03;previousTime=time;
- const frozen=state.paused||state.speed===0||state.motionAmount===0;
+ const reduced=frames.some(f=>f.stats.reducedMotion),frozen=state.paused||state.speed===0||state.motionAmount===0||reduced;
  const fps=Math.round(Math.min(...frames.map(f=>f.stats.fps)));
  const blocked=frames.some(f=>f.stats.videoBlocked);
- $('#playback-status').textContent=blocked?'Video needs a click on its wall output':frozen?'Motion held · '+fps+' fps':advancing?'● LIVE · '+fps+' fps · '+time.toFixed(1)+' s':'Checking motion…';
+ $('#playback-status').textContent=blocked?'Click the wall output to start video':reduced?'Reduced motion preference':frozen?'Motion held, '+fps+' fps':advancing?'Playing at '+fps+' fps, '+time.toFixed(1)+' s':'Checking motion';
  $('#playback-status').classList.toggle('held',frozen||blocked);
 },600);
 paint();

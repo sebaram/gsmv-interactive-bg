@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test state.test.mjs screens.test.mjs motion.test.mjs",
+    "test": "node --test state.test.mjs screens.test.mjs motion.test.mjs site.test.mjs",
+    "build": "node scripts/build-site.mjs",
     "start": "python serve.py --open"
   }
 }
