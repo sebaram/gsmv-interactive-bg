@@ -68,3 +68,11 @@ Also run: `npm test` (49 motion, logo geometry, video-selection, screen-state, m
 - Rendered Hallmark sweep: no Floor failures or open Reflex findings; matching form fields retain an answered Finish note, and the existing scene-thumbnail waiver remains.
 
 YouTube requires internet and embedding permission; its branding/overlays/advertising and streaming synchronization remain service behavior. Local files remain the controlled option for uninterrupted takes.
+
+## Seeded MV variation and the Elements list
+
+`npm test`:54 passing tests. Builds and JavaScript syntax checks pass. New tests cover repeatable varied paths/surfaces, exact assembly, classic randomness0, seed/timing bounds and persistence, unique seeds for added/copied sculptures, and independent geometry with editable facets.
+
+`qa_mv_variations.py` verified multiple MV instances on one screen, changing one seed while the other instance's rendered pixels stay unchanged, facet editing, motion/pause and fresh-storage URL persistence. `qa_element_list.py` verified expandable hierarchy, nested search context, row visibility, clear selection, canvas/list synchronization, stable search/numeric focus, add/duplicate/remove and MV controls, unobstructed painted row controls, and a bounded390px layout. `qa_preset_parts.py` and `qa_authoring.py` regressions pass.
+
+Read-only review found no material defects. The Hallmark renderer reports a false occlusion finding for rows outside the element list's scroll viewport: its text-center probe does not intersect ranges with overflow ancestors before testing the element below. Actual clipped rows are not painted over subsequent fields; screenshot inspection and a viewport-clipped hit-test verify visible row controls. Disabled controls use explicit fill/ink/cursor styling. The existing matching-form-fields Finish note and scene-thumbnail waiver remain.

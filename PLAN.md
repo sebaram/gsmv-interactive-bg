@@ -37,3 +37,9 @@ Verify all six styles, multiple actual sources, both wall shapes, direct gesture
 Remove the separate video preview/detail pane; retain useful catalog thumbnails, titles and descriptions with direct file/add actions. Add validated YouTube links as ordinary optional layers, store their IDs/start/title in URL state, load the official API only on wall outputs, preserve shared playback and per-screen physical placement, offer shape correction and show actionable embedding/network errors. Verify at the API boundary and with an actual YouTube stream.
 
 Expose nested preset Mesh/Line/Group parts as stable semantic hierarchy paths. Preserve legacy root IDs and defaults, compose child transforms with parent motion, support child selection, reset, copied parts and independently edited copied-group descendants, and retain all part edits in bookmarked looks. Verify transformed-parent dragging, all presets, native video/authoring regressions and public CI deployment.
+
+## Follow-up: varied MV instances and element list
+
+Give whole MV roots independent geometry and reproducible seed-based timing, trajectories and soft forms while retaining exact assembled facets and classic randomness0. Newly added and duplicated MVs get distinct seeds; provide per-root seed/randomness/New variation controls and persist them in look URLs. Keep facet editing and copies of other object types intact.
+
+Add a searchable expandable element list with current selection, per-row visibility and contextual add/duplicate/hide/remove/reset controls. Preserve focus through frequent preview updates, support clear selection and reveal canvas-picked descendants, and keep the list bounded on narrow displays. Verify distinct rendered instances, one-instance changes leaving another unchanged, hierarchy CRUD, pause, fresh-storage URLs and deployment.

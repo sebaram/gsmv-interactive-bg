@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {sanitize} from './state.js';
 import {addElement,patchElement,removeElement,presetEdits,resetElement} from './authoring.js';
+import * as authoringTools from './authoring.js';
 
 test('fresh backgrounds are unmodified presets',()=>{
  assert.deepEqual(sanitize().authored,{});assert.equal(sanitize().editElements,false);
@@ -24,6 +25,7 @@ test('authoring transforms are bounded and independent for each preset and scree
 import * as T from './vendor/three.module.js';
 import {authoringScene} from './authoring-scene.js';
 import {encodeLook,decodeLook} from './look-url.js';
+import {createLogoSculpture} from './logo-scene.js';
 
 function fixture(){
  globalThis.innerWidth=1280;globalThis.innerHeight=720;
@@ -95,4 +97,26 @@ test('semantic part labels preserve legacy top-level element IDs in saved looks'
  const f=fixture(),line=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,0),new T.Vector3(1,1,0)]),new T.LineBasicMaterial());f.group.add(line);
  const author=makeAuthor(f),entry=author.manifest.find(e=>e.name==='Connection line');
  assert.ok(entry);assert.match(entry.id,/-sculptural-element-1$/);
+});
+
+test('added and duplicated MV sculptures receive independent persisted variation seeds',()=>{
+ let state=addElement(sanitize({variant:5}),'logo');const first=state.authored[5].objects[0];
+ assert.ok(first.seed>0);assert.equal(first.randomness,1);
+ state=addElement(state,'copy',{},first.id);const copy=state.authored[5].objects[1];assert.notEqual(first.seed,copy.seed);assert.equal(copy.randomness,1);
+ assert.deepEqual(decodeLook(encodeLook(state)).authored,sanitize(state).authored);
+ assert.equal(typeof authoringTools.randomizeElement,'function');
+ const changed=authoringTools.randomizeElement(state,copy.id);assert.notEqual(changed.authored[5].objects[1].seed,copy.seed);assert.equal(changed.authored[5].objects[0].seed,first.seed);
+ const bounded=sanitize(patchElement(changed,copy.id,{seed:1e9,randomness:100}));assert.equal(bounded.authored[5].objects[1].seed,999999);assert.equal(bounded.authored[5].objects[1].randomness,2);
+});
+test('whole MV copies own their animation geometry and preserve independently editable facets',()=>{
+ const state=addElement(sanitize({variant:5}),'copy',{x:25,screen:'left'},'preset-logo-front'),f=fixture(),systems=[];
+ function makeLogo(){const system=createLogoSculpture(c=>new T.MeshBasicMaterial({color:c}));system.root.name='MV sculpture';systems.push(system);return system.root;}
+ f.group.clear();const original=makeLogo();original.userData.authorId='preset-logo-front';f.group.add(original);
+ const author=authoringScene(f.group,f.camera,state,{view:'front',preview:false,createObject:makeLogo});assert.equal(systems.length,2);
+ const originalFacet=systems[0].root.children[0].children[0],copyFacet=systems[1].root.children[0].children[0];
+ assert.notEqual(originalFacet.geometry,copyFacet.geometry);
+ systems.forEach(s=>s.update(3,1,s.root.userData.mvSettings));author.draw();
+ assert.notDeepEqual([...originalFacet.geometry.attributes.position.array],[...copyFacet.geometry.attributes.position.array]);
+ assert.ok(author.manifest.find(e=>e.id==='object-1').mv);assert.equal(author.manifest.find(e=>e.id==='object-1-part-1').mv,false);
+ author.apply(patchElement(state,'object-1-part-1',{visible:false}));assert.equal(copyFacet.parent.visible,false);assert.equal(originalFacet.parent.visible,true);
 });

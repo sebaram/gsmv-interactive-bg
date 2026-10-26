@@ -44,7 +44,7 @@ with sync_playwright() as p:
  print('PASS Copied group parts stay independent and their selection handles drag in the monitor',flush=True)
  page.locator('#pause-btn').click();front.wait_for_function('window.META.state.paused')
  page.locator('#author-element').select_option('preset-main');page.locator('#author-size').fill('1.4');page.locator('#author-rotation').fill('35')
- page.locator('#author-element').select_option('preset-main-part-3');page.wait_for_timeout(150)
+ page.locator('#author-element').select_option('preset-main-part-3');page.locator('.preview-room').scroll_into_view_if_needed();page.wait_for_timeout(150)
  box=front.locator('.element-handle').bounding_box();start_x=box['x']+box['width']/2;start_y=box['y']+box['height']/2
  page.mouse.move(start_x,start_y);page.mouse.down();page.mouse.move(start_x+20,start_y,steps=4);page.mouse.up();page.wait_for_timeout(100)
  after=front.locator('.element-handle').bounding_box();dx=after['x']+after['width']/2-start_x;dy=after['y']+after['height']/2-start_y

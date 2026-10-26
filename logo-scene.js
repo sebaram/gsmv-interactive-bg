@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.js';
-import {facets,cycle,facetPose,morphSurface} from './logo-morph.js';
+import {facets,cycle,facetPose,morphSurface,logoTime,logoShape} from './logo-morph.js';
 
 function facetGeometry(facet){
  const corners=facet.points.map(([x,y])=>new T.Vector2((x-70.865)/70.87,(35.435-y)/70.87));
@@ -32,12 +32,12 @@ export function createLogoSculpture(materialFactory){
  for(const facet of facets){const data=facetGeometry(facet),object=new T.Mesh(data.geometry,materialFactory(facet.color));root.add(object);parts.push({...data,object});}
  const bridges=[];
  for(let i=0;i<3;i++){const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(new Float32Array(45*3),3));const line=new T.Line(geometry,new T.LineBasicMaterial({color:i===1?'#ed1c24':'#0066b3',transparent:true,opacity:.25}));root.add(line);bridges.push(line);}
- function update(time,amount=1){
-  const t=time*amount,{morph}=cycle(t);
+ function update(time,amount=1,variation={}){
+  const t=variation.held?15:logoTime(time,amount,variation),{morph}=cycle(t);
   for(let i=0;i<parts.length;i++){
-   const p=parts[i],pose=facetPose(t,i),positions=p.geometry.attributes.position;
+   const p=parts[i],pose=facetPose(t,i,variation),positions=p.geometry.attributes.position,surface={shape:logoShape(variation,i)};
    p.object.position.set(p.center.x+pose.x,p.center.y+pose.y,pose.z);p.object.rotation.set(pose.rotationX,pose.rotationY,pose.rotationZ);
-   for(let k=0;k<p.records.length;k++){const v=p.records[k],next=morphSurface(v.x,v.y,v.radial,.045,pose.morph,t,p.radius,v.side);positions.setXYZ(k,...next);}
+   for(let k=0;k<p.records.length;k++){const v=p.records[k],next=morphSurface(v.x,v.y,v.radial,.045,pose.morph,t,p.radius,v.side,surface);positions.setXYZ(k,...next);}
    positions.needsUpdate=true;p.geometry.computeVertexNormals();p.geometry.computeBoundingSphere();
   }
   for(let i=0;i<bridges.length;i++){

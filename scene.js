@@ -162,7 +162,7 @@ function mvSymbiosis(){
 
 function createAuthorObject(type){
  const root=new T.Group();group.add(root);
- if(type==='logo'){const system=createLogoSculpture(color=>physical(color,.23,.42,{side:T.DoubleSide}));group.remove(root);group.add(system.root);system.root.scale.setScalar(2.5);logoSystems.push(system);return system.root;}
+ if(type==='logo'){const system=createLogoSculpture(color=>physical(color,.23,.42,{side:T.DoubleSide}));group.remove(root);group.add(system.root);system.root.name='MV sculpture';system.root.scale.setScalar(2.5);logoSystems.push(system);return system.root;}
  if(type==='network'){group.remove(root);return connectionNetwork(0,0,0,1);}
  if(type==='ribbons'){for(const [color,phase] of [['#0066b3',0],['#ed1c24',2]]){const o=mesh(ribbonGeometry(phase),physical(color,.24,.45,{side:T.DoubleSide}),root);o.scale.setScalar(.7);moving.push({o,type:'ribbon',phase});}}
  if(type==='orbits'){sphere(.7,'#347ac4',0,0,0,root);for(let i=0;i<3;i++){const o=torus(2.2-i*.25,.08,i===1?'#ed1c24':'#0066b3',root);moving.push({o,type:'orbit',base:[.8+i*.2,.3+i*.4,.1],phase:i});}}
@@ -222,7 +222,7 @@ function draw(now){
  if(preview&&!params.has('capture')&&parent!==window&&parent.METAStudio)setClockOffset(parent.METAStudio.now()-Date.now());
  const t=motionAllowed()?timeline(state):0,slow=t*.24;
  if(background)background.material.uniforms.uTime.value=t*state.motionAmount;
- for(const system of logoSystems){system.update(motionAllowed()?t:15,motionAllowed()?state.motionAmount:1);system.root.rotation.y=state.interactive?pointer.x*.12:0;system.root.rotation.x=state.interactive?-pointer.y*.08:0;}
+ for(const system of logoSystems){system.update(t,state.motionAmount,{...system.root.userData.mvSettings,held:!motionAllowed()});system.root.rotation.y=state.interactive?pointer.x*.12:0;system.root.rotation.x=state.interactive?-pointer.y*.08:0;}
  for(const m of moving){const o=m.o;
   const pose=motionPose(m.type,t,m.phase||0,state.motionAmount);
   if(m.type==='orbit'){o.rotation.set(m.base[0]+pose.x,m.base[1]+pose.y,m.base[2]+pose.z);}

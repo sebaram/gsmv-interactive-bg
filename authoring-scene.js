@@ -23,7 +23,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   const defaults={screen:sc.id,x:(pixel-sc.x)/sc.width*100,y:(1-ndc.y)/2*100,size:1,rotation:0,visible:true};
   const originalParent=object.parent||group,parentMatrix=originalParent.matrixWorld.clone(),localAnchor=anchor.clone().applyMatrix4(parentMatrix.clone().invert()),wrap=new T.Group();originalParent.add(wrap);wrap.add(object);wrappers.add(wrap);
   const label=custom?(custom.type==='copy'?'Copy of '+(entries.find(e=>e.id===custom.source)?.name||'element'):objectTypes.find(t=>t[0]===custom.type)?.[1]||name):name+(n>1?' '+n:'');
-  const entry={id,label,name:parent?parent.name+' / '+label:label,parentId:parent?.id||null,rootId:rootId||id,depth:parent?parent.depth+1:0,kind:(custom?.type==='copy'?entries.find(e=>e.id===custom.source)?.kind:custom?.type)||((object.name==='MV sculpture')?'logo':name==='Research network'?'network':null),object,wrap,anchor,localAnchor,parentMatrix,defaults,custom:!!custom,owner:parent?.owner||custom?.id||null};entries.push(entry);return entry;
+  const entry={id,label,name:parent?parent.name+' / '+label:label,parentId:parent?.id||null,rootId:rootId||id,depth:parent?parent.depth+1:0,kind:(custom?.type==='copy'?entries.find(e=>e.id===custom.source)?.kind:custom?.type)||((object.name==='MV sculpture')?'logo':name==='Research network'?'network':null),object,wrap,anchor,localAnchor,parentMatrix,defaults,custom:!!custom,owner:parent?.owner||custom?.id||null};if(entry.kind==='logo'&&!parent){defaults.seed=0;defaults.randomness=0;}entries.push(entry);return entry;
  }
  function registerTree(object,custom=null,parent=null,path=[]){const children=[...object.children],entry=register(object,custom,parent,path);for(const [i,child] of children.entries())if(child.isMesh||child.isLine||child.isGroup)registerTree(child,null,entry,[...path,i+1]);return entry;}
  for(const object of [...group.children])if(object!==background)registerTree(object);
@@ -38,7 +38,10 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  for(const custom of presetEdits(state).objects){
   if(custom.type==='copy'){
    const source=entries.find(e=>e.id===custom.source);if(!source)continue;
-   const clone=cloneAnimated(source.object);group.add(clone);const entry=registerTree(clone,custom);entry.defaults={...source.defaults,size:1,rotation:0,visible:true};
+   const independentMV=source.kind==='logo'&&!source.parentId;
+   const clone=independentMV?createObject('logo'):cloneAnimated(source.object);
+   if(independentMV){clone.position.copy(source.object.position);clone.quaternion.copy(source.object.quaternion);clone.scale.copy(source.object.scale);}
+   group.add(clone);const entry=registerTree(clone,custom);entry.defaults={...source.defaults,size:1,rotation:0,visible:true};
   }else {const object=createObject(custom.type);if(object)registerTree(object,custom);}
  }
  for(const sc of p.screens)for(const [domId,name,y] of [['branding','Department signature',9],['headline','Research titles',70],['wall-caption','Topic footer',90]])entries.push({id:domId+'-'+sc.id,name,domId,custom:false,defaults:{screen:sc.id,x:7,y,size:1,rotation:0,visible:true}});
@@ -49,6 +52,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  }
  function applyDom(entry){const r=resolved(entry);if(entry.defaults.screen!==view)return;const el=document.getElementById(entry.domId),edited=presetEdits(current).edits[entry.id],sc=current.screens.find(s=>s.id===view)||current.screens[0],correction=(innerWidth/innerHeight)/screenAspect(sc);el.style.left=edited?r.x+'%':'';el.style.top=edited?r.y+'%':'';el.style.bottom=edited?'auto':'';el.style.transform=`scaleX(${correction}) scale(${r.size}) rotate(${r.rotation}deg)`;el.style.transformOrigin='left top';el.style.display=(entry.domId==='headline'?current.headlines:current.branding)&&r.visible?'':'none';}
  function apply(next){current=next;for(const entry of entries){if(entry.domId){applyDom(entry);continue;}const r=resolved(entry),rotation=r.rotation*Math.PI/180;
+  if(entry.kind==='logo'&&!entry.parentId)entry.object.userData.mvSettings={seed:r.seed||0,randomness:r.randomness||0};
   const position=r.x===entry.defaults.x&&r.y===entry.defaults.y&&r.screen===entry.defaults.screen?entry.localAnchor.clone():target(r,entry.anchor.z).applyMatrix4(entry.parentMatrix.clone().invert());
   const anchor=entry.localAnchor.clone().multiplyScalar(r.size).applyAxisAngle(new T.Vector3(0,0,1),rotation);entry.wrap.scale.setScalar(r.size);entry.wrap.rotation.z=rotation;entry.wrap.position.copy(position.sub(anchor));entry.wrap.visible=r.visible;
  }}
@@ -79,5 +83,5 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   if(right<0||left>100||bottom<0||top>100||right<left||bottom<top){handle.hidden=true;return;}
   Object.assign(handle.style,{left:left+'%',top:top+'%',width:Math.max(5,right-left)+'%',height:Math.max(5,bottom-top)+'%'});handle.querySelector('span').textContent=entry.name;
  }
- apply(state);return {apply,draw,get manifest(){return entries.filter(entry=>!resolved(entry).archived&&(!entry.owner||!presetEdits(current).objects.find(o=>o.id===entry.owner)?.archived)).map(entry=>({id:entry.id,name:entry.name,parentId:entry.parentId,rootId:entry.rootId,depth:entry.depth||0,owner:entry.owner,custom:entry.custom,dom:!!entry.domId,base:entry.defaults,...resolved(entry)}));}};
+ apply(state);return {apply,draw,get manifest(){return entries.filter(entry=>!resolved(entry).archived&&(!entry.owner||!presetEdits(current).objects.find(o=>o.id===entry.owner)?.archived)).map(entry=>({id:entry.id,name:entry.name,parentId:entry.parentId,rootId:entry.rootId,depth:entry.depth||0,owner:entry.owner,custom:entry.custom,dom:!!entry.domId,mv:entry.kind==='logo'&&!entry.parentId,base:entry.defaults,...resolved(entry)}));}};
 }
