@@ -49,7 +49,7 @@ with sync_playwright() as p:
  assert output.locator('.element-handle,.element-hover').count()==0
  print('PASS Signature dragging works and actual wall outputs contain no editor highlights',flush=True)
  page.set_viewport_size({'width':390,'height':844});page.locator('#element-search').fill('sphere');assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
- assert page.locator('.preview-room').evaluate('e=>e.getBoundingClientRect().height<=innerHeight*.52')
+ page.wait_for_function('document.querySelector(".preview-room").getBoundingClientRect().height<=innerHeight*.52')
  page.screenshot(path=str(APP/'previews/qa-preview-interaction-mobile.png'),full_page=True)
  portrait={**state,'variant':2,'screens':[{'id':'front','name':'Portrait','width':2160,'height':3840,'mode':'raster'}]}
  page.goto(BASE.split('#')[0]+'#look=v1.'+base64.urlsafe_b64encode(json.dumps(portrait).encode()).decode().rstrip('='));page.wait_for_function('window.METAStudio && document.querySelectorAll(".paired iframe").length===1')
