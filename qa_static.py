@@ -29,9 +29,9 @@ with sync_playwright() as p:
     print('PASS Public output opens at the correct subpath and follows controls',flush=True)
     page.locator('[data-variant="5"]').click();wall.wait_for_function('window.META.state.variant===5 && window.META.video')
     page.locator('#no-video').click();wall.wait_for_function('!window.META.video')
-    page.locator('#video-search').fill('P2-S5-01');page.locator('[data-preview-video="P2-S5-01"]').click()
-    assert page.locator('#video-poster').is_visible()
-    assert 'AquaHaptics' in page.locator('#video-title').inner_text()
+    page.locator('#video-search').fill('P2-S5-01')
+    assert page.locator('#video-preview').count()==0
+    assert 'AquaHaptics' in page.locator('.video-item strong').inner_text()
     source=next((APP.parent/'output'/'clips').glob('P2-S5-01*'))
     with page.expect_file_chooser() as selected:page.locator('#use-video').click()
     selected.value.set_files(source)

@@ -1,3 +1,4 @@
+import {youtubeSource} from './youtube-source.js';
 // Coordinates describe the physical display, independent of its input raster.
 const number=(v,fallback,min,max)=>Number.isFinite(+v)?Math.min(max,Math.max(min,+v)):fallback;
 const rect=raw=>({x:number(raw.x,70,0,100),y:number(raw.y,48,0,100),width:number(raw.width,36,5,100),enabled:raw.enabled!==false});
@@ -8,6 +9,7 @@ export function sanitizeLayers(raw=[]){
   const screens={};for(const [key,value] of Object.entries(layer.screens||{}).slice(0,8)){if(!value||typeof value!=='object')continue;const normalized=rect(value);screens[key]={};for(const k of ['x','y','width','enabled'])if(k in value)screens[key][k]=normalized[k];}
   const out={id,videoId:typeof layer.videoId==='string'?layer.videoId.slice(0,60):null,sourceAspect:number(layer.sourceAspect,16/9,.1,32),...rect(layer),screens};
   if(layer.customClip&&typeof layer.customClip.url==='string')out.customClip={url:layer.customClip.url,name:String(layer.customClip.name||'Local video').slice(0,160)};
+  const youtube=youtubeSource(layer.youtube);if(youtube){out.youtube=youtube;delete out.customClip;}
   return out;
  });
 }

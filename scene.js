@@ -24,7 +24,7 @@ const camera=new T.OrthographicCamera(-18,18,5,-5,.1,140);camera.position.set(0,
 const group=new T.Group();scene.add(group);
 const moving=[],logoSystems=[];
 let hero,secondary,background,layout,authoring;
-let lastConfig='',pointer={x:0,y:0},lastFrame=-1;
+let lastConfig='',pointer={x:0,y:0},lastFrame=-1,renderedTime=null;
 let frames=0,fps=0,statsEpoch=performance.now();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const motionAllowed=()=>!reducedMotion.matches||state.motionConsent;
@@ -234,11 +234,11 @@ function draw(now){
  if(hero){hero.position.y=Math.sin(t*.5*state.motionAmount)*.24+(state.variant===2?-.55:[1,4].includes(state.variant)?.2:0);if(state.interactive){hero.rotation.y+=(pointer.x*.12-hero.rotation.y)*.025;hero.rotation.x+=(-pointer.y*.1-hero.rotation.x)*.025;}else{hero.rotation.x=0;hero.rotation.y=0;}}
  if(secondary&&state.variant!==2)secondary.rotation.y=Math.sin(slow*.6*state.motionAmount)*.13;
  authoring?.draw();videoLayers.tick(now);
- renderer.render(scene,camera);
+ renderer.render(scene,camera);renderedTime=t;
  frames++;if(now-statsEpoch>500){fps=frames*1000/(now-statsEpoch);frames=0;statsEpoch=now;}
  document.body.dataset.ready='true';document.body.dataset.variant=String(state.variant);
  document.body.dataset.motionAmount=String(state.motionAmount);
 }
 requestAnimationFrame(draw);
 // Deterministic phase and ready state are useful for on-set stills and visual QA.
-window.META={get state(){return state;},get elements(){return authoring?.manifest||[];},get time(){return timeline(state);},get stats(){return {fps,videoBlocked:videoLayers.blocked,reducedMotion:!motionAllowed(),movingObjects:moving.length+logoSystems.length*6};},get video(){return videoLayers.stats[0]||null;},get videos(){return videoLayers.stats;},renderAt(seconds){state={...state,paused:true,offset:seconds};videoLayers.update(state);videoLayers.play();},get renderer(){return renderer;}};
+window.META={get state(){return state;},get elements(){return authoring?.manifest||[];},get time(){return timeline(state);},get renderedTime(){return renderedTime;},get stats(){return {fps,videoBlocked:videoLayers.blocked,reducedMotion:!motionAllowed(),movingObjects:moving.length+logoSystems.length*6};},get video(){return videoLayers.stats[0]||null;},get videos(){return videoLayers.stats;},renderAt(seconds){state={...state,paused:true,offset:seconds};videoLayers.update(state);videoLayers.play();},get renderer(){return renderer;}};

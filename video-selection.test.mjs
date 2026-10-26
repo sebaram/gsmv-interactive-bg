@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {chooseVideo,withoutVideo} from './video-library.js';
+import * as videoLibraryModule from './video-library.js';
+import {encodeLook,decodeLook} from './look-url.js';
 import {sanitize} from './state.js';
 import {patchLayer,removeLayer,placement,portableLook} from './video-layers.js';
 test('every video is selectable by title, explanation, poster and playable source',async()=>{
@@ -74,4 +76,15 @@ test('actual video proportions survive shared state for accurate placement contr
  assert.equal(state.videoLayers[0].sourceAspect,9/16);
  const r=placement(state.videoLayers[0],'front',16/9,state.videoLayers[0].sourceAspect);
  assert.equal(r.y,50);assert.ok(Math.abs(r.width-31.640625)<1e-6);
+});
+
+test('YouTube can be added to any preset and survives bookmarked looks',()=>{
+ assert.equal(typeof videoLibraryModule.chooseYoutube,'function');
+ const state=videoLibraryModule.chooseYoutube(sanitize({variant:1}),'https://youtu.be/M7lc1UVf-VE?t=30','Our department');
+ assert.equal(state.variant,1);assert.equal(state.videoLayers[0].youtube.id,'M7lc1UVf-VE');assert.equal(state.videoLayers[0].youtube.start,30);
+ const restored=decodeLook(encodeLook(state));assert.deepEqual(restored.videoLayers[0].youtube,state.videoLayers[0].youtube);
+});
+test('invalid YouTube sources cannot survive imported state',()=>{
+ const state=sanitize({videoLayers:[{id:'yt',youtube:{id:'<iframe>',title:'Bad'}},{id:'good',youtube:{id:'M7lc1UVf-VE',start:-20,title:'KAIST'}}]});
+ assert.equal(state.videoLayers[0].youtube,undefined);assert.equal(state.videoLayers[1].youtube.id,'M7lc1UVf-VE');assert.equal(state.videoLayers[1].youtube.start,0);
 });

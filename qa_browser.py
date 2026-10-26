@@ -82,7 +82,7 @@ with sync_playwright() as p:
             check(f'Visible pixel motion: style {style+1} / {name} ({fraction:.1%})',fraction>.005 and wall.evaluate('window.META.time')>start+.7)
     page.locator('[data-variant="1"]').click();wait(front,'window.META.state.variant===1')
     page.locator('#pause-btn').click();wait(front,'window.META.state.paused')
-    front.wait_for_timeout(200);a=image(front);front.wait_for_timeout(300);b=image(front)
+    wait(front,'window.META.renderedTime===window.META.time');front.wait_for_timeout(500);a=image(front);front.wait_for_timeout(300);b=image(front)
     check('Pause freezes rendered pixels',a.tobytes()==b.tobytes())
     page.locator('#motion-demo').click();wait(front,'!window.META.state.paused && window.META.state.speed===1 && window.META.state.motionAmount===1.3')
     check('Show visible motion resumes and resets movement controls',not front.evaluate('window.META.state.paused'))
@@ -139,7 +139,7 @@ with sync_playwright() as p:
     clip_ids=['P2-S1-02','P2-S2-02','P2-S3-01','P2-S4-01','P2-S5-01']
     for cue,clip_id in enumerate(clip_ids):
         page.locator('#video-search').fill(clip_id)
-        page.locator(f'[data-preview-video="{clip_id}"]').click()
+
         page.locator('#no-video').click();page.locator('#use-video').click()
         for wall in [front,left]:wait(wall,f'window.META.state.cue==={cue} && window.META.video && window.META.video.ready>=2')
         check(f'Video selection {cue+1} plays on both walls',not front.locator('#error').is_visible() and not left.locator('#error').is_visible())
@@ -159,7 +159,7 @@ with sync_playwright() as p:
     extra_context.close()
     configure('front',{'name':'Front LED wall','width':3840,'height':2160,'mode':'raster','cols':1,'rows':1,'grid':False})
     configure('left',{'cols':3,'rows':2,'grid':False})
-    page.locator('#video-search').fill('P2-S1-02');page.locator('[data-preview-video="P2-S1-02"]').click();page.locator('#use-video').click();page.locator('#video-search').fill('');page.locator('#brightness').fill('70');page.locator('#headlines').uncheck()
+    page.locator('#video-search').fill('P2-S1-02');page.locator('#use-video').click();page.locator('#video-search').fill('');page.locator('#brightness').fill('70');page.locator('#headlines').uncheck()
     page.locator('#motion-demo').click();page.locator('#motionAmount').fill('1')
     page.locator('#display-setup summary').click()
     page.wait_for_timeout(700)
@@ -182,5 +182,5 @@ clips=json.loads((APP/'clips.json').read_text(encoding='utf-8'))
 url=BASE+'/output/clips/'+urllib.parse.quote(clips[0]['url'].split('/')[-1])
 with urllib.request.urlopen(urllib.request.Request(url,headers={'Range':'bytes=0-127'})) as response:
     check('Local research video supports precise byte ranges',response.status==206 and len(response.read())==128)
-(APP/'QA.md').write_text('# Verification\n\nGoogle Chrome through Python Playwright; test server '+BASE+'.\n\n'+'\n'.join('- PASS: '+name for name in checks)+'\n\nAlso run: `npm test` (37 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.\n',encoding='utf-8')
+(APP/'QA.md').write_text('# Verification\n\nGoogle Chrome through Python Playwright; test server '+BASE+'.\n\n'+'\n'.join('- PASS: '+name for name in checks)+'\n\nAlso run: `npm test` (49 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.\n',encoding='utf-8')
 print(str(len(checks))+' browser/server checks passed',flush=True)

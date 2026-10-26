@@ -31,3 +31,9 @@ Replace the operator-facing research-cue buttons with a searchable video library
 Replace scene-coupled video galleries with an independent native-video overlay supporting up to eight layers. Fresh looks start with no footage. Add clips without changing the background; retain layers across style changes. Support all-screen placement plus per-screen center/width/visibility overrides, direct preview drag/resize and keyboard movement, duplicate/remove, master visibility, physical aspect correction, saved-look migration and portable exports. Handles stay in previews. Reuse the shared timeline and drift correction for every active video; placement edits must preserve decoders.
 
 Verify all six styles, multiple actual sources, both wall shapes, direct gestures, separate-client sync, pause/resume, screen addition, JSON persistence, clean outputs, mobile controls, public file selection and CI deployment.
+
+## Follow-up: direct video adding, YouTube and every preset part
+
+Remove the separate video preview/detail pane; retain useful catalog thumbnails, titles and descriptions with direct file/add actions. Add validated YouTube links as ordinary optional layers, store their IDs/start/title in URL state, load the official API only on wall outputs, preserve shared playback and per-screen physical placement, offer shape correction and show actionable embedding/network errors. Verify at the API boundary and with an actual YouTube stream.
+
+Expose nested preset Mesh/Line/Group parts as stable semantic hierarchy paths. Preserve legacy root IDs and defaults, compose child transforms with parent motion, support child selection, reset, copied parts and independently edited copied-group descendants, and retain all part edits in bookmarked looks. Verify transformed-parent dragging, all presets, native video/authoring regressions and public CI deployment.

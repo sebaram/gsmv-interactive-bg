@@ -1,4 +1,4 @@
-"""Verify the logo transformation and explicit preview/apply video workflow."""
+"""Verify the logo transformation and direct-add video workflow."""
 import io
 import json
 import os
@@ -19,16 +19,16 @@ with sync_playwright() as p:
  page=c.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  page.goto(BASE+'/backgrounds/');page.wait_for_function('document.querySelector("#video-result-count").textContent==="34 videos"')
  assert 'Research cue' not in page.locator('body').inner_text()
- assert page.locator('#video-title').inner_text()
- assert page.locator('#video-description').inner_text()
+ assert page.locator('#video-preview,#video-poster,.video-detail').count()==0
+ assert page.locator('.video-item strong').first.inner_text()
+ assert page.locator('.video-item-description').first.inner_text()
  assert page.locator('.video-item img').count()==4
- print('PASS Explicit video library shows 34 titles, descriptions, posters and previews',flush=True)
+ print('PASS Explicit video library shows 34 titles, descriptions, posters and direct adding',flush=True)
  before=page.evaluate('window.METAStudio.state.videoId')
- page.locator('#video-search').fill('P2-S5-01');page.locator('[data-preview-video="P2-S5-01"]').click()
- page.wait_for_function('document.querySelector("#video-title").textContent.includes("AquaHaptics")')
- page.wait_for_function('document.querySelector("#video-preview").readyState>=2')
+ page.locator('#video-search').fill('P2-S5-01')
+ assert 'AquaHaptics' in page.locator('.video-item strong').inner_text()
  assert page.evaluate('window.METAStudio.state.videoId')==before
- print('PASS Previewing a clip does not change the wall content',flush=True)
+ print('PASS Browsing direct-add cards does not change the wall content',flush=True)
  with page.expect_popup() as opened:page.locator('#output-links a').first.click()
  wall=opened.value;wall.on('pageerror',lambda e:errors.append(str(e)));wall.wait_for_function('window.META && document.body.dataset.ready==="true"')
  assert wall.evaluate('window.META.video') is None
@@ -44,9 +44,13 @@ with sync_playwright() as p:
  before=wall.locator('#scene').screenshot();wall.wait_for_timeout(1500);after=wall.locator('#scene').screenshot()
  assert ImageChops.difference(Image.open(io.BytesIO(before)),Image.open(io.BytesIO(after))).getbbox()
  print('PASS Procedural MV scene moves without video',flush=True)
- page.locator('#pause-btn').click();wall.wait_for_function('window.META.state.paused');wall.wait_for_timeout(100)
+ page.locator('#pause-btn').click();wall.wait_for_function('window.META.state.paused && window.META.renderedTime===window.META.time');wall.wait_for_timeout(500)
  a=wall.locator('#scene').screenshot();wall.wait_for_timeout(250);z=wall.locator('#scene').screenshot()
- assert ImageChops.difference(Image.open(io.BytesIO(a)),Image.open(io.BytesIO(z))).getbbox() is None
+ d=ImageChops.difference(Image.open(io.BytesIO(a)).convert('RGB'),Image.open(io.BytesIO(z)).convert('RGB'))
+ if d.getbbox() is not None:
+  print('Paused frame difference:',d.getextrema(),flush=True)
+  (APP/'previews/qa-pause-a.png').write_bytes(a);(APP/'previews/qa-pause-z.png').write_bytes(z)
+ assert d.getbbox() is None
  print('PASS Pause freezes the morph geometry',flush=True)
  # A representative assembly frame must be much wider than its height (the MV mark).
  wall.evaluate('window.META.renderAt(15)');wall.wait_for_timeout(100);wall.screenshot(path=str(APP/'previews/mv-assembled.jpg'),type='jpeg',quality=94)

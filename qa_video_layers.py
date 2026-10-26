@@ -29,7 +29,7 @@ with sync_playwright() as p:
  page.locator('#use-video').click();wall.wait_for_function('window.META.video && window.META.video.ready>=2')
  first=page.evaluate('window.METAStudio.state.activeVideoLayer')
  wall.evaluate('window.firstDecoder=document.querySelector(".video-layer video")')
- page.locator('#video-search').fill('P2-S5-01');page.locator('[data-preview-video="P2-S5-01"]').click();page.locator('#use-video').click()
+ page.locator('#video-search').fill('P2-S5-01');page.locator('#use-video').click()
  wall.wait_for_function('window.META.videos.length===2 && window.META.videos.every(v=>v.ready>=2)')
  assert wall.evaluate('window.firstDecoder===document.querySelector(".video-layer video")')
  assert len(set(page.evaluate('window.METAStudio.state.videoLayers.map(l=>l.id)')))==2

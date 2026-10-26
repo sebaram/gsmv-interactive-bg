@@ -27,17 +27,23 @@ Every background starts without video in a fresh studio. Switching backgrounds p
 
 All six backgrounds are starting **presets**. In **Author the preset**, select an element, choose its screen and set position, size, rotation and visibility. **Duplicate element** gives it an independent placement: for example, keep the main sculpture large on the front/right screen and put a smaller copy on the left. Copies keep their animation and survive removal of a custom source object. **Add element** offers MV sculptures, red/blue ribbons, orbital forms, networks, spheres and arches on any preset.
 
-Enable **Edit in preview** to drag the selected element or resize with its lower-right corner. Its editing box stays steady while its contents animate. The element list includes the preset's sculptures, decorative components and each screen's department signature, research titles and topic footer. Signatures and text are positioned separately per display; choose that display's existing copy. Position percentages describe the object's center for 3D elements and the upper-left anchor for signature/text. **Reset element** restores a preset component; **Reset this preset** clears only that preset's edits and added objects. Video layers remain independent.
+Enable **Edit in preview** to drag the selected element or resize with its lower-right corner. Click a visible part in the monitor to select it, including a child beneath a group outline. The hierarchical element list exposes individual ribbons, rings, spheres, arches, network nodes/links and MV facets inside their parent sculptures. Child edits compose with parent motion and group transforms; originals and copied groups keep independent part edits. The element list also includes the preset's sculptures, decorative components and each screen's department signature, research titles and topic footer. Signatures and text are positioned separately per display; choose that display's existing copy. Position percentages describe the object's center for 3D elements and the upper-left anchor for signature/text. **Reset element** restores a preset component; **Reset this preset** clears only that preset's edits and added objects. Video layers remain independent.
 
 The address bar updates automatically with a versioned `#look=v1.…` fragment. **Copy look link** copies the current arrangement; bookmark or share it to restore the preset, authored elements, screen shapes, video choices and playback settings in a fresh browser. No server save is needed. Public output links also carry the look, including Display setup and URL fields, so their addresses can be bookmarked directly. Runtime editing handles are excluded. Playing looks restart their timeline on opening; paused looks retain their held phase.
 
-The URL contains configuration, not video bytes or file permissions. Choose local video files again after opening in a new browser. Portable demo sources and LAN library clip IDs are retained. On the LAN controller, opening a saved look applies it to the session once; subsequent edits continue to synchronize with playback computers.
+The URL contains configuration, not video bytes or file permissions. Choose local video files again after opening in a new browser. YouTube sources, portable demo sources and LAN library clip IDs are retained. On the LAN controller, opening a saved look applies it to the session once; subsequent edits continue to synchronize with playback computers.
 
 ## Choose a video
 
-The monitor now has a **34-clip video library** instead of research-cue buttons. Search titles, descriptions, topics or clip IDs, or browse with Previous/Next. Each entry has an actual poster frame, title, topic and duration. The larger detail view explains the clip and offers preview playback.
+The monitor now has a **34-clip video library** instead of research-cue buttons. Search titles, descriptions, topics or clip IDs, or browse with Previous/Next. Each card has an actual thumbnail, title, explanation, topic and duration, with a direct add button. There is no separate preview player or detail pane.
 
-**Preview** changes only the detail view. **Add video** adds a separate layer to the current background, without changing the background. Add up to eight clips, including repeated clips. The on-set panel links directly to the library.
+**Add video** adds a separate layer to the current background, without changing the background. Add up to eight clips, including repeated clips. The on-set panel links directly to the library.
+
+### YouTube
+
+Paste a YouTube watch, share (`youtu.be`), Shorts, live or embed link in **YouTube**, optionally name the layer, and click **Add YouTube**. A timestamp in the link becomes the start point. The editor uses a lightweight placement card; opening the wall output loads the official YouTube player, muted and looping. It follows the session's pause, visibility and supported playback rates, with periodic timeline correction. This is best-effort streaming synchronization, not frame-accurate synchronization between separate YouTube players.
+
+YouTube layers use the same per-screen placement, size, duplicate/remove and bookmark controls as local files. Choose **YouTube shape** for widescreen, portrait or square footage. YouTube links survive reopening a saved address without file selection or server storage. Playback needs internet and a video that permits embedding. YouTube can show branding, overlays or advertisements; use local files when those would interfere with a take. The adapter uses the [official YouTube IFrame API](https://developers.google.com/youtube/iframe_api_reference) and [supported player parameters](https://developers.google.com/youtube/player_parameters).
 
 The **Video layers** panel below the live monitor controls the composition:
 
@@ -47,7 +53,7 @@ The **Video layers** panel below the live monitor controls the composition:
 - **Visible here** shows or hides a layer on the chosen screen. **Show videos** hides all layers while retaining their positions; **No video** removes every layer.
 - **Reset placement** resets the selected scope. Newly added screens inherit each layer's all-screen placement.
 
-Placement and source aspect compensate for each screen's physical shape, including tiled and portrait screens. Editing handles appear only in the monitor preview. Outputs stay clean. Saved looks retain every layer and per-screen placement; old single-video looks migrate automatically.
+Placement and source aspect compensate for each screen's physical shape, including tiled and portrait screens. Editing handles appear only in the monitor preview. YouTube retains its own player behavior and possible overlays. Saved looks retain every layer and per-screen placement; old single-video looks migrate automatically.
 
 Five primary examples have English titles and descriptions; the additional selected clips retain their supplied Korean titles and explanations. Poster images are real frames from those clips. Original video files remain outside Git.
 
@@ -55,7 +61,7 @@ Five primary examples have English titles and descriptions; the additional selec
 
 Open the public studio in Chrome or Edge. Choose a background, configure screens, and open each output in its own window. Controls synchronize windows in the **same browser**.
 
-Video is optional. Original laboratory videos are not published. The library shows poster previews and descriptions; **Add this video from file** opens your local copy. You can also use **Add any video from this computer** or **Add demo animation**. Each chosen file becomes an independent layer. Files play directly from your computer as browser blobs and are not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
+Video is optional. Original laboratory videos are not published. The library shows thumbnails and descriptions; **Choose file** on a card opens your local copy. You can also use **Add any video from this computer** or **Add demo animation**. Each chosen file becomes an independent layer. Files play directly from your computer as browser blobs and are not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
 
 For synchronized playback across separate computers, use the LAN server below. GitHub Pages is static hosting and does not run the Python sync server.
 
@@ -64,7 +70,7 @@ For synchronized playback across separate computers, use the LAN server below. G
 1. Clone or download this repository.
 2. Double-click **START.bat**, or run `python serve.py --open`. Only the server computer needs Python 3.
 3. Open `http://127.0.0.1:8765/backgrounds/` in Chrome or Edge. Keep the server console open.
-4. Choose a direction, then preview and apply a video if wanted. Open each screen's output, move the window to its display and click the background for fullscreen. **Esc** leaves fullscreen.
+4. Choose a preset, then add a local file or YouTube link if wanted. Open each screen's output, move the window to its display and click the background for fullscreen. **Esc** leaves fullscreen.
 5. Before recording, use **Prepare clean take** to clear calibration, framing and tile-grid overlays on every screen and disable pointer interaction.
 
 The server maps `/backgrounds/` to the app regardless of the cloned directory name. It serves only the app and selected media directory, and blocks hidden paths such as `.git`.
@@ -77,7 +83,7 @@ On the current shoot workspace, the original clips are already at `../output/cli
 python serve.py --media-dir "D:\Shoot\selected-clips" --open
 ```
 
-The `GSMV_MEDIA_DIR` environment variable is also supported. `clips.json` lists all 34 library items, their descriptions, poster paths and exact expected clip filenames. Originals remain outside Git. Local server mode previews and plays those research files; public mode offers a demo or local file selection.
+The `GSMV_MEDIA_DIR` environment variable is also supported. `clips.json` lists all 34 library items, their descriptions, poster paths and exact expected clip filenames. Originals remain outside Git. Local server mode adds and plays those research files; public mode offers a demo or local file selection.
 
 | Scenario cue | Selected clip ID |
 | --- | --- |
@@ -128,7 +134,7 @@ Videos retain their source annotations and loop their selected excerpts. For uni
 
 ## Development and CI/CD
 
-There are no runtime package dependencies or CDN requests. Three.js, fonts and identity assets are local. Node 24 or later is used for checks and public packaging:
+Procedural backgrounds and local-file playback use no runtime package dependencies or CDNs. Three.js, fonts and identity assets are local. Only YouTube wall layers load the external official player/API; the editor does not load YouTube playback. Node 24 or later is used for checks and public packaging:
 
 ```sh
 npm test
@@ -139,7 +145,7 @@ npm run build
 
 `.github/workflows/pages.yml` runs tests, syntax checks and the static build for pushes and pull requests. Pushes to `main` publish the artifact through GitHub Actions to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. Pull requests test the bundle without deploying it.
 
-For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. `python qa_authoring.py` checks the public bundle, authored elements and address restoration in fresh browser contexts. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
+For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. `python qa_youtube.py` checks direct adding and the external YouTube API adapter; `python qa_preset_parts.py` checks individual preset parts. `python qa_authoring.py` checks the public bundle, authored elements and address restoration in fresh browser contexts. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
 
 ## Design and credits
 

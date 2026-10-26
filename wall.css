@@ -3,6 +3,7 @@
 #wall-video-layers{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .video-layer{position:absolute;transform:translate(-50%,-50%);background:#0b1625;box-shadow:0 1vh 3vh #0005;pointer-events:none}
 .video-layer[hidden]{display:none}.video-layer video{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none}
+.youtube-media,.youtube-placement{position:absolute;inset:0;overflow:hidden;pointer-events:none}.youtube-media iframe{position:absolute;left:0;top:0;border:0;width:var(--youtube-width,100%);height:var(--youtube-height,100%);transform:scale(var(--youtube-scale-x,1),var(--youtube-scale-y,1));transform-origin:left top;pointer-events:none}.youtube-placement{display:flex;flex-direction:column;justify-content:center;gap:1vh;padding:5%;background:#132235;color:#d8e5f4}.youtube-placement strong{font-weight:500;font-size:3vh;overflow-wrap:anywhere}.youtube-placement span{font-size:1.8vh;color:#9eb7d0}
 .video-unavailable{position:absolute;inset:0;padding:5%;align-content:center;text-align:center;font-size:2vh;color:#cbd5e2;background:#132235}
 .video-edit-label,.video-resize{display:none}.preview .video-layer.editing{pointer-events:auto;cursor:move;outline:1px solid #adceff;touch-action:none}
 .preview .video-layer.editing.selected{outline:2px solid #83b5ff}.preview .editing .video-edit-label{display:block;position:absolute;top:0;left:0;font:10px 'Segoe UI',sans-serif;color:#fff;background:#104b8d;padding:2px 5px;pointer-events:none}

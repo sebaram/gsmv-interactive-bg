@@ -1,33 +1,45 @@
 import {timeline,screenAspect} from './state.js';
 import {placement} from './video-layers.js';
+import {youtubePlayer} from './youtube-player.js';
 
 export function videoOverlay(container,clips,{view,preview,motionAllowed}){
  const entries=new Map();let state,lastSync=0;
- const info=entry=>({id:entry.layer.id,time:entry.video.currentTime,paused:entry.video.paused,muted:entry.video.muted,ready:entry.video.readyState,source:entry.layer.videoId||'local'});
+ const info=entry=>({id:entry.layer.id,time:entry.video?.currentTime||0,paused:entry.video?.paused??state.paused,muted:true,ready:entry.video?.readyState||0,source:entry.layer.youtube?'youtube/'+entry.layer.youtube.id:entry.layer.videoId||'local',provider:entry.kind,error:entry.error.hidden?null:entry.error.textContent});
  function sync(entry,force=false){
-  const v=entry.video;if(v.readyState<1||!Number.isFinite(v.duration)||!v.duration)return;
-  const target=motionAllowed()?timeline(state)%v.duration:0;
-  if(force||Math.abs(v.currentTime-target)>.28)v.currentTime=target;
+  const v=entry.video;if(entry.failed||!v||v.readyState<1)return;
+  const duration=v.duration,start=entry.layer.youtube?.start<duration?entry.layer.youtube.start:0;
+  if(Number.isFinite(duration)&&duration>0){const target=start+(motionAllowed()?timeline(state)%(duration-start):0);if(force||Math.abs(v.currentTime-target)>(entry.kind==='youtube'?1.5:.28))v.currentTime=target;}
   if(!state.showVideo||!entry.rect.enabled||state.paused||state.speed===0||!motionAllowed())v.pause();
-  else {v.playbackRate=Math.max(.0625,state.speed);if(v.paused)v.play().then(()=>entry.blocked=false).catch(()=>entry.blocked=true);}
+  else {v.playbackRate=Math.max(.0625,state.speed);if(v.paused){if(entry.kind==='youtube')v.play();else v.play().then(()=>entry.blocked=false).catch(()=>entry.blocked=true);}}
  }
  function position(entry){
   const sc=state.screens.find(s=>s.id===view)||state.screens[0],v=entry.video;
-  entry.rect=placement(entry.layer,sc.id,screenAspect(sc),v.videoWidth/v.videoHeight||16/9);
+  entry.rect=placement(entry.layer,sc.id,screenAspect(sc),entry.kind==='youtube'?entry.layer.sourceAspect:v.videoWidth/v.videoHeight||16/9);
   const r=entry.rect;Object.assign(entry.wrap.style,{left:r.x+'%',top:r.y+'%',width:r.width+'%',height:r.height+'%'});
   entry.wrap.hidden=!state.showVideo||!r.enabled;
   entry.wrap.classList.toggle('editing',preview&&state.editVideos);
   entry.wrap.classList.toggle('selected',state.activeVideoLayer===entry.layer.id);
   if(preview)entry.wrap.tabIndex=state.editVideos?0:-1;
+  if(entry.kind==='youtube'){
+   const width=innerWidth*r.width/100,height=innerHeight*r.height/100,aspect=entry.layer.sourceAspect;
+   const playerHeight=Math.max(height,200,200/aspect),playerWidth=playerHeight*aspect;
+   entry.wrap.style.setProperty('--youtube-width',playerWidth+'px');entry.wrap.style.setProperty('--youtube-height',playerHeight+'px');entry.wrap.style.setProperty('--youtube-scale-x',width/playerWidth);entry.wrap.style.setProperty('--youtube-scale-y',height/playerHeight);
+  }
  }
  function create(layer){
-  const wrap=document.createElement('div'),video=document.createElement('video'),label=document.createElement('span');
-  wrap.className='video-layer';wrap.dataset.layer=layer.id;video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.preload='auto';
+  const wrap=document.createElement('div'),label=document.createElement('span'),kind=layer.youtube?'youtube':'file';
+  wrap.className='video-layer';wrap.dataset.layer=layer.id;wrap.dataset.provider=kind;
   label.className='video-unavailable';label.textContent='Video unavailable. Choose this file again in the studio.';label.hidden=true;
-  wrap.append(video,label);container.append(wrap);
-  const entry={wrap,video,layer,blocked:false,url:null,rect:null};
-  video.onloadedmetadata=()=>{position(entry);sync(entry,true);const sourceAspect=video.videoWidth/video.videoHeight;if(preview&&Number.isFinite(sourceAspect)&&Math.abs(sourceAspect-entry.layer.sourceAspect)>.0001)parent.METAStudio?.updateVideoLayer(layer.id,{sourceAspect},'all');};video.onerror=()=>{label.hidden=false;};
-  entry.error=label;
+  wrap.append(label);container.append(wrap);
+  const entry={wrap,video:null,kind,layer,blocked:false,url:null,rect:null,error:label};
+  if(kind==='youtube'){
+   const host=document.createElement('div');host.className=preview?'youtube-placement':'youtube-media';wrap.prepend(host);
+   if(preview){const title=document.createElement('strong'),note=document.createElement('span');title.textContent=layer.youtube.title;note.textContent='YouTube / plays on wall output';host.append(title,note);}
+   else entry.video=youtubePlayer(host,layer.youtube,{onReady:()=>{position(entry);sync(entry,true);},onEnded:()=>sync(entry,true),onPlaying:()=>entry.blocked=false,onBlocked:()=>entry.blocked=true,onError:message=>{entry.failed=true;label.textContent=message;label.hidden=false;entry.video?.pause();}});
+  }else{
+   const video=document.createElement('video');video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.preload='auto';entry.video=video;wrap.prepend(video);
+   video.onloadedmetadata=()=>{position(entry);sync(entry,true);const sourceAspect=video.videoWidth/video.videoHeight;if(preview&&Number.isFinite(sourceAspect)&&Math.abs(sourceAspect-entry.layer.sourceAspect)>.0001)parent.METAStudio?.updateVideoLayer(layer.id,{sourceAspect},'all');};video.onerror=()=>{label.hidden=false;};
+  }
   if(preview){
    const tag=document.createElement('span'),handle=document.createElement('button');tag.className='video-edit-label';handle.className='video-resize';handle.type='button';handle.setAttribute('aria-label','Resize video');tag.textContent='Move video';wrap.append(tag,handle);
    wrap.onpointerdown=e=>{
@@ -45,13 +57,14 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
   }
   return entry;
  }
+ function dispose(entry){if(entry.kind==='youtube')entry.video?.destroy();else{entry.video.pause();entry.video.removeAttribute('src');entry.video.load();}entry.wrap.remove();}
  function update(next){
   const previous=state;state=next;
-  for(const [id,entry] of entries)if(!state.videoLayers.some(l=>l.id===id)){entry.video.pause();entry.video.removeAttribute('src');entry.video.load();entry.wrap.remove();entries.delete(id);}
+  for(const [id,entry] of entries)if(!state.videoLayers.some(l=>l.id===id)){dispose(entry);entries.delete(id);}
   for(const layer of state.videoLayers){
-   let entry=entries.get(layer.id);if(!entry){entry=create(layer);entries.set(layer.id,entry);}entry.layer=layer;
+   let entry=entries.get(layer.id);if(entry&&(entry.kind!==(layer.youtube?'youtube':'file')||entry.layer.youtube?.id!==layer.youtube?.id||entry.layer.youtube?.start!==layer.youtube?.start)){dispose(entry);entries.delete(layer.id);entry=null;}if(!entry){entry=create(layer);entries.set(layer.id,entry);}entry.layer=layer;
    const clip=layer.customClip||clips.find(c=>c.id===layer.videoId),url=clip?.url||'';
-   if(url!==entry.url){entry.video.pause();entry.url=url;entry.error.hidden=true;if(url)entry.video.src=url;else{entry.video.removeAttribute('src');entry.error.hidden=false;}entry.video.load();}
+   if(entry.kind==='file'&&url!==entry.url){entry.video.pause();entry.url=url;entry.error.hidden=true;if(url)entry.video.src=url;else{entry.video.removeAttribute('src');entry.error.hidden=false;}entry.video.load();}
    position(entry);sync(entry,previous&&(previous.paused!==state.paused||previous.speed!==state.speed||previous.offset!==state.offset));
   }
  }
