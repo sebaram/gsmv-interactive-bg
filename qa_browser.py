@@ -36,7 +36,7 @@ def changed(a,b):
     return sum(max(rgb)>12 for rgb in d.get_flattened_data())/(a.width*a.height)
 
 # This test server is separate from the user's active port 8765.
-post({'variant':4,'cue':0,'paused':False,'epoch':time.time()*1000,'offset':0,'speed':1,'motionAmount':1,'brightness':70,'headlines':False,'branding':True})
+post({'variant':4,'cue':0,'showVideo':True,'paused':False,'epoch':time.time()*1000,'offset':0,'speed':1,'motionAmount':1,'brightness':70,'headlines':False,'branding':True})
 with sync_playwright() as p:
     browser=p.chromium.launch(channel='chrome',headless=True,args=['--autoplay-policy=no-user-gesture-required'])
     errors=[]
@@ -140,7 +140,7 @@ with sync_playwright() as p:
     for cue,clip_id in enumerate(clip_ids):
         page.locator('#video-search').fill(clip_id)
         page.locator(f'[data-preview-video="{clip_id}"]').click()
-        page.locator('#use-video').click()
+        page.locator('#no-video').click();page.locator('#use-video').click()
         for wall in [front,left]:wait(wall,f'window.META.state.cue==={cue} && window.META.video && window.META.video.ready>=2')
         check(f'Video selection {cue+1} plays on both walls',not front.locator('#error').is_visible() and not left.locator('#error').is_visible())
     page.locator('#no-video').click();wait(front,'!window.META.state.showVideo && !window.META.video')
@@ -150,7 +150,7 @@ with sync_playwright() as p:
     data=json.loads(look.read_text())
     check('Saved look includes all screen layouts',len(data['screens'])==3 and data['screens'][1]['aspectW']==9)
     page.locator('[data-variant="1"]').click();page.locator('#look-file').set_input_files(look);look.unlink()
-    wait(front,'window.META.state.variant===4 && window.META.state.cue===5')
+    wait(front,'window.META.state.variant===4 && window.META.state.cue===4')
     check('Imported look restores style and screens',len(front.evaluate('window.META.state.screens'))==3)
     page.locator(f'[data-screen="{extra_id}"] [data-action="remove"]').click();wait(front,'window.META.state.screens.length===2')
     check('Removing a screen updates previews and outputs',page.locator('.paired iframe').count()==2 and page.locator('#output-links a').count()==2)
@@ -182,5 +182,5 @@ clips=json.loads((APP/'clips.json').read_text(encoding='utf-8'))
 url=BASE+'/output/clips/'+urllib.parse.quote(clips[0]['url'].split('/')[-1])
 with urllib.request.urlopen(urllib.request.Request(url,headers={'Range':'bytes=0-127'})) as response:
     check('Local research video supports precise byte ranges',response.status==206 and len(response.read())==128)
-(APP/'QA.md').write_text('# Verification\n\nGoogle Chrome through Python Playwright; test server '+BASE+'.\n\n'+'\n'.join('- PASS: '+name for name in checks)+'\n\nAlso run: `npm test` (21 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.\n',encoding='utf-8')
+(APP/'QA.md').write_text('# Verification\n\nGoogle Chrome through Python Playwright; test server '+BASE+'.\n\n'+'\n'.join('- PASS: '+name for name in checks)+'\n\nAlso run: `npm test` (27 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.\n',encoding='utf-8')
 print(str(len(checks))+' browser/server checks passed',flush=True)

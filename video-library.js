@@ -1,11 +1,11 @@
 import {cues,sanitize} from './state.js';
+import {addLayer} from './video-layers.js';
 
-export function chooseVideo(state,clip){
- const next={...state,videoId:clip.id,cue:clip.cue??0,showVideo:true};
- if(![3,4,5].includes(next.variant))next.variant=4;
+export function chooseVideo(state,clip,customClip){
+ const next=addLayer(sanitize(state),clip,customClip);next.videoId=clip.id;next.cue=clip.cue??0;
  delete next.customClip;return sanitize(next);
 }
-export function withoutVideo(state){const next={...state,showVideo:false,videoId:null,cue:5};delete next.customClip;return sanitize(next);}
+export function withoutVideo(state){const next={...state,showVideo:false,videoId:null,videoLayers:[],activeVideoLayer:null};delete next.customClip;return sanitize(next);}
 const duration=seconds=>{const n=Math.round(seconds);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');};
 
 export function videoLibrary(container,clips,{getState,commit,chooseFile,publicMode=false}){
@@ -27,16 +27,16 @@ export function videoLibrary(container,clips,{getState,commit,chooseFile,publicM
   if(!found.length){const empty=document.createElement('p');empty.className='video-empty';empty.textContent='No matching videos. Try a different title or topic.';list.append(empty);}
  }
  function paint(){
-  const state=getState(),activeId=state.videoId||cues[state.cue].clip,active=clips.find(c=>c.id===activeId),enabled=state.showVideo&&[3,4,5].includes(state.variant);
-  $('#video-selection-status').textContent=!enabled?'No video. Motion graphic only.':state.customClip?'On screens: '+state.customClip.name:publicMode?'On screens: animation demo. Choose a local file for research footage.':active?'On screens: '+active.title:'No research video selected.';
+  const state=getState(),enabled=state.showVideo&&state.videoLayers.length>0;
+  $('#video-selection-status').textContent=!enabled?'Video is optional. Add a clip to any background.':state.videoLayers.length+' video layer'+(state.videoLayers.length===1?'':'s')+': '+state.videoLayers.map(l=>l.customClip?.name||clips.find(c=>c.id===l.videoId)?.title||'Video').join(', ');
   $('#no-video').classList.toggle('active',!enabled);
-  for(const item of list.querySelectorAll('[data-video]')){const selected=item.dataset.video===inspected.id,onScreen=enabled&&item.dataset.video===activeId;item.classList.toggle('selected',selected);item.querySelector('button').setAttribute('aria-pressed',selected);item.classList.toggle('on-screens',onScreen);item.querySelector('.video-on-screen').hidden=!onScreen;}
-  const custom=state.customClip&&activeId===inspected.id?state.customClip:null;
+  for(const item of list.querySelectorAll('[data-video]')){const selected=item.dataset.video===inspected.id,onScreen=enabled&&state.videoLayers.some(l=>l.videoId===item.dataset.video);item.classList.toggle('selected',selected);item.querySelector('button').setAttribute('aria-pressed',selected);item.classList.toggle('on-screens',onScreen);item.querySelector('.video-on-screen').hidden=!onScreen;}
+  const custom=state.videoLayers.findLast(l=>l.videoId===inspected.id&&l.customClip)?.customClip;
   const available=!publicMode||Boolean(custom),url=custom?.url||inspected.url,key=inspected.id+'/'+(custom?.url||'');
   $('#video-title').textContent=inspected.title;$('#video-description').textContent=inspected.description;
   $('#video-meta').textContent=inspected.category+' / '+duration(inspected.originalDuration||inspected.duration)+' / '+inspected.id;
-  $('#video-availability').textContent=custom?'Your file plays from this computer.':publicMode?'Preview image shown. Open the local studio for the original, or choose your copy below.':'Preview here, then send this video to all wall outputs.';
-  $('#use-video').textContent=publicMode?'Choose this video file':'Use this video';$('#use-video').dataset.video=inspected.id;
+  $('#video-availability').textContent=custom?'Your file plays from this computer.':publicMode?'Preview image shown. Choose your copy below to add it as a video layer.':'Preview here, then add a layer. Adjust its placement for every screen above.';
+  $('#use-video').textContent=publicMode?'Add this video from file':'Add video';$('#use-video').dataset.video=inspected.id;$('#use-video').disabled=state.videoLayers.length>=8;
   if(key!==loadedKey){loadedKey=key;player.pause();player.removeAttribute('src');player.load();if(available){player.src=url;player.poster=inspected.poster;}poster.src=inspected.poster;poster.alt=inspected.title+' preview image';}
   player.hidden=!available;poster.hidden=available;
  }

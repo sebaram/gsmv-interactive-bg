@@ -13,12 +13,12 @@ Google Chrome through Python Playwright; test server http://127.0.0.1:8766.
 - PASS: Clock correction aligns independent machines
 - PASS: Preview inherits the corrected clock from skewed controller
 - PASS: Live playback indicator reports rendering
-- PASS: Visible pixel motion: style 2 / front (6.8%)
-- PASS: Visible pixel motion: style 2 / left (2.4%)
-- PASS: Visible pixel motion: style 4 / front (13.2%)
-- PASS: Visible pixel motion: style 4 / left (6.9%)
-- PASS: Visible pixel motion: style 5 / front (16.5%)
-- PASS: Visible pixel motion: style 5 / left (11.6%)
+- PASS: Visible pixel motion: style 2 / front (11.2%)
+- PASS: Visible pixel motion: style 2 / left (13.5%)
+- PASS: Visible pixel motion: style 4 / front (13.0%)
+- PASS: Visible pixel motion: style 4 / left (18.3%)
+- PASS: Visible pixel motion: style 5 / front (18.8%)
+- PASS: Visible pixel motion: style 5 / left (14.4%)
 - PASS: Pause freezes rendered pixels
 - PASS: Show visible motion resumes and resets movement controls
 - PASS: Zero movement holds decorative output within GPU rounding
@@ -52,6 +52,8 @@ Google Chrome through Python Playwright; test server http://127.0.0.1:8766.
 - PASS: Restricted route /backgrounds/.git/config
 - PASS: Local research video supports precise byte ranges
 
-Also run: `npm test` (21 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.
+Also run: `npm test` (27 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.
 
-New feature verification: the dedicated logo/video browser run passed all seven grouped checks: 34-item catalog with titles/descriptions/posters; preview without changing output; applying footage while retaining MV Symbiosis; search and empty results; no-video procedural motion; paused morph geometry; narrow layout and no JavaScript errors. Public-mode playback, local-file selection through the per-video button, demo restoration and reduced-motion override passed. Actual 3840×2160 stills were rendered. Hallmark render sweep: 0 FAIL, 0 WARN, existing scene-thumbnail size waiver. Fresh-context review: ship, no material findings.
+Optional video composition verified with `qa_video_layers.py`: add/remove on all six styles, multiple independent decoders, direct preview drag and resize, physical tiled aspect correction, per-screen and master visibility, all-screen placement, separate-client pause/resume, save/load, duplicate/remove, new screens, clean outputs and narrow layouts. No JavaScript errors.
+
+`qa_static.py` verified explicit demo addition, native local-file selection, multiple layers, project-path output links, no API requests and reduced-motion behavior. A generated portrait MP4 additionally verified actual source proportions in the placement fields and JSON export retaining the portable demo URL while removing browser blob references. Code review findings in those two areas and deterministic video seeking were fixed.

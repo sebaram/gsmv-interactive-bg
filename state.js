@@ -1,3 +1,4 @@
+import {sanitizeLayers} from './video-layers.js';
 export const KEY='gsmv-interview-walls-v1';
 export const variants=[
  {name:'Blue Hour',tag:'ORBITAL / IMMERSIVE',tone:'#90beff',desc:'Sculptural orbits in a deep blue atmosphere. A quiet, confident setting for faculty interviews.',use:'Recommended · faculty & opening'},
@@ -15,7 +16,7 @@ export const cues=[
  {name:'Haptic experience',ko:'경험을 확장하다',en:'HAPTIC FEEDBACK',lab:'05 / EXPERIENCE',clip:'P2-S5-01',color:'#ef8d8d'},
  {name:'Metaverse economics',ko:'함께 살아갈 세계',en:'METAVERSE ECONOMICS',lab:'06 / SOCIETY',clip:null,color:'#80c8c6'}
 ];
-export const defaults={variant:4,cue:0,videoId:null,showVideo:true,brightness:70,speed:1,motionAmount:1,paused:false,epoch:Date.now(),offset:0,branding:true,headlines:false,guide:false,calibration:false,interactive:false,frontW:3840,frontH:2160,leftW:3840,leftH:2160,leftShape:'tiles',bezel:0};
+export const defaults={variant:4,cue:0,videoId:null,showVideo:false,brightness:70,speed:1,motionAmount:1,paused:false,epoch:Date.now(),offset:0,branding:true,headlines:false,guide:false,calibration:false,interactive:false,frontW:3840,frontH:2160,leftW:3840,leftH:2160,leftShape:'tiles',bezel:0};
 let clockOffset=0;
 export function setClockOffset(value){clockOffset=value;}
 export function currentTime(){return Date.now()+clockOffset;}
@@ -27,7 +28,10 @@ export function sanitize(raw={}){
  s.brightness=num(s.brightness,70,10,100);s.speed=num(s.speed,1,0,3);s.motionAmount=num(s.motionAmount,1,0,2);s.bezel=[0,2,3,4,32].includes(+s.bezel)?+s.bezel:0;s.leftShape=s.leftShape==='raster'?'raster':'tiles';
  s.epoch=num(s.epoch,Date.now(),0,1e14);s.offset=num(s.offset,0,0,1e10);
  for(const k of ['paused','branding','headlines','guide','calibration','interactive'])s[k]=Boolean(s[k]);
- s.showVideo=raw.showVideo!==false;s.videoId=typeof raw.videoId==='string'&&/^[A-Za-z0-9_-]{1,60}$/.test(raw.videoId)?raw.videoId:null;
+ s.showVideo=raw.showVideo===true;s.videoId=typeof raw.videoId==='string'&&/^[A-Za-z0-9_-]{1,60}$/.test(raw.videoId)?raw.videoId:null;
+ s.videoLayers=sanitizeLayers(Array.isArray(raw.videoLayers)?raw.videoLayers:raw.showVideo===true?[{id:'video-1',videoId:s.videoId||cues[s.cue].clip,customClip:raw.customClip}]:[]);
+ s.activeVideoLayer=s.videoLayers.some(l=>l.id===raw.activeVideoLayer)?raw.activeVideoLayer:s.videoLayers.at(-1)?.id||null;
+ s.editVideos=Boolean(raw.editVideos);
  const legacy=[{id:'left',name:'Left tiled wall',width:s.leftW,height:s.leftH,mode:s.leftShape==='tiles'?'tiles':'raster',cols:s.bezel===32?3:s.bezel||3,rows:s.bezel===32?2:s.bezel||2,grid:!!s.bezel},{id:'front',name:'Front LED wall',width:s.frontW,height:s.frontH,mode:'raster',cols:1,rows:1}];
  const incoming=Array.isArray(raw.screens)&&raw.screens.length?raw.screens.slice(0,8):legacy;
  const ids=new Set();s.screens=incoming.map((screen,i)=>{const sc=sanitizeScreen(screen,i);while(ids.has(sc.id))sc.id+='-2';ids.add(sc.id);return sc;});

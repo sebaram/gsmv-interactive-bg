@@ -8,10 +8,10 @@ Real-time 3D backgrounds for interview shoots, with configurable display walls, 
 
 | Direction | Treatment |
 | --- | --- |
-| **MV Symbiosis** | Six exact facets from the official MV symbol soften, exchange form and position, assemble into the mark, then unfold together. Optional video gallery. |
-| **Shared Reality** | The combined direction: Common Ground's red real-world and blue virtual ribbons surrounding Living Research's floating video gallery. |
+| **MV Symbiosis** | Six exact facets from the official MV symbol soften, exchange form and position, assemble into the mark, then unfold together. Optional, freely positioned video layers. |
+| **Shared Reality** | The combined direction: Common Ground's red real-world and blue virtual ribbons combined with the research direction. |
 | **Common Ground** | Interwoven red and blue ribbons representing exchange between real and virtual spaces. |
-| **Living Research** | Moving research galleries and connection networks, with footage on every screen. |
+| **Living Research** | Moving connection networks, with optional footage on any screen. |
 | Blue Hour | Polished blue orbital forms with restrained red accents. |
 | Soft Architecture | Pale arches, warm stone and floating blue/red forms. |
 
@@ -21,13 +21,23 @@ The original department signature is retained. The source identity and color gui
 
 The new scene uses the six red and blue polylines copied directly from the official SVG, rather than an approximate M/V icon. Over a 36-second cycle, the facets become soft volumetric forms, move in complementary pairs, consolidate into the recognizable symbol, hold it, and unfold into another exchange. The red/blue connections represent mutual influence. Pause, speed, movement amount, reduced motion and every configured screen remain supported. The interview subject's area stays quieter toward the center-left.
 
-Selecting MV Symbiosis initially runs without a video so the transformation is clear. Use the video library to add footage beside the sculpture, or choose No video to return to the full-size mark. Under an operating-system reduced-motion preference, it shows the assembled symbol until playback is explicitly enabled.
+Every background starts without video in a fresh studio. Switching backgrounds preserves any video layers you have added and their placement. Use the library to add footage wherever it suits the composition, or choose **No video** to remove all layers. Under an operating-system reduced-motion preference, it shows the assembled symbol until playback is explicitly enabled.
 
 ## Choose a video
 
 The monitor now has a **34-clip video library** instead of research-cue buttons. Search titles, descriptions, topics or clip IDs, or browse with Previous/Next. Each entry has an actual poster frame, title, topic and duration. The larger detail view explains the clip and offers preview playback.
 
-**Preview** changes only the detail view. **Use this video** sends that clip to the wall outputs; the status names what is on screens. MV Symbiosis keeps its logo animation when footage is added. A procedural-only background switches to Shared Reality when a video is applied. **No video** removes the footage without requiring a topic selection. The on-set panel also links directly to the video browser.
+**Preview** changes only the detail view. **Add video** adds a separate layer to the current background, without changing the background. Add up to eight clips, including repeated clips. The on-set panel links directly to the library.
+
+The **Video layers** panel below the live monitor controls the composition:
+
+- Choose the selected layer; **Duplicate** or **Remove video** manages individual layers.
+- Enable **Edit in preview**, then drag a video to move it and drag its lower-right corner to resize. Arrow keys move a focused video; Shift moves faster.
+- Choose **All screens** or an individual screen before entering horizontal center, vertical center and width percentages. Dragging edits the screen you drag on. An All screens change replaces that property on every screen.
+- **Visible here** shows or hides a layer on the chosen screen. **Show videos** hides all layers while retaining their positions; **No video** removes every layer.
+- **Reset placement** resets the selected scope. Newly added screens inherit each layer's all-screen placement.
+
+Placement and source aspect compensate for each screen's physical shape, including tiled and portrait screens. Editing handles appear only in the monitor preview. Outputs stay clean. Saved looks retain every layer and per-screen placement; old single-video looks migrate automatically.
 
 Five primary examples have English titles and descriptions; the additional selected clips retain their supplied Korean titles and explanations. Poster images are real frames from those clips. Original video files remain outside Git.
 
@@ -35,7 +45,7 @@ Five primary examples have English titles and descriptions; the additional selec
 
 Open the public studio in Chrome or Edge. Choose a background, configure screens, and open each output in its own window. Controls synchronize windows in the **same browser**.
 
-Research galleries initially show a small, explicitly labeled **animation demo**. Original laboratory videos are not published. The library shows poster previews and descriptions; **Choose this video file** opens your local copy. You can also use **Use any video from this computer**. It plays directly from your computer as a browser blob and is not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
+Video is optional. Original laboratory videos are not published. The library shows poster previews and descriptions; **Add this video from file** opens your local copy. You can also use **Add any video from this computer** or **Add demo animation**. Each chosen file becomes an independent layer. Files play directly from your computer as browser blobs and are not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
 
 For synchronized playback across separate computers, use the LAN server below. GitHub Pages is static hosting and does not run the Python sync server.
 
@@ -57,7 +67,7 @@ On the current shoot workspace, the original clips are already at `../output/cli
 python serve.py --media-dir "D:\Shoot\selected-clips" --open
 ```
 
-The `GSMV_MEDIA_DIR` environment variable is also supported. `clips.json` lists all 34 library items, their descriptions, poster paths and exact expected clip filenames. Originals remain outside Git. Local server mode previews and plays those research files; public mode uses its demo until you choose a local file.
+The `GSMV_MEDIA_DIR` environment variable is also supported. `clips.json` lists all 34 library items, their descriptions, poster paths and exact expected clip filenames. Originals remain outside Git. Local server mode previews and plays those research files; public mode offers a demo or local file selection.
 
 | Scenario cue | Selected clip ID |
 | --- | --- |
@@ -74,7 +84,7 @@ Run the server on **one computer** and connect the playback computers to the sam
 
 Allow Python through Windows Firewall on a private network if prompted. Wired Ethernet is recommended for video playback. Campus client isolation may prevent LAN access to port 8765.
 
-Settings are shared through server events; one SharedWorker connection is reused by tabs on the same computer to avoid exhausting browser connection slots. Clients estimate the server clock offset, recalibrate every 30 seconds, and periodically correct video drift above approximately 0.28 seconds. This is software synchronization, not hardware genlock or a guarantee that display refresh phases match. Keep one active control room.
+Settings are shared through server events; one SharedWorker connection is reused by tabs on the same computer to avoid exhausting browser connection slots. Clients estimate the server clock offset, recalibrate every 30 seconds, and periodically correct each video's drift above approximately 0.28 seconds. This is software synchronization, not hardware genlock or a guarantee that display refresh phases match. Keep one active control room.
 
 ## Screen editor
 
@@ -104,7 +114,7 @@ If the processor preserves a 16:9 picture rather than stretching it, select **Ma
 
 Output shortcuts: **Space** pause/resume, **1–6** select a direction, **G** framing guide, **Esc** leave fullscreen. No controls are burned into fullscreen outputs.
 
-Videos retain their source annotations and loop their selected excerpts. For uninterrupted interview takes, Common Ground uses procedural motion without clip cuts. Check the actual camera for moiré, LED scan/PWM banding, shutter behavior, logo placement and framing before filming.
+Videos retain their source annotations and loop their selected excerpts. For uninterrupted interview takes, leave video off and use the procedural background. Check the actual camera for moiré, LED scan/PWM banding, shutter behavior, logo placement and framing before filming.
 
 ## Development and CI/CD
 
@@ -119,7 +129,7 @@ npm run build
 
 `.github/workflows/pages.yml` runs tests, syntax checks and the static build for pushes and pull requests. Pushes to `main` publish the artifact through GitHub Actions to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. Pull requests test the bundle without deploying it.
 
-For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
+For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
 
 ## Design and credits
 
