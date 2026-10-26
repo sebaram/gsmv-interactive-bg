@@ -1,4 +1,5 @@
 import {sanitizeLayers} from './video-layers.js';
+import {sanitizeAuthored} from './authoring.js';
 export const KEY='gsmv-interview-walls-v1';
 export const variants=[
  {name:'Blue Hour',tag:'ORBITAL / IMMERSIVE',tone:'#90beff',desc:'Sculptural orbits in a deep blue atmosphere. A quiet, confident setting for faculty interviews.',use:'Recommended · faculty & opening'},
@@ -32,6 +33,7 @@ export function sanitize(raw={}){
  s.videoLayers=sanitizeLayers(Array.isArray(raw.videoLayers)?raw.videoLayers:raw.showVideo===true?[{id:'video-1',videoId:s.videoId||cues[s.cue].clip,customClip:raw.customClip}]:[]);
  s.activeVideoLayer=s.videoLayers.some(l=>l.id===raw.activeVideoLayer)?raw.activeVideoLayer:s.videoLayers.at(-1)?.id||null;
  s.editVideos=Boolean(raw.editVideos);
+ s.authored=sanitizeAuthored(raw.authored);s.editElements=Boolean(raw.editElements);s.activeElement=typeof raw.activeElement==='string'?raw.activeElement:null;
  const legacy=[{id:'left',name:'Left tiled wall',width:s.leftW,height:s.leftH,mode:s.leftShape==='tiles'?'tiles':'raster',cols:s.bezel===32?3:s.bezel||3,rows:s.bezel===32?2:s.bezel||2,grid:!!s.bezel},{id:'front',name:'Front LED wall',width:s.frontW,height:s.frontH,mode:'raster',cols:1,rows:1}];
  const incoming=Array.isArray(raw.screens)&&raw.screens.length?raw.screens.slice(0,8):legacy;
  const ids=new Set();s.screens=incoming.map((screen,i)=>{const sc=sanitizeScreen(screen,i);while(ids.has(sc.id))sc.id+='-2';ids.add(sc.id);return sc;});

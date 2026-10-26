@@ -23,6 +23,16 @@ The new scene uses the six red and blue polylines copied directly from the offic
 
 Every background starts without video in a fresh studio. Switching backgrounds preserves any video layers you have added and their placement. Use the library to add footage wherever it suits the composition, or choose **No video** to remove all layers. Under an operating-system reduced-motion preference, it shows the assembled symbol until playback is explicitly enabled.
 
+## Author a preset and bookmark it
+
+All six backgrounds are starting **presets**. In **Author the preset**, select an element, choose its screen and set position, size, rotation and visibility. **Duplicate element** gives it an independent placement: for example, keep the main sculpture large on the front/right screen and put a smaller copy on the left. Copies keep their animation and survive removal of a custom source object. **Add element** offers MV sculptures, red/blue ribbons, orbital forms, networks, spheres and arches on any preset.
+
+Enable **Edit in preview** to drag the selected element or resize with its lower-right corner. Its editing box stays steady while its contents animate. The element list includes the preset's sculptures, decorative components and each screen's department signature, research titles and topic footer. Signatures and text are positioned separately per display; choose that display's existing copy. Position percentages describe the object's center for 3D elements and the upper-left anchor for signature/text. **Reset element** restores a preset component; **Reset this preset** clears only that preset's edits and added objects. Video layers remain independent.
+
+The address bar updates automatically with a versioned `#look=v1.…` fragment. **Copy look link** copies the current arrangement; bookmark or share it to restore the preset, authored elements, screen shapes, video choices and playback settings in a fresh browser. No server save is needed. Public output links also carry the look, including Display setup and URL fields, so their addresses can be bookmarked directly. Runtime editing handles are excluded. Playing looks restart their timeline on opening; paused looks retain their held phase.
+
+The URL contains configuration, not video bytes or file permissions. Choose local video files again after opening in a new browser. Portable demo sources and LAN library clip IDs are retained. On the LAN controller, opening a saved look applies it to the session once; subsequent edits continue to synchronize with playback computers.
+
 ## Choose a video
 
 The monitor now has a **34-clip video library** instead of research-cue buttons. Search titles, descriptions, topics or clip IDs, or browse with Previous/Next. Each entry has an actual poster frame, title, topic and duration. The larger detail view explains the clip and offers preview playback.
@@ -129,7 +139,7 @@ npm run build
 
 `.github/workflows/pages.yml` runs tests, syntax checks and the static build for pushes and pull requests. Pushes to `main` publish the artifact through GitHub Actions to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. Pull requests test the bundle without deploying it.
 
-For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
+For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. `python qa_authoring.py` checks the public bundle, authored elements and address restoration in fresh browser contexts. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
 
 ## Design and credits
 

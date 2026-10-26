@@ -2,12 +2,15 @@ import * as T from './vendor/three.module.js';
 import {KEY,variants,cues,read,save,sanitize,timeline,setPaused,panorama,screenAspect,setClockOffset} from './state.js';
 import {connectSync} from './sync.js';
 import {videoOverlay} from './video-overlay.js';
+import {authoringScene} from './authoring-scene.js';
+import {presetEdits} from './authoring.js';
+import {decodeLook} from './look-url.js';
 import {motionPose} from './motion.js';
 import {createLogoSculpture} from './logo-scene.js';
 
 const params=new URLSearchParams(location.search),view=params.get('view')||'front',preview=params.has('preview');
 const fixedVariant=params.has('variant')?Math.max(0,Math.min(variants.length-1,+params.get('variant'))):null;
-let state=read();if(fixedVariant!==null)state.variant=fixedVariant;
+let state=decodeLook(location.hash)||read();if(fixedVariant!==null)state.variant=fixedVariant;
 const channel=new BroadcastChannel(KEY);
 document.body.classList.add(view==='front'?'front':'left');if(preview)document.body.classList.add('preview');
 document.title=`META / ${view} output`;
@@ -20,7 +23,7 @@ const scene=new T.Scene();
 const camera=new T.OrthographicCamera(-18,18,5,-5,.1,140);camera.position.set(0,3.8,32);camera.lookAt(0,0,0);
 const group=new T.Group();scene.add(group);
 const moving=[],logoSystems=[];
-let hero,secondary,background,layout;
+let hero,secondary,background,layout,authoring;
 let lastConfig='',pointer={x:0,y:0},lastFrame=-1;
 let frames=0,fps=0,statsEpoch=performance.now();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -58,6 +61,7 @@ function atmosphere(light){
  background=mesh(new T.PlaneGeometry(Math.max(170,layout.width+100),60),mat);background.position.set(0,0,-24);
 }
 function clear(){
+ authoring=null;
  const geometries=new Set(),materials=new Set();group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
  for(const g of geometries)g.dispose();for(const m of materials){if(m.map&&m.map!==environment.texture)m.map.dispose();m.dispose();}
  group.clear();moving.length=0;logoSystems.length=0;hero=null;secondary=null;
@@ -150,21 +154,31 @@ function mvSymbiosis(){
   const system=createLogoSculpture(color=>physical(color,.23,.42,{side:T.DoubleSide}));
   const scale=Math.min(main?2.95:3.8,width*.17);
   system.root.scale.setScalar(scale);system.root.position.set(start+width*(main?.70:.54),.35,0);
-  group.add(system.root);logoSystems.push(system);shadow(system.root.position.x,-3.98,0,scale*3,scale*1.4,.28);
+  system.root.name='MV sculpture';system.root.userData.authorId='preset-logo-'+sc.id;group.add(system.root);logoSystems.push(system);shadow(system.root.position.x,-3.98,0,scale*3,scale*1.4,.28);
  }
  const bottom=-3.4;
  for(const color of ['#0066b3','#ed1c24']){const dz=color==='#ed1c24'?.15:0;tube([[-layout.width/2-2,bottom-dz,-8],[-layout.width*.2,bottom+.1-dz,-7],[layout.width*.2,bottom-.15-dz,-7],[layout.width/2+2,bottom+.1-dz,-8]],.035,color);}
 }
 
+function createAuthorObject(type){
+ const root=new T.Group();group.add(root);
+ if(type==='logo'){const system=createLogoSculpture(color=>physical(color,.23,.42,{side:T.DoubleSide}));group.remove(root);group.add(system.root);system.root.scale.setScalar(2.5);logoSystems.push(system);return system.root;}
+ if(type==='network'){group.remove(root);return connectionNetwork(0,0,0,1);}
+ if(type==='ribbons'){for(const [color,phase] of [['#0066b3',0],['#ed1c24',2]]){const o=mesh(ribbonGeometry(phase),physical(color,.24,.45,{side:T.DoubleSide}),root);o.scale.setScalar(.7);moving.push({o,type:'ribbon',phase});}}
+ if(type==='orbits'){sphere(.7,'#347ac4',0,0,0,root);for(let i=0;i<3;i++){const o=torus(2.2-i*.25,.08,i===1?'#ed1c24':'#0066b3',root);moving.push({o,type:'orbit',base:[.8+i*.2,.3+i*.4,.1],phase:i});}}
+ if(type==='sphere'){const o=sphere(1.6,'#377fc1',0,0,0,root);moving.push({o,type:'float',y:0,phase:1});}
+ if(type==='arch'){const o=arch(3.6,5.7,.4,physical('#e8e3d9',.47,.07),root);o.rotation.y=-.2;}
+ return root;
+}
 function rebuild(){
  clear();document.querySelector('#error').hidden=true;layout=positions();
  keyLight.color.set('#d9ebff');keyLight.intensity=5;rim.color.set('#5e9fff');rim.intensity=4;redLight.intensity=80;
  [blueHour,commonGround,softArchitecture,livingResearch,sharedReality,mvSymbiosis][state.variant]();
  if(state.variant<3)extraScreens();
  if(secondary&&layout.main.id===layout.companion.id)secondary.visible=false;
- resize();applyOverlay();lastConfig=configKey();
+ resize();authoring=authoringScene(group,camera,state,{background,hero,secondary,createObject:createAuthorObject,view,preview});applyOverlay();lastConfig=configKey();
 }
-function configKey(){return `${state.variant}/${state.cue}/`+JSON.stringify(state.screens.map(({grid,name,...sc})=>sc));}
+function configKey(){return `${state.variant}/${state.cue}/`+JSON.stringify(presetEdits(state).objects.map(({id,type,source})=>({id,type,source})))+JSON.stringify(state.screens.map(({grid,name,...sc})=>sc));}
 function resize(){
  renderer.setSize(innerWidth,innerHeight,false);
  const p=panorama(state),a=p.width/p.height;camera.left=-a*5;camera.right=a*5;camera.top=5;camera.bottom=-5;
@@ -174,15 +188,14 @@ function resize(){
  for(const id of ['branding','headline','wall-caption']){const el=document.getElementById(id);el.style.transform=`scaleX(${correction})`;el.style.transformOrigin='left center';}
  // Use physical height for equal logo scale across the differently shaped walls.
  document.querySelector('#branding').style.width=`${innerHeight*(16/9)*.3}px`;
- document.querySelector('#calibration').style.setProperty('--aspect-correction',correction);videoLayers.resize();
+ document.querySelector('#calibration').style.setProperty('--aspect-correction',correction);videoLayers.resize();authoring?.apply(state);
 }
 function applyOverlay(){
  document.querySelector('#art').style.filter=`brightness(${state.brightness/100})`;document.body.classList.toggle('light',state.variant===2);
  document.querySelector('#wall-logo').src=state.variant===2?'assets/logo-color.png':'assets/logo-white.png';
  document.querySelector('#branding').style.display=state.branding?'':'none';
  document.querySelector('#headline').style.display=state.headlines?'':'none';
- videoLayers.update(state);
- document.querySelector('#wall-caption').style.display=state.branding?'':'none';
+ videoLayers.update(state);authoring?.apply(state);
  document.querySelector('#cue-index').textContent=cues[state.cue].lab;
  document.querySelector('#cue-title').textContent=cues[state.cue].ko;
  document.querySelector('#cue-en').textContent=cues[state.cue].en;
@@ -195,7 +208,7 @@ function applyOverlay(){
  document.querySelector('#tile-grid').style.backgroundSize=`${100/cols}% ${100/rows}%`;
  if(!state.screens.some(sc=>sc.id===view)){document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='This screen was removed. Open a current output link from the control room.';}
 }
-function update(next){state=sanitize(next);if(fixedVariant!==null)state.variant=fixedVariant;if(configKey()!==lastConfig)rebuild();else{applyOverlay();resize();}}
+function update(next){state=sanitize(next);if(fixedVariant!==null)state.variant=fixedVariant;if(configKey()!==lastConfig)rebuild();else{resize();applyOverlay();}}
 channel.onmessage=e=>update(e.data);addEventListener('storage',e=>{if(e.key===KEY)update(read());});addEventListener('resize',resize);
 let hintTimer;addEventListener('pointermove',e=>{if(state.interactive){pointer.x=e.clientX/innerWidth-.5;pointer.y=e.clientY/innerHeight-.5;}if(!preview&&!document.fullscreenElement){document.body.classList.add('show-hint');clearTimeout(hintTimer);hintTimer=setTimeout(()=>document.body.classList.remove('show-hint'),1800);}});
 addEventListener('pointerleave',()=>{pointer.x=pointer.y=0;});
@@ -220,7 +233,7 @@ function draw(now){
  }
  if(hero){hero.position.y=Math.sin(t*.5*state.motionAmount)*.24+(state.variant===2?-.55:[1,4].includes(state.variant)?.2:0);if(state.interactive){hero.rotation.y+=(pointer.x*.12-hero.rotation.y)*.025;hero.rotation.x+=(-pointer.y*.1-hero.rotation.x)*.025;}else{hero.rotation.x=0;hero.rotation.y=0;}}
  if(secondary&&state.variant!==2)secondary.rotation.y=Math.sin(slow*.6*state.motionAmount)*.13;
- videoLayers.tick(now);
+ authoring?.draw();videoLayers.tick(now);
  renderer.render(scene,camera);
  frames++;if(now-statsEpoch>500){fps=frames*1000/(now-statsEpoch);frames=0;statsEpoch=now;}
  document.body.dataset.ready='true';document.body.dataset.variant=String(state.variant);
@@ -228,4 +241,4 @@ function draw(now){
 }
 requestAnimationFrame(draw);
 // Deterministic phase and ready state are useful for on-set stills and visual QA.
-window.META={get state(){return state;},get time(){return timeline(state);},get stats(){return {fps,videoBlocked:videoLayers.blocked,reducedMotion:!motionAllowed(),movingObjects:moving.length+logoSystems.length*6};},get video(){return videoLayers.stats[0]||null;},get videos(){return videoLayers.stats;},renderAt(seconds){state={...state,paused:true,offset:seconds};videoLayers.update(state);videoLayers.play();},get renderer(){return renderer;}};
+window.META={get state(){return state;},get elements(){return authoring?.manifest||[];},get time(){return timeline(state);},get stats(){return {fps,videoBlocked:videoLayers.blocked,reducedMotion:!motionAllowed(),movingObjects:moving.length+logoSystems.length*6};},get video(){return videoLayers.stats[0]||null;},get videos(){return videoLayers.stats;},renderAt(seconds){state={...state,paused:true,offset:seconds};videoLayers.update(state);videoLayers.play();},get renderer(){return renderer;}};

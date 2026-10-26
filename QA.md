@@ -13,12 +13,12 @@ Google Chrome through Python Playwright; test server http://127.0.0.1:8766.
 - PASS: Clock correction aligns independent machines
 - PASS: Preview inherits the corrected clock from skewed controller
 - PASS: Live playback indicator reports rendering
-- PASS: Visible pixel motion: style 2 / front (11.2%)
-- PASS: Visible pixel motion: style 2 / left (13.5%)
+- PASS: Visible pixel motion: style 2 / front (10.8%)
+- PASS: Visible pixel motion: style 2 / left (12.9%)
 - PASS: Visible pixel motion: style 4 / front (13.0%)
-- PASS: Visible pixel motion: style 4 / left (18.3%)
-- PASS: Visible pixel motion: style 5 / front (18.8%)
-- PASS: Visible pixel motion: style 5 / left (14.4%)
+- PASS: Visible pixel motion: style 4 / left (18.8%)
+- PASS: Visible pixel motion: style 5 / front (20.9%)
+- PASS: Visible pixel motion: style 5 / left (14.0%)
 - PASS: Pause freezes rendered pixels
 - PASS: Show visible motion resumes and resets movement controls
 - PASS: Zero movement holds decorative output within GPU rounding
@@ -52,8 +52,13 @@ Google Chrome through Python Playwright; test server http://127.0.0.1:8766.
 - PASS: Restricted route /backgrounds/.git/config
 - PASS: Local research video supports precise byte ranges
 
-Also run: `npm test` (27 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.
+Also run: `npm test` (37 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.
 
-Optional video composition verified with `qa_video_layers.py`: add/remove on all six styles, multiple independent decoders, direct preview drag and resize, physical tiled aspect correction, per-screen and master visibility, all-screen placement, separate-client pause/resume, save/load, duplicate/remove, new screens, clean outputs and narrow layouts. No JavaScript errors.
 
-`qa_static.py` verified explicit demo addition, native local-file selection, multiple layers, project-path output links, no API requests and reduced-motion behavior. A generated portrait MP4 additionally verified actual source proportions in the placement fields and JSON export retaining the portable demo URL while removing browser blob references. Code review findings in those two areas and deterministic video seeking were fixed.
+## Editable presets and URL persistence
+
+`npm test`: 37 passing tests, including per-preset authoring bounds, copy independence and reset, Unicode URL round trips, stable serialization, source permissions and malformed/oversized input. Build and JavaScript syntax checks pass.
+
+`qa_authoring.py` verifies all six preset manifests; a large original on the front/right and smaller duplicate on the left; direct drag/resize; per-screen identity; element visibility; added MV objects with optional video; preserved motion/pause; copied/bookmarked studio and standalone output URLs in fresh browser storage; preset reset without changing video layers; narrow layouts; no JavaScript errors or public API requests. A separate LAN test verified saved-address precedence over an old server snapshot and subsequent edits reaching a separate playback context. The 49 browser/server regression checks also passed with authoring wrappers enabled.
+
+Review fixes: preserve DOM size/rotation through resize, honor footer visibility, keep duplicates when a custom source is removed, include look fragments on every public output-link path, and keep editing controls responsive before renderers receive the latest state. Rendered Hallmark sweep has no Floor failures; the form-consistency Finish note is answered in CSS, and the original scene-thumbnail waiver remains.

@@ -16,7 +16,7 @@ export function addLayer(state,clip,customClip){
  let n=1;while(state.videoLayers.some(l=>l.id==='video-'+n))n++;
  const layer={id:'video-'+n,videoId:clip.id,x:70,y:48,width:36,enabled:true,screens:{}};
  if(customClip)layer.customClip=customClip;
- return {...state,videoLayers:[...state.videoLayers,layer],activeVideoLayer:layer.id,showVideo:true,editVideos:true};
+ return {...state,videoLayers:[...state.videoLayers,layer],activeVideoLayer:layer.id,showVideo:true,editVideos:true,editElements:false};
 }
 export function patchLayer(state,id,patch,screen='all'){
  return {...state,videoLayers:state.videoLayers.map(layer=>{
@@ -31,4 +31,4 @@ export function placement(layer,screenId,physicalAspect,sourceAspect=layer.sourc
  const r={...layer,...layer.screens?.[screenId]},width=Math.min(r.width,100*sourceAspect/physicalAspect),height=width*physicalAspect/sourceAspect;
  return {...r,width,height,x:Math.min(100-width/2,Math.max(width/2,r.x)),y:Math.min(100-height/2,Math.max(height/2,r.y))};
 }
-export function portableLook(state){return {...state,customClip:undefined,editVideos:false,videoLayers:state.videoLayers.map(({customClip,...layer})=>customClip&&!customClip.url.startsWith('blob:')?{...layer,customClip}:layer)};}
+export function portableLook(state){return {...state,customClip:undefined,editVideos:false,editElements:false,activeElement:null,videoLayers:state.videoLayers.map(({customClip,...layer})=>customClip&&!customClip.url.startsWith('blob:')?{...layer,customClip}:layer)};}

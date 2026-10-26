@@ -23,7 +23,7 @@ export function videoLayerControls(container,clips,{getState,commit}){
   $('#duplicate-video-layer').disabled=count>=8;
  }
  $('#show-videos').onchange=e=>commit({...getState(),showVideo:e.target.checked});
- $('#edit-video-layers').onchange=e=>commit({...getState(),editVideos:e.target.checked});
+ $('#edit-video-layers').onchange=e=>commit({...getState(),editVideos:e.target.checked,editElements:e.target.checked?false:getState().editElements});
  $('#active-video-layer').onchange=e=>commit({...getState(),activeVideoLayer:e.target.value});
  $('#video-placement-screen').onchange=e=>{scope=e.target.value;paint();};
  $('#layer-visible').onchange=e=>change({enabled:e.target.checked});

@@ -3,7 +3,7 @@ export const staticMode=typeof location!=='undefined'&&(location.hostname.endsWi
 
 // SSE carries settings; clock offset is estimated with a round trip to the server.
 // Each renderer uses the same absolute timeline. This is software sync, not genlock.
-export function connectSync(onState,{controller=false,initial=null,onStatus=()=>{},onInfo=()=>{}}={}){
+export function connectSync(onState,{controller=false,initial=null,preferInitial=false,onStatus=()=>{},onInfo=()=>{}}={}){
  if(staticMode){queueMicrotask(()=>{onStatus(true);onInfo({mode:'browser',front:new URL('wall.html?view=front',location.href).href,left:new URL('wall.html?view=left',location.href).href});});return {send(){},close(){}};}
  let pending=null,sending=false,ready=false,events,worker,stopped=false,wasDisconnected=false,latest=initial;
  async function send(state){
@@ -16,7 +16,8 @@ export function connectSync(onState,{controller=false,initial=null,onStatus=()=>
   const start=Date.now(),r=await fetch('/api/state',{cache:'no-store'});if(!r.ok)throw Error('sync server unavailable');const data=await r.json(),end=Date.now();
   const initialPhase=latest?timeline(latest):0;
   setClockOffset(data.serverTime-(start+end)/2);ready=true;
-  if(data.state){latest=sanitize(data.state);onState(latest);}
+  if(preferInitial&&controller&&latest){preferInitial=false;latest=sanitize({...latest,epoch:currentTime(),offset:initialPhase});onState(latest);await send(latest);}
+  else if(data.state){latest=sanitize(data.state);onState(latest);}
   else if(controller&&latest)await send({...latest,epoch:currentTime(),offset:initialPhase});
   if(data.urls)onInfo(data.urls);
   onStatus(true);return data;
