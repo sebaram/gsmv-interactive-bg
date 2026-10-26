@@ -100,11 +100,12 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   };
   function beginGesture(event,entry,resizing,owner){
    if(event.button!==0||!entry)return;event.preventDefault();event.stopPropagation();selectEntry(entry);owner.focus?.({preventScroll:true});
+   parent.METAStudio?.beginElementGesture();
    const r=resolved(entry),origin=dragOrigin(entry),start={x:event.clientX,y:event.clientY},width=Math.max(30,visibleRect(entry)?.right-visibleRect(entry)?.left||30);
    let moved=false,pending=null,frame=null;dragging=true;hover.hidden=true;owner.setPointerCapture(event.pointerId);
    const flush=()=>{if(!pending)return;const patch=pending;pending=null;parent.METAStudio?.updateElement(entry.id,patch);if(parent.METAStudio)apply(parent.METAStudio.state);};
    const move=e=>{const dx=e.clientX-start.x,dy=e.clientY-start.y;moved=moved||Math.hypot(dx,dy)>=3;if(!moved)return;pending=resizing?{size:r.size*Math.max(.1,1+dx*2/width)}:dragPatch(entry,r,dx,dy,origin);if(frame===null)frame=requestAnimationFrame(()=>{frame=null;flush();});};
-   const finish=()=>{if(frame!==null)cancelAnimationFrame(frame);flush();if(owner.hasPointerCapture(event.pointerId))owner.releasePointerCapture(event.pointerId);owner.removeEventListener('pointermove',move);owner.removeEventListener('pointerup',finish);owner.removeEventListener('pointercancel',finish);dragging=false;pointerPosition=null;};
+   const finish=()=>{if(frame!==null)cancelAnimationFrame(frame);flush();if(owner.hasPointerCapture(event.pointerId))owner.releasePointerCapture(event.pointerId);owner.removeEventListener('pointermove',move);owner.removeEventListener('pointerup',finish);owner.removeEventListener('pointercancel',finish);dragging=false;pointerPosition=null;parent.METAStudio?.endElementGesture();};
    owner.addEventListener('pointermove',move);owner.addEventListener('pointerup',finish);owner.addEventListener('pointercancel',finish);
   }
   handle.onpointerdown=event=>{
@@ -113,11 +114,15 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
    const label=!!event.target.closest('.element-handle-label'),border=Math.min(event.clientX-bounds.left,bounds.right-event.clientX,event.clientY-bounds.top,bounds.bottom-event.clientY)<5;
    const entry=resizing||label||border||selected.domId?selected:pickAt(event.clientX,event.clientY)||selected;beginGesture(event,entry,resizing,handle);
   };
+  function menuFor(event,entry){event.preventDefault();event.stopPropagation();const frame=frameElement.getBoundingClientRect();parent.METAStudio?.elementMenu(entry?.id||null,frame.left+event.clientX,frame.top+event.clientY);}
+  handle.oncontextmenu=event=>{const selected=entries.find(e=>e.id===current.activeElement);menuFor(event,event.target.closest('.element-handle-label,.element-resize')?selected:pickAt(event.clientX,event.clientY)||selected);};
+  canvas.oncontextmenu=event=>menuFor(event,pickAt(event.clientX,event.clientY));
+  document.onkeydown=event=>parent.METAStudio?.elementKey(event);
   const keys=event=>{if(event.key==='Escape'){event.preventDefault();selectEntry(null);return;}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;const entry=entries.find(e=>e.id===current.activeElement);if(!entry)return;event.preventDefault();const r=resolved(entry),step=event.shiftKey?5:1;parent.METAStudio?.updateElement(entry.id,dragPatch(entry,r,(event.key==='ArrowLeft'?-step:event.key==='ArrowRight'?step:0)*innerWidth/100,(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0)*innerHeight/100,dragOrigin(entry)));};
   handle.onpointermove=e=>{if(!dragging)pointerPosition={x:e.clientX,y:e.clientY};};handle.onpointerleave=()=>{if(!dragging){pointerPosition=null;hovered=null;hover.hidden=true;}};handle.onkeydown=keys;canvas.onkeydown=keys;canvas.tabIndex=0;canvas.setAttribute('aria-label','Interactive background preview. Click and drag an element to move it. Escape clears selection.');
   canvas.onpointerdown=event=>{if(event.button!==0)return;const entry=pickAt(event.clientX,event.clientY);if(entry)beginGesture(event,entry,false,canvas);else if(current.activeElement)selectEntry(null);};
   canvas.onpointermove=event=>{if(!dragging)pointerPosition={x:event.clientX,y:event.clientY};};canvas.onpointerleave=()=>{pointerPosition=null;hovered=null;hover.hidden=true;canvas.style.cursor='default';};
-  for(const entry of entries.filter(e=>e.domId&&e.defaults.screen===view)){const el=document.getElementById(entry.domId);el.onpointerdown=e=>beginGesture(e,entry,false,el);el.tabIndex=0;el.onkeydown=keys;el.onpointerenter=()=>{pointerPosition=null;hovered=entry;};el.onpointerleave=()=>{hovered=null;};for(const image of el.querySelectorAll('img'))image.draggable=false;}
+  for(const entry of entries.filter(e=>e.domId&&e.defaults.screen===view)){const el=document.getElementById(entry.domId);el.onpointerdown=e=>beginGesture(e,entry,false,el);el.oncontextmenu=e=>menuFor(e,entry);el.tabIndex=0;el.onkeydown=keys;el.onpointerenter=()=>{pointerPosition=null;hovered=entry;};el.onpointerleave=()=>{hovered=null;};for(const image of el.querySelectorAll('img'))image.draggable=false;}
  }
  function drawHandle(){
   if(!handle)return;

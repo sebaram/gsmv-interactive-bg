@@ -38,3 +38,51 @@ export function removeElement(state,id){
  return {...state,activeElement,authored:{...state.authored,[state.variant]:{...preset,edits,objects}}};
 }
 export function resetElement(state,id){const preset=presetEdits(state),edits={...preset.edits};delete edits[id];return {...state,authored:{...state.authored,[state.variant]:{...preset,edits}}};}
+
+// The clipboard stays in this editor tab. Its snapshot survives source deletion.
+export function copyElement(state,element){
+ if(!element||element.dom||isElementDeleted(state,element.id))return null;
+ return structuredClone({variant:state.variant,element,preset:presetEdits(state)});
+}
+export function pasteElement(state,clipboard){
+ if(!clipboard||clipboard.variant!==state.variant)return state;
+ const snapshot=clipboard.preset,preset=presetEdits(state),objects=[...preset.objects],edits={...preset.edits},mapped=new Map();
+ const freeId=()=>{let n=1;while(objects.some(o=>o.id==='object-'+n))n++;return 'object-'+n;};
+ function ensureSource(id){
+  const owner=snapshot.objects.find(o=>inElementSubtree(id,o.id));
+  if(!owner){
+   const root=id.split('-part-')[0],before=snapshot.edits[root]||{},now=preset.edits[root]||{};
+   if(id.includes('-part-')&&root.startsWith('preset-logo-')&&((before.seed||0)!==(now.seed||0)||(before.randomness||0)!==(now.randomness||0))){
+    if(!mapped.has(root)){const nextId=freeId();objects.push({id:nextId,type:'copy',source:root,archived:true,visible:false,seed:before.seed||0,randomness:before.randomness||0});mapped.set(root,nextId);}
+    return mapped.get(root)+id.slice(root.length);
+   }
+   return id;
+  }
+  if(!mapped.has(owner.id)){
+   const source=owner.type==='copy'?ensureSource(owner.source):owner.source;
+   const existing=objects.find(o=>o.id===owner.id&&o.type===owner.type&&o.source===source&&(o.seed||0)===(owner.seed||0)&&(o.randomness||0)===(owner.randomness||0));
+   if(existing)mapped.set(owner.id,existing.id);
+   else {
+    const nextId=freeId();
+    objects.push({...owner,id:nextId,source,archived:true,visible:false});mapped.set(owner.id,nextId);
+    for(const [part,patch] of Object.entries(snapshot.edits))if(inElementSubtree(part,owner.id))edits[nextId+part.slice(owner.id.length)]={...patch};
+   }
+  }
+  return mapped.get(owner.id)+id.slice(owner.id.length);
+ }
+ const source=ensureSource(clipboard.element.id);if(objects.length>=32)return state;
+ const element=clipboard.element;
+ let next=addElement({...state,authored:{...state.authored,[state.variant]:{objects,edits}}},'copy',{screen:element.screen,x:Math.min(140,element.x+5),y:element.y,size:element.size,rotation:element.rotation,visible:true},source);
+ const nextPreset=presetEdits(next),id=next.activeElement,prefix=clipboard.element.id+(clipboard.element.id.includes('-part-')?'-':'-part-');
+ nextPreset.edits=Object.fromEntries(Object.entries(nextPreset.edits).filter(([part])=>!inElementSubtree(part,id)));
+ for(const [part,patch] of Object.entries(snapshot.edits))if(part.startsWith(prefix))nextPreset.edits[id+'-part-'+part.slice(prefix.length)]={...patch};
+ return next;
+}
+
+export function authoringHistory(){
+ let past=[],future=[],observed=null,grouped=false,recorded=false;
+ const stamp=state=>JSON.stringify(sanitizeAuthored(state.authored)),snapshot=state=>structuredClone({authored:sanitizeAuthored(state.authored),variant:state.variant,activeElement:state.activeElement,editElements:state.editElements,editVideos:state.editVideos});
+ function observe(state){const key=stamp(state);if(observed!==null&&key!==observed){past=[];future=[];grouped=false;recorded=false;}observed=key;}
+ function restore(state,from,to){if(!from.length)return state;to.push(snapshot(state));const saved=from.pop(),next={...state,...saved};observed=stamp(next);grouped=false;recorded=false;return next;}
+ return {observe,begin(){grouped=true;recorded=false;},end(){grouped=false;recorded=false;},record(before,after){observe(before);if(stamp(before)===stamp(after))return;if(!grouped||!recorded){past.push(snapshot(before));if(past.length>40)past.shift();}recorded=true;future=[];observed=stamp(after);},undo(state){observe(state);return restore(state,past,future);},redo(state){observe(state);return restore(state,future,past);},get canUndo(){return past.length>0;},get canRedo(){return future.length>0;}};
+}

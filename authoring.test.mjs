@@ -143,3 +143,62 @@ test('repeated custom deletion cannot hide a later object reusing that ID',()=>{
  let state=addElement(sanitize(),'sphere');state=removeElement(state,'object-1');state=removeElement(state,'object-1');state=addElement(state,'arch');
  assert.equal(state.authored[4].objects[0].id,'object-1');assert.equal(authoringTools.isElementDeleted(state,'object-1'),false);
 });
+
+test('clipboard keeps child edits as they were copied and can paste after the source is deleted',()=>{
+ assert.equal(typeof authoringTools.copyElement,'function');assert.equal(typeof authoringTools.pasteElement,'function');
+ let state=addElement(sanitize({variant:1}),'network',{x:25,size:.7});state=patchElement(state,'object-1-part-1',{x:32,visible:false});
+ const clip=authoringTools.copyElement(state,{id:'object-1',screen:'front',x:25,y:50,size:.7,rotation:0});
+ state=patchElement(state,'object-1-part-1',{x:80,visible:true});state=removeElement(state,'object-1');state=addElement(state,'arch');
+ state=authoringTools.pasteElement(state,clip);const pasted=state.activeElement,preset=presetEdits(state),copy=preset.objects.find(o=>o.id===pasted);
+ assert.equal(copy.type,'copy');assert.equal(copy.x,30);assert.equal(copy.size,.7);assert.notEqual(copy.source,'object-1');
+ assert.equal(preset.objects.find(o=>o.id===copy.source).type,'network');assert.equal(preset.objects.find(o=>o.id===copy.source).archived,true);
+ assert.deepEqual(preset.edits[pasted+'-part-1'],{x:32,visible:false});assert.equal(preset.objects.find(o=>o.id==='object-1').type,'arch');
+ assert.equal(authoringTools.pasteElement({...state,variant:2},clip).variant,2);assert.deepEqual(presetEdits({...state,variant:2}),{edits:{},objects:[]});
+ assert.equal(authoringTools.copyElement(state,{id:'branding-front',dom:true}),null);
+});
+
+test('clipboard restores copied-part dependencies and does not partially paste at the object limit',()=>{
+ assert.equal(typeof authoringTools.copyElement,'function');
+ let state=addElement(sanitize({variant:1}),'network');state=addElement(state,'copy',{},'object-1-part-1');
+ const clip=authoringTools.copyElement(state,{id:'object-2',screen:'left',x:40,y:45,size:1,rotation:0});
+ state=removeElement(state,'object-1');state=removeElement(state,'object-2');state=authoringTools.pasteElement(state,clip);
+ const objects=presetEdits(state).objects,copy=objects.find(o=>o.id===state.activeElement),source=objects.find(o=>o.id===copy.source);
+ assert.equal(objects.length,3);assert.equal(source.archived,true);assert.match(source.source,/-part-1$/);assert.equal(copy.screen,'left');
+ let full=sanitize({variant:1});for(let i=0;i<31;i++)full=addElement(full,'sphere');assert.equal(authoringTools.pasteElement(full,clip),full);
+});
+
+test('authoring history groups a drag, supports redo, and leaves playback and screens intact',()=>{
+ assert.equal(typeof authoringTools.authoringHistory,'function');
+ const history=authoringTools.authoringHistory();let state=sanitize({variant:1});history.observe(state);
+ history.begin();let next=patchElement(state,'preset-main',{x:20});history.record(state,next);state=next;next=patchElement(state,'preset-main',{x:25});history.record(state,next);state=next;history.end();
+ state={...state,brightness:60,paused:true};state=history.undo(state);assert.deepEqual(state.authored,{});assert.equal(state.brightness,60);assert.equal(state.paused,true);assert.equal(history.canUndo,false);assert.equal(history.canRedo,true);
+ state=history.redo(state);assert.equal(state.authored[1].edits['preset-main'].x,25);history.observe(state);
+ next=removeElement(state,'preset-main');history.record(state,next);state=next;assert.equal(history.canRedo,false);
+ history.observe({...state,authored:{}});assert.equal(history.canUndo,false);
+});
+
+test('history survives normal state sanitization after adding an object',()=>{
+ const history=authoringTools.authoringHistory(),before=sanitize({variant:1}),next=addElement(before,'sphere');history.observe(before);history.record(before,next);history.observe(sanitize(next));assert.equal(history.canUndo,true);assert.deepEqual(history.undo(sanitize(next)).authored,{});
+});
+
+test('clipboard duplicates still give MV sculptures a fresh independent variation',()=>{
+ const state=addElement(sanitize({variant:5}),'logo'),element={...presetEdits(state).objects[0],mv:true},next=authoringTools.pasteElement(state,authoringTools.copyElement(state,element)),copy=presetEdits(next).objects.find(o=>o.id===next.activeElement);
+ assert.notEqual(copy.seed,element.seed);assert.equal(copy.randomness,1);
+});
+
+test('pasted MV parts retain their copied source variation after editing or reusing its ID',()=>{
+ for(const reuse of [false,true]){
+  let state=addElement(sanitize({variant:5}),'logo'),original=presetEdits(state).objects[0];
+  const clip=authoringTools.copyElement(state,{id:original.id+'-part-1',screen:'front',x:40,y:40,size:1,rotation:0});
+  if(reuse){state=removeElement(state,original.id);state=addElement(state,'logo');}
+  state=patchElement(state,original.id,{seed:999,randomness:2});state=authoringTools.pasteElement(state,clip);
+  const objects=presetEdits(state).objects,copy=objects.find(o=>o.id===state.activeElement),source=objects.find(o=>copy.source===o.id+'-part-1');
+  assert.notEqual(source.id,original.id);assert.equal(source.seed,original.seed);assert.equal(source.randomness,original.randomness);assert.equal(source.archived,true);
+ }
+});
+
+test('clipboard freezes a preset MV part’s source variation',()=>{
+ let state=patchElement(sanitize({variant:5}),'preset-logo-front',{seed:17,randomness:.8});
+ const clip=authoringTools.copyElement(state,{id:'preset-logo-front-part-1',screen:'front',x:50,y:50,size:1,rotation:0});state=patchElement(state,'preset-logo-front',{seed:99,randomness:2});state=authoringTools.pasteElement(state,clip);
+ const objects=presetEdits(state).objects,copy=objects.find(o=>o.id===state.activeElement),source=objects.find(o=>copy.source===o.id+'-part-1');assert.ok(source);assert.equal(source.seed,17);assert.equal(source.randomness,.8);assert.equal(source.source,'preset-logo-front');
+});

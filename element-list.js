@@ -1,6 +1,6 @@
 // The list only rebuilds for structural changes, search or group expansion.
 // Frequent preview paints update row state without replacing focused controls.
-export function elementList(container,{select,toggleVisible,deleteElement}){
+export function elementList(container,{select,toggleVisible,deleteElement,contextMenu}){
  container.innerHTML=`<div class="author-list-heading"><h4>Elements</h4><button type="button" class="subtle" id="clear-element-selection">Clear selection</button></div><label class="author-search-label" for="element-search">Search elements and parts</label><input id="element-search" type="search" placeholder="Name, part or screen" autocomplete="off"><p class="note" id="element-list-status" role="status"></p><div id="element-list" aria-label="Preset elements"><ul></ul></div>`;
  const search=container.querySelector('#element-search'),list=container.querySelector('#element-list'),status=container.querySelector('#element-list-status'),clear=container.querySelector('#clear-element-selection');
  const expanded=new Set(),rows=new Map();let elements=[],screens=[],selected='',previousSelection='',structure='',dirty=true;
@@ -14,7 +14,7 @@ export function elementList(container,{select,toggleVisible,deleteElement}){
   rows.clear();
   function branch(parent){const ul=document.createElement('ul');for(const element of children.get(parent)||[]){
    if(query&&!shown.has(element.id))continue;
-   const nested=children.get(element.id)||[],li=document.createElement('li'),row=document.createElement('div');row.className='author-element-row';row.dataset.elementId=element.id;
+   const nested=children.get(element.id)||[],li=document.createElement('li'),row=document.createElement('div');row.className='author-element-row';row.dataset.elementId=element.id;row.oncontextmenu=event=>{event.stopPropagation();contextMenu?.(element.id,event);};
    if(nested.length){const toggle=document.createElement('button');toggle.type='button';toggle.className='author-disclosure';toggle.dataset.elementId=element.id;toggle.dataset.action='expand';toggle.textContent=query||expanded.has(element.id)?'Collapse':'Expand';toggle.setAttribute('aria-expanded',String(!!query||expanded.has(element.id)));toggle.setAttribute('aria-label',toggle.textContent+' '+element.name);toggle.disabled=!!query;toggle.onclick=()=>{expanded.has(element.id)?expanded.delete(element.id):expanded.add(element.id);dirty=true;paint(elements,selected,screens);};row.append(toggle);}
    else {const spacer=document.createElement('span');spacer.className='author-disclosure-space';row.append(spacer);}
    const button=document.createElement('button');button.type='button';button.className='author-row-select';button.dataset.elementId=element.id;button.dataset.action='select';button.title=element.name;button.setAttribute('aria-label','Select '+element.name);const label=document.createElement('span'),detail=document.createElement('small');label.textContent=element.name.split(' / ').at(-1);button.append(label,detail);button.onclick=()=>select(element.id);row.append(button);

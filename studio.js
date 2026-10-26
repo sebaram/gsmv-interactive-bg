@@ -5,7 +5,6 @@ import {videoLibrary,chooseVideo} from './video-library.js';
 import {patchLayer,portableLook} from './video-layers.js';
 import {videoLayerControls} from './video-layer-controls.js';
 import {authoringControls} from './authoring-ui.js';
-import {patchElement} from './authoring.js';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
 const addressLook=decodeLook(location.hash);
 let state=addressLook||read();save(state);
@@ -19,7 +18,7 @@ const clips=await fetch('./clips.json').then(r=>r.json());
 let pendingVideo=null;
 const library=videoLibrary($('#video-library'),clips,{getState:()=>state,commit:next=>{state=next;publish();},publicMode:staticMode,chooseFile:clip=>{pendingVideo=clip;$('#local-video').click();}});
 const layers=videoLayerControls($('#video-layer-controls'),clips,{getState:()=>state,commit:next=>{state=next;publish();}});
-const author=authoringControls($('#authoring-controls'),{getState:()=>state,getElements:()=>{try{return document.querySelector('.paired iframe')?.contentWindow.META?.elements||[];}catch{return [];}},commit:next=>{state=next;publish();}});
+const author=authoringControls($('#authoring-controls'),{getState:()=>state,getElements:()=>{try{return document.querySelector('.paired iframe')?.contentWindow.META?.elements||[];}catch{return [];}},commit:next=>{state=next;publish();},notify:toast});
 $('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
 function publish(){state=sanitize(state);save(state);channel.postMessage(state);paint();sync.send(state);}
 function paint(){
@@ -78,7 +77,7 @@ const sync=connectSync(next=>{state=next;save(state);channel.postMessage(state);
 if(staticMode){$('#network-help').textContent='Public preview controls synchronize windows in this browser. For separate computers, run the LAN server from the repository.';$('#local-video-controls').hidden=false;}
 $('#local-video').onchange=e=>{const file=e.target.files[0];if(!file)return;if(state.videoLayers.length>=8){toast('Up to 8 video layers. Remove one before adding another.');return;}const url=URL.createObjectURL(file);state=chooseVideo(state,pendingVideo||library.inspected,{url,name:file.name});pendingVideo=null;$('#local-video-status').textContent=file.name+' added (stays in this browser)';e.target.value='';publish();};
 $('#clear-local-video').onclick=()=>{state=chooseVideo(state,library.inspected,{url:'previews/demo-motion.mp4',name:'Demo animation'});publish();};
-window.METAStudio={now:currentTime,selectElement(id){state.activeElement=id;state.editElements=true;state.editVideos=false;publish();},updateElement(id,patch){state=patchElement(state,id,patch);state.activeElement=id;publish();},get state(){return state;},selectVideoLayer(id,screen){state.activeVideoLayer=id;layers.setScope(screen);publish();},updateVideoLayer(id,patch,screen){state=patchLayer(state,id,patch,screen);publish();}};
+window.METAStudio={now:currentTime,selectElement(id){author.closeMenu();state.activeElement=id;state.editElements=true;state.editVideos=false;publish();},updateElement:(id,patch)=>author.updateElement(id,patch),elementKey:event=>author.keydown(event),elementMenu:(id,x,y)=>author.openMenu(id,x,y),beginElementGesture:()=>author.beginGesture(),endElementGesture:()=>author.endGesture(),get state(){return state;},selectVideoLayer(id,screen){state.activeVideoLayer=id;layers.setScope(screen);publish();},updateVideoLayer(id,patch,screen){state=patchLayer(state,id,patch,screen);publish();}};
 let previousTime=null;
 setInterval(()=>{
  const frames=[...document.querySelectorAll('.paired iframe')].map(f=>{try{return f.contentWindow.META;}catch{return null;}}).filter(Boolean),first=frames[0];
