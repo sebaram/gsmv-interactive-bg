@@ -80,7 +80,7 @@ class Handler(SimpleHTTPRequestHandler):
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 raise ValueError('Expected application/json')
             state = json.loads(self.rfile.read(length))
-            if not isinstance(state, dict) or type(state.get('variant')) is not int or state['variant'] not in range(5):
+            if not isinstance(state, dict) or type(state.get('variant')) is not int or state['variant'] not in range(6):
                 raise ValueError('Invalid state')
         except (ValueError, TypeError):
             return self.json_response({'error': 'Invalid state'}, 400)

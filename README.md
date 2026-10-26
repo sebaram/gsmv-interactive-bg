@@ -2,25 +2,40 @@
 
 Real-time 3D backgrounds for interview shoots, with configurable display walls, research video, local playback and network control.
 
-**[Public studio](https://sebaram.github.io/gsmv-interactive-bg/)** · [Five background directions](previews/comparison.jpg)
+**[Public studio](https://sebaram.github.io/gsmv-interactive-bg/)** · [Six background directions](previews/comparison.jpg)
 
 ## Backgrounds
 
 | Direction | Treatment |
 | --- | --- |
+| **MV Symbiosis** | Six exact facets from the official MV symbol soften, exchange form and position, assemble into the mark, then unfold together. Optional video gallery. |
 | **Shared Reality** | The combined direction: Common Ground's red real-world and blue virtual ribbons surrounding Living Research's floating video gallery. |
 | **Common Ground** | Interwoven red and blue ribbons representing exchange between real and virtual spaces. |
 | **Living Research** | Moving research galleries and connection networks, with footage on every screen. |
 | Blue Hour | Polished blue orbital forms with restrained red accents. |
 | Soft Architecture | Pale arches, warm stone and floating blue/red forms. |
 
-The original department logo is retained. The source identity and color guide are from [meta.kaist.ac.kr/logo](https://meta.kaist.ac.kr/logo); the supplied scenario decks determine the six research cues.
+The original department signature is retained. The source identity and color guide are from [meta.kaist.ac.kr/logo](https://meta.kaist.ac.kr/logo); the supplied scenario decks and selected clips provide the video library.
+
+### MV Symbiosis
+
+The new scene uses the six red and blue polylines copied directly from the official SVG, rather than an approximate M/V icon. Over a 36-second cycle, the facets become soft volumetric forms, move in complementary pairs, consolidate into the recognizable symbol, hold it, and unfold into another exchange. The red/blue connections represent mutual influence. Pause, speed, movement amount, reduced motion and every configured screen remain supported. The interview subject's area stays quieter toward the center-left.
+
+Selecting MV Symbiosis initially runs without a video so the transformation is clear. Use the video library to add footage beside the sculpture, or choose No video to return to the full-size mark. Under an operating-system reduced-motion preference, it shows the assembled symbol until playback is explicitly enabled.
+
+## Choose a video
+
+The monitor now has a **34-clip video library** instead of research-cue buttons. Search titles, descriptions, topics or clip IDs, or browse with Previous/Next. Each entry has an actual poster frame, title, topic and duration. The larger detail view explains the clip and offers preview playback.
+
+**Preview** changes only the detail view. **Use this video** sends that clip to the wall outputs; the status names what is on screens. MV Symbiosis keeps its logo animation when footage is added. A procedural-only background switches to Shared Reality when a video is applied. **No video** removes the footage without requiring a topic selection. The on-set panel also links directly to the video browser.
+
+Five primary examples have English titles and descriptions; the additional selected clips retain their supplied Korean titles and explanations. Poster images are real frames from those clips. Original video files remain outside Git.
 
 ## Public browser mode
 
 Open the public studio in Chrome or Edge. Choose a background, configure screens, and open each output in its own window. Controls synchronize windows in the **same browser**.
 
-Research galleries initially show a small, explicitly labeled **animation demo**. Original laboratory videos are not published. Choose **Use a local research video** to display your own file. It plays directly from your computer as a browser blob; it is not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
+Research galleries initially show a small, explicitly labeled **animation demo**. Original laboratory videos are not published. The library shows poster previews and descriptions; **Choose this video file** opens your local copy. You can also use **Use any video from this computer**. It plays directly from your computer as a browser blob and is not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
 
 For synchronized playback across separate computers, use the LAN server below. GitHub Pages is static hosting and does not run the Python sync server.
 
@@ -29,7 +44,7 @@ For synchronized playback across separate computers, use the LAN server below. G
 1. Clone or download this repository.
 2. Double-click **START.bat**, or run `python serve.py --open`. Only the server computer needs Python 3.
 3. Open `http://127.0.0.1:8765/backgrounds/` in Chrome or Edge. Keep the server console open.
-4. Choose a direction and a research cue, then open each screen's output. Move each window to its display and click the background for fullscreen. **Esc** leaves fullscreen.
+4. Choose a direction, then preview and apply a video if wanted. Open each screen's output, move the window to its display and click the background for fullscreen. **Esc** leaves fullscreen.
 5. Before recording, use **Prepare clean take** to clear calibration, framing and tile-grid overlays on every screen and disable pointer interaction.
 
 The server maps `/backgrounds/` to the app regardless of the cloned directory name. It serves only the app and selected media directory, and blocks hidden paths such as `.git`.
@@ -42,7 +57,7 @@ On the current shoot workspace, the original clips are already at `../output/cli
 python serve.py --media-dir "D:\Shoot\selected-clips" --open
 ```
 
-The `GSMV_MEDIA_DIR` environment variable is also supported. `clips.json` lists the exact expected clip filenames. Originals remain outside Git. Local server mode plays those research files; public mode uses its demo until you choose a local file.
+The `GSMV_MEDIA_DIR` environment variable is also supported. `clips.json` lists all 34 library items, their descriptions, poster paths and exact expected clip filenames. Originals remain outside Git. Local server mode previews and plays those research files; public mode uses its demo until you choose a local file.
 
 | Scenario cue | Selected clip ID |
 | --- | --- |
@@ -87,7 +102,7 @@ If the processor preserves a 16:9 picture rather than stretching it, select **Ma
 - **Wall brightness** is a software adjustment. Match hardware wall brightness and camera exposure on set.
 - **Department signature**, **Research titles** and **Pointer interaction** are optional. Disable pointer interaction during recording.
 
-Output shortcuts: **Space** pause/resume, **1–5** select a direction, **G** framing guide, **Esc** leave fullscreen. No controls are burned into fullscreen outputs.
+Output shortcuts: **Space** pause/resume, **1–6** select a direction, **G** framing guide, **Esc** leave fullscreen. No controls are burned into fullscreen outputs.
 
 Videos retain their source annotations and loop their selected excerpts. For uninterrupted interview takes, Common Ground uses procedural motion without clip cuts. Check the actual camera for moiré, LED scan/PWM banding, shutter behavior, logo placement and framing before filming.
 

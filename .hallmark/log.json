@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-26",
+    "mode": "feature refinement",
+    "scope": "app",
+    "theme": "console",
+    "signature": "MV Symbiosis with six official logo facets and an explicit video browser",
+    "material": "34 selected video clips with actual poster frames, original titles and supplied explanations",
+    "review": {"type": "fresh-context subagent", "verdict": "ship", "materialFindings": 0},
+    "sweep": {"floorFailures": 0, "warnings": 0},
+    "waived": [{"gate": "39b", "reason": "Actual background thumbnails need a larger hit area than standard app controls"}],
+    "prompt": "Add a motion graphic directly derived from the MV identity and replace research cues with title, explanation, preview and explicit video selection."
+  },
+  {
+    "date": "2026-10-26",
     "mode": "redesign",
     "depth": "full",
     "scope": "app",

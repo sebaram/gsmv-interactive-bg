@@ -46,7 +46,7 @@ with sync_playwright() as p:
     page=controller.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(BASE+'/backgrounds/')
     wait(page,"document.querySelector('#network-status').textContent.toLowerCase()==='network ready'")
-    check('All five directions are selectable',page.locator('[data-variant]').count()==5)
+    check('All six directions are selectable',page.locator('[data-variant]').count()==6)
     clients=[]
     for view,skew,width,height in [('front',-90000,960,540),('left',70000,960,360)]:
         context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1)
@@ -57,10 +57,11 @@ with sync_playwright() as p:
         clients.append((context,wall))
     front,left=clients[0][1],clients[1][1]
     page.wait_for_timeout(700)
-    for i in range(5):
+    for i in range(6):
         page.locator(f'[data-variant="{i}"]').click()
         for wall in [front,left]:wait(wall,f'window.META.state.variant==={i}')
         check(f'Style {i+1} reaches both independent clients',all(w.evaluate('window.META.state.variant')==i for w in [front,left]))
+    page.locator('[data-variant="4"]').click()
     wait(front,'window.META.video && window.META.video.ready>=2')
     wait(left,'window.META.video && window.META.video.ready>=2')
     check('Combined style plays muted research on both walls',front.evaluate('window.META.video.muted') and left.evaluate('window.META.video.muted'))
@@ -135,12 +136,15 @@ with sync_playwright() as p:
     check('Screen reordering propagates without changing output identity',extra.evaluate(f'window.META.state.screens[1].id==="{extra_id}"'))
     page.locator('#clean-btn').click();wait(left,'!window.META.state.calibration && !window.META.state.guide && window.META.state.screens.every(s=>!s.grid)')
     check('Clean take clears grids for every screen',not extra.locator('#tile-grid').is_visible())
-    for cue in range(5):
-        page.locator(f'[data-cue="{cue}"]').click()
+    clip_ids=['P2-S1-02','P2-S2-02','P2-S3-01','P2-S4-01','P2-S5-01']
+    for cue,clip_id in enumerate(clip_ids):
+        page.locator('#video-search').fill(clip_id)
+        page.locator(f'[data-preview-video="{clip_id}"]').click()
+        page.locator('#use-video').click()
         for wall in [front,left]:wait(wall,f'window.META.state.cue==={cue} && window.META.video && window.META.video.ready>=2')
-        check(f'Research cue {cue+1} plays on both walls',not front.locator('#error').is_visible() and not left.locator('#error').is_visible())
-    page.locator('[data-cue="5"]').click();wait(front,'window.META.state.cue===5 && !window.META.video')
-    check('Economics keeps conceptual content distinct',front.evaluate('window.META.video') is None)
+        check(f'Video selection {cue+1} plays on both walls',not front.locator('#error').is_visible() and not left.locator('#error').is_visible())
+    page.locator('#no-video').click();wait(front,'!window.META.state.showVideo && !window.META.video')
+    check('No video produces a procedural-only background',front.evaluate('window.META.video') is None)
     with page.expect_download() as download:page.locator('#save-look').click()
     look=OUT/'qa-look.json';download.value.save_as(look)
     data=json.loads(look.read_text())
@@ -155,7 +159,7 @@ with sync_playwright() as p:
     extra_context.close()
     configure('front',{'name':'Front LED wall','width':3840,'height':2160,'mode':'raster','cols':1,'rows':1,'grid':False})
     configure('left',{'cols':3,'rows':2,'grid':False})
-    page.locator('[data-cue="0"]').click();page.locator('#brightness').fill('70');page.locator('#headlines').uncheck()
+    page.locator('#video-search').fill('P2-S1-02');page.locator('[data-preview-video="P2-S1-02"]').click();page.locator('#use-video').click();page.locator('#video-search').fill('');page.locator('#brightness').fill('70');page.locator('#headlines').uncheck()
     page.locator('#motion-demo').click();page.locator('#motionAmount').fill('1')
     page.locator('#display-setup summary').click()
     page.wait_for_timeout(700)
@@ -178,5 +182,5 @@ clips=json.loads((APP/'clips.json').read_text(encoding='utf-8'))
 url=BASE+'/output/clips/'+urllib.parse.quote(clips[0]['url'].split('/')[-1])
 with urllib.request.urlopen(urllib.request.Request(url,headers={'Range':'bytes=0-127'})) as response:
     check('Local research video supports precise byte ranges',response.status==206 and len(response.read())==128)
-(APP/'QA.md').write_text('# Verification\n\nGoogle Chrome through Python Playwright; test server '+BASE+'.\n\n'+'\n'.join('- PASS: '+name for name in checks)+'\n\nAlso run: `npm test` (13 motion, screen-state, migration and timeline tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.\n',encoding='utf-8')
+(APP/'QA.md').write_text('# Verification\n\nGoogle Chrome through Python Playwright; test server '+BASE+'.\n\n'+'\n'.join('- PASS: '+name for name in checks)+'\n\nAlso run: `npm test` (21 motion, logo geometry, video-selection, screen-state, migration, timeline and public-bundle tests). Independent browser contexts and deliberately skewed clocks exercise network synchronization. Actual display mapping, camera exposure and separate physical machines require on-set validation.\n',encoding='utf-8')
 print(str(len(checks))+' browser/server checks passed',flush=True)

@@ -11,6 +11,8 @@ test('public bundle works under a GitHub project path without exposing local med
   execFileSync(process.execPath,[join(root,'scripts/build-site.mjs'),'--out',join(temp,'site')],{cwd:root});
   const html=await readFile(join(temp,'site/index.html'),'utf8'),wall=await readFile(join(temp,'site/wall.html'),'utf8');
   assert.match(html,/data-hosting="static"/);assert.match(wall,/data-hosting="static"/);
+  assert.match(html,/name="studio-build"/);assert.match(html,/studio\.js\?v=[a-f0-9]{12}/);
+  assert.match(await readFile(join(temp,'site/studio.js'),'utf8'),/state\.js\?v=[a-f0-9]{12}/);
   assert.ok(!html.includes('href="/backgrounds/'));
   const clips=JSON.parse(await readFile(join(temp,'site/clips.json'),'utf8'));
   assert.ok(clips.every(c=>c.url==='previews/demo-motion.mp4'));

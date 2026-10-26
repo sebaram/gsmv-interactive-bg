@@ -3,8 +3,9 @@ export const variants=[
  {name:'Blue Hour',tag:'ORBITAL / IMMERSIVE',tone:'#90beff',desc:'Sculptural orbits in a deep blue atmosphere. A quiet, confident setting for faculty interviews.',use:'Recommended · faculty & opening'},
  {name:'Common Ground',tag:'REAL ↔ VIRTUAL',tone:'#ff9687',desc:'Red represents the real world; blue represents the virtual. Interwoven ribbons show their continuous exchange.',use:'Real ↔ virtual · shared experiences'},
  {name:'Soft Architecture',tag:'SPATIAL / EDITORIAL',tone:'#ddd3b9',desc:'Warm porcelain forms, architectural depth and soft light. An open, understated research studio.',use:'Spatial design · bright studio look'},
- {name:'Living Research',tag:'RESEARCH / IN MOTION',tone:'#a2ded1',desc:'Your actual research footage suspended in a moving digital gallery on every screen. Change the cue to match the interview.',use:'Lab interviews · research & innovation'},
- {name:'Shared Reality',tag:'REAL + VIRTUAL + RESEARCH',tone:'#b6baff',desc:'Living research inside Common Ground. Red reality and blue virtual ribbons flow around your research, connecting each screen.',use:'Combined direction · recommended'}
+ {name:'Living Research',tag:'RESEARCH / IN MOTION',tone:'#a2ded1',desc:'Your actual research footage suspended in a moving digital gallery on every screen. Choose a video to match the conversation.',use:'Lab interviews · research & innovation'},
+ {name:'Shared Reality',tag:'REAL + VIRTUAL + RESEARCH',tone:'#b6baff',desc:'Living research inside Common Ground. Red reality and blue virtual ribbons flow around your research, connecting each screen.',use:'Combined direction · recommended'},
+ {name:'MV Symbiosis',tag:'LOGO / TRANSFORMATION',tone:'#91c9f4',desc:'Six facets from the MV symbol become soft forms, exchange shape and position, consolidate into the mark, and unfold together again.',use:'Department identity · real and virtual in symbiosis'}
 ];
 export const cues=[
  {name:'Space design',ko:'공간을 설계하다',en:'METAVERSE SPACE DESIGN',lab:'01 / SPACE',clip:'P2-S1-02',color:'#388fff'},
@@ -14,7 +15,7 @@ export const cues=[
  {name:'Haptic experience',ko:'경험을 확장하다',en:'HAPTIC FEEDBACK',lab:'05 / EXPERIENCE',clip:'P2-S5-01',color:'#ef8d8d'},
  {name:'Metaverse economics',ko:'함께 살아갈 세계',en:'METAVERSE ECONOMICS',lab:'06 / SOCIETY',clip:null,color:'#80c8c6'}
 ];
-export const defaults={variant:4,cue:0,brightness:70,speed:1,motionAmount:1,paused:false,epoch:Date.now(),offset:0,branding:true,headlines:false,guide:false,calibration:false,interactive:false,frontW:3840,frontH:2160,leftW:3840,leftH:2160,leftShape:'tiles',bezel:0};
+export const defaults={variant:4,cue:0,videoId:null,showVideo:true,brightness:70,speed:1,motionAmount:1,paused:false,epoch:Date.now(),offset:0,branding:true,headlines:false,guide:false,calibration:false,interactive:false,frontW:3840,frontH:2160,leftW:3840,leftH:2160,leftShape:'tiles',bezel:0};
 let clockOffset=0;
 export function setClockOffset(value){clockOffset=value;}
 export function currentTime(){return Date.now()+clockOffset;}
@@ -26,6 +27,7 @@ export function sanitize(raw={}){
  s.brightness=num(s.brightness,70,10,100);s.speed=num(s.speed,1,0,3);s.motionAmount=num(s.motionAmount,1,0,2);s.bezel=[0,2,3,4,32].includes(+s.bezel)?+s.bezel:0;s.leftShape=s.leftShape==='raster'?'raster':'tiles';
  s.epoch=num(s.epoch,Date.now(),0,1e14);s.offset=num(s.offset,0,0,1e10);
  for(const k of ['paused','branding','headlines','guide','calibration','interactive'])s[k]=Boolean(s[k]);
+ s.showVideo=raw.showVideo!==false;s.videoId=typeof raw.videoId==='string'&&/^[A-Za-z0-9_-]{1,60}$/.test(raw.videoId)?raw.videoId:null;
  const legacy=[{id:'left',name:'Left tiled wall',width:s.leftW,height:s.leftH,mode:s.leftShape==='tiles'?'tiles':'raster',cols:s.bezel===32?3:s.bezel||3,rows:s.bezel===32?2:s.bezel||2,grid:!!s.bezel},{id:'front',name:'Front LED wall',width:s.frontW,height:s.frontH,mode:'raster',cols:1,rows:1}];
  const incoming=Array.isArray(raw.screens)&&raw.screens.length?raw.screens.slice(0,8):legacy;
  const ids=new Set();s.screens=incoming.map((screen,i)=>{const sc=sanitizeScreen(screen,i);while(ids.has(sc.id))sc.id+='-2';ids.add(sc.id);return sc;});
