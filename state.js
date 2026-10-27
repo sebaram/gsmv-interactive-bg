@@ -9,7 +9,9 @@ export const variants=[
  {name:'Soft Architecture',tag:'SPATIAL / EDITORIAL',tone:'#ddd3b9',desc:'Warm porcelain forms, architectural depth and soft light. An open, understated research studio.',use:'Spatial design · bright studio look'},
  {name:'Living Research',tag:'RESEARCH / IN MOTION',tone:'#a2ded1',desc:'Your actual research footage suspended in a moving digital gallery on every screen. Choose a video to match the conversation.',use:'Lab interviews · research & innovation'},
  {name:'Shared Reality',tag:'REAL + VIRTUAL + RESEARCH',tone:'#b6baff',desc:'Living research inside Common Ground. Red reality and blue virtual ribbons flow around your research, connecting each screen.',use:'Combined direction · recommended'},
- {name:'MV Symbiosis',tag:'LOGO / TRANSFORMATION',tone:'#91c9f4',desc:'Six facets from the MV symbol become soft forms, exchange shape and position, consolidate into the mark, and unfold together again.',use:'Department identity · real and virtual in symbiosis'}
+ {name:'MV Symbiosis',tag:'LOGO / TRANSFORMATION',tone:'#91c9f4',desc:'Six facets from the MV symbol become soft forms, exchange shape and position, consolidate into the mark, and unfold together again.',use:'Department identity · real and virtual in symbiosis'},
+ {name:'Serein Atelier',tag:'LIMESTONE / BRONZE / LIGHT',tone:'#d5bb92',desc:'A warm limestone atelier with a recessed alcove and slowly turning bronze leaves. Grounded architecture frames a quiet center for seated or standing interviews.',use:'Floor-level LED · warm architectural interview'},
+ {name:'MV Light Court',tag:'REAL / VIRTUAL / MATERIAL',tone:'#79b8df',desc:'A graphite light court pairs a grounded red lacquer form with blue optical blades. Restrained material contrast and a calm center give the conversation room.',use:'Floor-level LED · dark material study'}
 ];
 export const cues=[
  {name:'Space design',ko:'공간을 설계하다',en:'METAVERSE SPACE DESIGN',lab:'01 / SPACE',clip:'P2-S1-02',color:'#388fff'},

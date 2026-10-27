@@ -16,7 +16,7 @@ with sync_playwright() as p:
  c=b.new_context(viewport={'width':1600,'height':1100},permissions=['clipboard-read','clipboard-write'])
  page=c.new_page();errors=[];api=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:api.append(r.url) if '/api/' in r.url else None)
  page.goto(BASE);page.wait_for_function('window.METAStudio && document.querySelectorAll("#author-element option").length>0')
- for variant in range(6):
+ for variant in range(page.locator('[data-variant]').count()):
   page.locator(f'[data-variant="{variant}"]').click()
   page.wait_for_function('(v)=>[...document.querySelectorAll(".paired iframe")].every(f=>f.contentWindow.META?.state.variant===v && f.contentWindow.META.elements.length>5)',arg=variant)
  print('PASS Every background is an editable preset with an element manifest',flush=True)

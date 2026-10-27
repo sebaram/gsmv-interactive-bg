@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaults, sanitize, timeline, setPaused, setSpeed, panorama, leftAspect } from './state.js';
+import {readFileSync} from 'node:fs';
+import { defaults, sanitize, timeline, setPaused, setSpeed, panorama, leftAspect, variants } from './state.js';
+import {encodeLook,decodeLook} from './look-url.js';
 
 test('invalid saved settings cannot break wall projection', () => {
   const s = sanitize({variant:99, frontW:0, leftH:'bad', brightness:900, speed:-2});
@@ -28,4 +30,25 @@ test('front and left views have an exactly shared edge', () => {
   const p=panorama({...defaults,frontW:3840,frontH:1080,leftW:1920,leftH:1080});
   assert.equal(p.front.x,p.left.width); assert.equal(p.front.width+p.left.width,p.width);
   assert.equal(p.front.height,p.left.height);
+});
+
+test('floor-level presets retain authored parts and appearance through shared URLs',()=>{
+ assert.deepEqual(variants.slice(6).map(v=>v.name),['Serein Atelier','MV Light Court']);
+ for(const variant of [6,7]){
+  const state=sanitize({variant,authored:{[variant]:{edits:{'court-glass-front':{x:83,size:.8,motionSpeed:.4}},objects:[]}},appearance:{[variant]:{floor:.65,lighting:.8}},videoLayers:[]});
+  const loaded=decodeLook(encodeLook(state));
+  assert.equal(loaded.variant,variant);assert.deepEqual(loaded.authored,state.authored);assert.deepEqual(loaded.appearance,state.appearance);assert.deepEqual(loaded.videoLayers,[]);
+ }
+ assert.equal(sanitize({variant:8}).variant,0);
+});
+
+test('all sixteen floor-wall variations retain their authored composition in portable looks',()=>{
+ const collection=JSON.parse(readFileSync(new URL('./looks/floor-wall-variations.json',import.meta.url),'utf8'));
+ assert.equal(collection.looks.length,16);assert.equal(new Set(collection.looks.map(x=>x.name)).size,16);
+ for(const {look} of collection.looks){
+  const saved=decodeLook(encodeLook(look));assert.equal(saved.variant,look.variant);
+  assert.deepEqual(saved.authored,look.authored);assert.deepEqual(saved.appearance,look.appearance);
+  assert.equal(saved.screens.find(s=>s.id==='front').width/saved.screens.find(s=>s.id==='front').height,16/9);
+  assert.equal(saved.videoLayers.length,0);
+ }
 });

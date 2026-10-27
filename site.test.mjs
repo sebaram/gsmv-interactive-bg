@@ -18,6 +18,9 @@ test('public bundle works under a GitHub project path without exposing local med
   assert.ok(clips.every(c=>c.url==='previews/demo-motion.mp4'));
   assert.ok((await stat(join(temp,'site/previews/demo-motion.mp4'))).size>1000);
   await access(join(temp,'site/vendor/three.module.js'));
+  assert.equal(JSON.parse(await readFile(join(temp,'site/looks/floor-wall-variations.json'),'utf8')).looks.length,16);
+  await access(join(temp,'site/floor-scenes.js'));
+  assert.match(await readFile(join(temp,'site/scene.js'),'utf8'),/floor-scenes\.js\?v=[a-f0-9]{12}/);
   await assert.rejects(access(join(temp,'site/.git')));await assert.rejects(access(join(temp,'site/serve.py')));
  }finally{await rm(temp,{recursive:true,force:true});}
 });

@@ -36,9 +36,11 @@ with sync_playwright() as p:
  page.locator('[data-variant="1"]').click();page.locator('[data-variant="5"]').click();page.wait_for_function('[...document.querySelectorAll(".paired iframe")].every(f=>f.contentWindow.META?.state.variant===5)');page.set_viewport_size({'width':1600,'height':1400});page.wait_for_timeout(200)
  for i,frame in enumerate(frames):
   frame.evaluate('window.META.renderAt(15)');frame.wait_for_function('window.META.renderedTime===15');page.wait_for_timeout(150);assert rendered(frame).size==baseline[i].size;assert ImageChops.difference(rendered(frame),baseline[i]).getbbox() is None
- for variant in range(6):
+ for variant in range(page.locator('[data-variant]').count()):
   page.locator(f'[data-variant="{variant}"]').click();page.locator('#appearance-mode').select_option('solid');color(page,'backgroundColor','#203040');page.locator('#appearance-floor').fill('0');page.wait_for_function('(v)=>[...document.querySelectorAll(".paired iframe")].every(f=>f.contentWindow.META?.state.variant===v&&f.contentWindow.META.state.appearance[v]?.floor===0)',arg=variant);page.wait_for_timeout(150)
-  for frame in frames:assert max(abs(a-b) for a,b in zip(rendered(frame).getpixel((5,5)),(32,48,64)))<=3
+  for frame in frames:
+   result=rendered(frame);sample=(result.width//2,int(result.height*.4)) if variant>=6 else (5,5)
+   assert max(abs(a-b) for a,b in zip(result.getpixel(sample),(32,48,64)))<=3,(variant,sample,result.getpixel(sample))
   page.locator('#reset-appearance').click()
  assert wall.locator('#scene-appearance').count()==0;assert not errors,errors
- print('PASS All six presets support appearance edits; reset preserves videos, mobile fits and wall outputs stay clean',flush=True);b.close()
+ print('PASS All presets support appearance edits; reset preserves videos, mobile fits and wall outputs stay clean',flush=True);b.close()

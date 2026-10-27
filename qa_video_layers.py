@@ -20,13 +20,13 @@ with sync_playwright() as p:
  with page.expect_popup() as opened:page.locator('#output-links a').first.click()
  wall=opened.value;wall.on('pageerror',lambda e:errors.append(str(e)))
  wall.wait_for_function('window.META && document.body.dataset.ready==="true"');assert wall.evaluate('window.META.video') is None
- for variant in range(6):
+ for variant in range(page.locator('[data-variant]').count()):
   page.locator(f'[data-variant="{variant}"]').click()
   page.locator('#use-video').click()
   wall.wait_for_function(f'window.META.state.variant==={variant} && window.META.video && window.META.video.ready>=2')
   assert wall.locator('.video-resize').count()==0
   page.locator('#no-video').click();wall.wait_for_function('window.META.videos.length===0');page.locator('[data-remove-video]').click()
- print('PASS Video can be added and removed on all six backgrounds without changing styles',flush=True)
+ print('PASS Video can be added and removed on all backgrounds without changing styles',flush=True)
  page.locator('#use-video').click();wall.wait_for_function('window.META.video && window.META.video.ready>=2')
  first=page.evaluate('window.METAStudio.state.activeVideoLayer')
  wall.evaluate('window.firstDecoder=document.querySelector(".video-layer video")')

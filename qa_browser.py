@@ -46,7 +46,7 @@ with sync_playwright() as p:
     page=controller.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(BASE+'/backgrounds/')
     wait(page,"document.querySelector('#network-status').textContent.toLowerCase()==='network ready'")
-    check('All six directions are selectable',page.locator('[data-variant]').count()==6)
+    check('All eight directions are selectable',page.locator('[data-variant]').count()==8)
     clients=[]
     for view,skew,width,height in [('front',-90000,960,540),('left',70000,960,360)]:
         context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1)
@@ -57,7 +57,7 @@ with sync_playwright() as p:
         clients.append((context,wall))
     front,left=clients[0][1],clients[1][1]
     page.wait_for_timeout(700)
-    for i in range(6):
+    for i in range(page.locator('[data-variant]').count()):
         page.locator(f'[data-variant="{i}"]').click()
         for wall in [front,left]:wait(wall,f'window.META.state.variant==={i}')
         check(f'Style {i+1} reaches both independent clients',all(w.evaluate('window.META.state.variant')==i for w in [front,left]))

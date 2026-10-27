@@ -2,6 +2,8 @@ import test from 'node:test';
 import * as motionTools from './motion.js';
 import assert from 'node:assert/strict';
 import {motionPose} from './motion.js';
+import * as T from './vendor/three.module.js';
+import {recordMotion,sampledTransform,motionContext} from './object-motion.js';
 
 test('per-object clocks retime continuously and freeze independently',()=>{
  assert.equal(typeof motionTools.clockTime,'function');assert.equal(typeof motionTools.retimeMotion,'function');
@@ -18,4 +20,14 @@ test('research network and floating gallery visibly move',()=>{
 });
 test('motion amount zero holds all decorative transforms',()=>{
  for(const type of ['ribbon','network','gallery','orbit','float'])assert.deepEqual(motionPose(type,1,2,0),motionPose(type,20,2,0));
+});
+
+test('architectural sculptures turn without lifting and obey independent clocks',()=>{
+ const object=new T.Group();object.position.set(4,-4.61,-3);object.rotation.y=.3;
+ recordMotion(object,{type:'sway',rate:.12,angle:.3,phase:0});
+ const before=sampledTransform(object,0,1),after=sampledTransform(object,8,1);
+ assert.deepEqual(before.position,after.position);assert.ok(before.quaternion.angleTo(after.quaternion)>.2);
+ assert.deepEqual(sampledTransform(object,0,0),sampledTransform(object,50,0));
+ object.userData.authorMotion={motionSpeed:0,motionOffset:8};
+ assert.deepEqual(sampledTransform(object,motionContext(object,10).time),sampledTransform(object,motionContext(object,100).time));
 });

@@ -8,6 +8,7 @@ import {decodeLook,liveOutputLook} from './look-url.js';
 import {motionContext,recordMotion,applySample} from './object-motion.js';
 import {createLogoSculpture} from './logo-scene.js';
 import {appearanceFor,lightAppearance} from './appearance.js';
+import {sereinAtelier,mvLightCourt} from './floor-scenes.js';
 
 const params=new URLSearchParams(location.search),view=params.get('view')||'front',preview=params.has('preview');
 const fixedVariant=params.has('variant')?Math.max(0,Math.min(variants.length-1,+params.get('variant'))):null;
@@ -174,8 +175,15 @@ function createAuthorObject(type){
 }
 function rebuild(){
  clear();document.querySelector('#error').hidden=true;layout=positions();
- hemisphere.intensity=2.4;keyLight.color.set('#d9ebff');keyLight.intensity=5;rim.color.set('#5e9fff');rim.intensity=4;redLight.intensity=80;
- [blueHour,commonGround,softArchitecture,livingResearch,sharedReality,mvSymbiosis][state.variant]();
+ hemisphere.color.set('#b3dcff');hemisphere.intensity=2.4;keyLight.color.set('#d9ebff');keyLight.intensity=5;rim.color.set('#5e9fff');rim.intensity=4;redLight.intensity=80;
+ if(state.variant<6)[blueHour,commonGround,softArchitecture,livingResearch,sharedReality,mvSymbiosis][state.variant]();
+ else {
+  const warm=state.variant===6;
+  hemisphere.color.set(warm?'#e3d5bd':'#afcbe0');hemisphere.intensity=warm?1.7:1.35;
+  keyLight.color.set(warm?'#ffe4bb':'#c4def2');keyLight.intensity=warm?3.1:2.8;
+  rim.color.set(warm?'#d6e2ee':'#368ed0');rim.intensity=warm?1.5:2.6;redLight.intensity=warm?0:12;
+  ({background,floorMaterial}=[sereinAtelier,mvLightCourt][state.variant-6]({group,layout,addMotion}));
+ }
  if(state.variant<3)extraScreens();
  if(secondary&&layout.main.id===layout.companion.id)secondary.visible=false;
  if(hero)addMotion({o:hero,type:'hero',baseY:state.variant===2?-.55:[1,4].includes(state.variant)?.2:0});
@@ -224,7 +232,7 @@ let hintTimer;addEventListener('pointermove',e=>{if(state.interactive){pointer.x
 addEventListener('pointerleave',()=>{pointer.x=pointer.y=0;});
 addEventListener('click',()=>{if(preview)return;document.body.classList.remove('show-hint');if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});videoLayers.play();});
 function send(next){save(next);channel.postMessage(next);update(next);sync.send(next);}
-addEventListener('keydown',e=>{if(preview)return;if(e.code==='Space'){e.preventDefault();send(setPaused(state,!state.paused));}if(/^[1-6]$/.test(e.key))send({...state,variant:+e.key-1});if(e.key.toLowerCase()==='g')send({...state,guide:!state.guide});});
+addEventListener('keydown',e=>{if(preview)return;if(e.code==='Space'){e.preventDefault();send(setPaused(state,!state.paused));}if(/^[1-9]$/.test(e.key)&&+e.key<=variants.length)send({...state,variant:+e.key-1});if(e.key.toLowerCase()==='g')send({...state,guide:!state.guide});});
 rebuild();
 const sync=params.has('capture')||preview?{send(){}}:connectSync(update);
 function draw(now){

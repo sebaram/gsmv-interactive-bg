@@ -17,6 +17,7 @@ export function sampledTransform(object,time,amount=1,pointer=null){
  if(spec.type==='gallery'){rotation.set(pose.x,pose.y,pose.z);position.y=spec.y+pose.lift;}
  if(spec.type==='hero'){position.y=Math.sin(time*.5*amount)*.24+spec.baseY;rotation.x=pointer?-pointer.y*.1:0;rotation.y=pointer?pointer.x*.12:0;}
  if(spec.type==='secondary')rotation.y=Math.sin(slow*.6*amount)*.13;
+ if(spec.type==='sway')rotation.y+=Math.sin(time*spec.rate*amount+(spec.phase||0))*spec.angle*amount;
  return {position,quaternion:new T.Quaternion().setFromEuler(rotation),scale};
 }
 export function applySample(object,time,amount,pointer=null){const sample=sampledTransform(object,time,amount,pointer);object.position.copy(sample.position);object.quaternion.copy(sample.quaternion);object.scale.copy(sample.scale);}

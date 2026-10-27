@@ -8,7 +8,7 @@ with sync_playwright() as p:
  context=browser.new_context(viewport={'width':1600,'height':1100})
  page=context.new_page();errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
  page.goto(BASE);page.wait_for_function('window.METAStudio && document.querySelectorAll("#author-element option").length>0')
- for variant in range(6):
+ for variant in range(page.locator('[data-variant]').count()):
   page.locator(f'[data-variant="{variant}"]').click()
   page.wait_for_function('(v)=>[...document.querySelectorAll(".paired iframe")].every(f=>f.contentWindow.META?.state.variant===v && f.contentWindow.META.elements.some(e=>e.parentId))',arg=variant)
   elements=page.evaluate('document.querySelector(".paired iframe").contentWindow.META.elements')

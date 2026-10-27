@@ -2,7 +2,7 @@
 
 Real-time 3D backgrounds for interview shoots, with configurable display walls, research video, local playback and network control.
 
-**[Studio](https://mvbg.arrc.app/)** · [Static preview](https://sebaram.github.io/gsmv-interactive-bg/) · [Six background directions](previews/comparison.jpg)
+**[Studio](https://mvbg.arrc.app/)** · [Static preview](https://sebaram.github.io/gsmv-interactive-bg/) · [16 floor-wall variations](previews/floor-variations.jpg)
 
 ## Server library
 
@@ -22,8 +22,14 @@ Administrator sessions expire after 12 hours; logout revokes the session immedia
 | **Living Research** | Moving connection networks, with optional footage on any screen. |
 | Blue Hour | Polished blue orbital forms with restrained red accents. |
 | Soft Architecture | Pale arches, warm stone and floating blue/red forms. |
+| Serein Atelier | Grounded limestone alcoves, a low bench and slowly turning bronze leaves. |
+| MV Light Court | A graphite gallery, red lacquer monolith and blue optical blades. |
 
 The original department signature is retained. The source identity and color guide are from [meta.kaist.ac.kr/logo](https://meta.kaist.ac.kr/logo); the supplied scenario decks and selected clips provide the video library.
+
+Serein Atelier and MV Light Court are composed for a floor-level **4.44 m × 2.5 m (16:9)** front LED wall, with a quiet center for seated and standing interviews. A shallow floor meets the lower screen edge; sculptures and low furniture remain grounded while their material faces turn slowly. Each configured display receives its own peripheral composition, including the 8:3 tiled wall. This is a staged view, not a tracked-camera calibration. Alcoves, sculptures and their parts remain editable, and each moving part supports independent speed and pause controls.
+
+The **Astra 01A–08B** collection provides two authored variations of every preset. In the live **Server library**, choose a named Astra look and select **Load selected look**; public loading needs no administrator login. Compare right/left sculpture placements, restrained/stronger palettes, Daylight/Evening Atelier and red/blue versus blue-only Light Court. Each look keeps its editable layers, independent motion and both display configurations. Videos start off and remain available separately. The collection is also in [looks/floor-wall-variations.json](looks/floor-wall-variations.json); `python scripts/compose-floor-looks.py` recreates it, and `python qa_floor_looks.py` renders its comparison images against the static test server.
 
 ### MV Symbiosis
 
@@ -45,7 +51,7 @@ Existing controls also cover overall Wall brightness, pause/resume, pointer inte
 
 ### Elements
 
-All six backgrounds are starting **presets**. In **Author the preset**, select an element, choose its screen and set position, size, rotation and visibility. **Duplicate element** gives it an independent placement: for example, keep the main sculpture large on the front/right screen and put a smaller copy on the left. Copies keep their animation and survive removal of a custom source object. **Add element** offers MV sculptures, red/blue ribbons, orbital forms, networks, spheres and arches on any preset.
+All eight backgrounds are starting **presets**. In **Author the preset**, select an element, choose its screen and set position, size, rotation and visibility. **Duplicate element** gives it an independent placement: for example, keep the main sculpture large on the front/right screen and put a smaller copy on the left. Copies keep their animation and survive removal of a custom source object. **Add element** offers MV sculptures, red/blue ribbons, orbital forms, networks, spheres and arches on any preset.
 
 The editor has a compact **Layers** pane on the left and selected **Properties** on the right. Expand groups to inspect their contents, search by name/part/screen, and use the eye or trash icons for visibility and deletion. Full names appear in Properties and row tooltips. The panes stack on narrow screens. Search **long** to find the red/blue **Long line** ribbon layers; their position, size, rotation and visibility are editable like other elements. Floor-grid connections are named **Connection line**.
 
@@ -173,7 +179,7 @@ If the processor preserves a 16:9 picture rather than stretching it, select **Ma
 - **Wall brightness** is a software adjustment. Match hardware wall brightness and camera exposure on set.
 - **Department signature**, **Research titles** and **Pointer interaction** are optional. Disable pointer interaction during recording.
 
-Output shortcuts: **Space** pause/resume, **1–6** select a direction, **G** framing guide, **Esc** leave fullscreen. No controls are burned into fullscreen outputs.
+Output shortcuts: **Space** pause/resume, **1–8** select a direction, **G** framing guide, **Esc** leave fullscreen. No controls are burned into fullscreen outputs.
 
 Videos retain their source annotations and loop their selected excerpts. For uninterrupted interview takes, leave video off and use the procedural background. Check the actual camera for moiré, LED scan/PWM banding, shutter behavior, logo placement and framing before filming.
 
