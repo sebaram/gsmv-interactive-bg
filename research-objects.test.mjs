@@ -9,6 +9,19 @@ import {authoringScene} from './authoring-scene.js';
 import {encodeLook,decodeLook} from './look-url.js';
 
 const pose=(story,part,side,time,extra={})=>relationPose({story,part,side,...extra},time);
+test('every research sculpture keeps a visible three-dimensional secondary motion during assembled phases',()=>{
+ for(const [type] of researchObjectTypes){
+  const moving=[];createResearchObject(type,({o,...spec})=>{recordMotion(o,spec);moving.push(o);});
+  for(const start of [0,11,13,16,25]){
+   const animated=moving.filter(o=>{
+    const a=sampledTransform(o,start),b=sampledTransform(o,start+.75);
+    return a.position.distanceTo(b.position)>.07||a.quaternion.angleTo(b.quaternion)>.09;
+   });
+   assert.ok(animated.length>=4,`${type} pauses at ${start}s: only ${animated.length} clearly moving parts`);
+  }
+  assert.ok(moving.some(o=>o.userData.motionSpec.part==='turntable'),`${type} needs changing depth, not only planar translation`);
+ }
+});
 test('co-presence brings distinct participants to one workspace and holds their common phase',()=>{
  const distance=t=>pose('presence','participant',1,t).position[0]-pose('presence','participant',-1,t).position[0];
  assert.ok(distance(0)>1);assert.equal(distance(13),0);assert.equal(distance(16),0);
@@ -47,6 +60,12 @@ test('every research sculpture has repeatable finite motion and a still meaningf
   for(const object of moving){
    assert.deepEqual(sampledTransform(object,5),sampledTransform(object,33));
    assert.deepEqual(sampledTransform(object,0,0),sampledTransform(object,17,0));
+   for(const amount of [.35,1,1.7]){
+    const end=sampledTransform(object,28-.00001,amount),start=sampledTransform(object,.00001,amount);
+    if(Math.max(...end.scale,...start.scale)<.01)continue; // Couriers reset only while fully hidden.
+    assert.ok(end.position.distanceTo(start.position)<.001);
+    assert.ok(end.quaternion.angleTo(start.quaternion)<.001,'custom movement amount must not introduce a loop-boundary snap');
+   }
    for(const amount of [0,1,2])for(const time of [-1,0,6,14,22,28]){
     const sample=sampledTransform(object,time,amount);
     assert.ok([...sample.position,...sample.quaternion,...sample.scale].every(Number.isFinite));

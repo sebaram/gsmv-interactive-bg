@@ -18,15 +18,17 @@ These sources inform the design. They do not officially endorse these artworks, 
 
 | Stage | Meaning | Visible relationship |
 | --- | --- | --- |
-| Blue Hour | Co-presence | Two distinct presences move toward one shared table and turn toward a common activity. |
-| Common Ground | Co-creation | Complementary parts jointly form a pavilion, hold the result and reopen. |
-| Soft Architecture | Shared coordinates | A solid spatial frame and a virtual frame register into one opening. |
-| Living Research | Mutual response | A signal and its reply connect two matching surfaces; both respond. |
+| Blue Hour | Co-presence | Distinct volumetric ribbons turn and interweave around a common core, with contributions orbiting in depth. |
+| Common Ground | Co-creation | Complementary bays hinge into a pavilion; orbiting contribution panels keep the shared phase moving. |
+| Soft Architecture | Shared coordinates | Articulated portals register into one opening while scan arcs rotate and couriers cross it. |
+| Living Research | Mutual response | Continuously rippling surfaces exchange a signal and a reply along a three-dimensional path. |
 | Shared Reality | A place to meet | Shared spatial coordinates on the front wall pair with co-presence on the tiled wall. |
 | MV Symbiosis | People and technology in harmony | The actual six logo facets change form, find the MV arrangement and unfold again. |
-| Serein Atelier | A commons made together | Complementary parts construct a shared pavilion inside a human-scale room. |
-| MV Light Court | A responsive counterpart | Matching physical/virtual forms show an action and a return response. |
+| Serein Atelier | A commons made together | Hinged parts and revolving contributions construct a shared pavilion inside a human-scale room. |
+| MV Light Court | A responsive counterpart | Rippling physical/virtual forms exchange couriers, an action and a return response. |
 
-The pavilion is an editorial metaphor for joint creation; the paired frames represent registration; the presences suggest people without pretending to be tracked avatars. Reusing a mechanism in different stages is intentional: the sculpture carries the research relationship, while the room or palette sets the tone.
+The pavilion is an editorial metaphor for joint creation; the paired frames represent registration; the interwoven ribbons suggest distinct participants without pretending to be tracked avatars. Reusing a mechanism in different stages is intentional: the motion graphic carries the research relationship, while the room or palette sets the tone.
+
+The kinetic revision replaces the chair-like co-presence tableau and adds continuous turning, travelling contributions, scan guides, surface waves and hinged assembly. Its 28-second relational loops keep moving during the shared phase, rather than spending it as a still sculpture. Changes of depth are visible from the fixed interview camera. Existing saved Meaning looks use the upgraded renderer without rewriting their authored state. [Watch four motion details](../previews/meaning-motion.mp4).
 
 Each composition keeps the central seated/standing interview zone quiet on the floor-mounted4.44×2.5m wall. The explanation and source links belong in the editor, not on the LED wall. Slow absolute-time motion, group editing, independent clocks and optional video remain available.

@@ -18,6 +18,45 @@ function wave(time,start,duration){const p=(time-start)/duration;return p>0&&p<1
 // and complementary pieces building one shared pavilion.
 export function relationPose(spec,time,amount=1){
  const position=[0,0,0],rotation=[0,0,0],scale=[1,1,1],t=loop(time),side=spec.side||1;
+ const phase=t*Math.PI/14,index=spec.index||0;
+ // Continuous secondary motion keeps the story alive while its main forms meet.
+ // Integer harmonics close exactly at 28 s; multiplying amplitudes (not time)
+ // preserves a genuinely still, authorable shape when movement amount is zero.
+ if(spec.part==='turntable'){
+  rotation[1]=Math.sin(phase)*.38*amount;
+ }
+ if(spec.part==='ribbon'){
+  rotation[0]=Math.sin(phase*2+side)*.55*amount;
+  rotation[1]=side*Math.sin(phase)*1.25*amount;
+  rotation[2]=Math.sin(phase+side)*.24*amount;
+ }
+ if(spec.part==='satellite'){
+  const a=phase*side*2+index*Math.PI/3,r=spec.radius||1.55;
+  position[0]=Math.cos(a)*r*amount;
+  position[1]=Math.sin(a)*r*.72*amount;
+  position[2]=Math.sin(a*2+index)*.58*amount;
+  rotation[0]=Math.sin(a)*.8*amount;rotation[1]=Math.cos(a)*.65*amount;
+ }
+ if(spec.part==='guide'){
+  rotation[2]=side*(Math.sin(phase)*1.7+Math.sin(phase*2)*.45)*amount;
+  rotation[1]=Math.sin(phase*2+index)*.33*amount;
+ }
+ if(spec.part==='flow'){
+  const a=phase*2+index*Math.PI/3;
+  position[0]=Math.cos(a)*1.38*amount;
+  position[1]=Math.sin(a)*.65*amount;
+  position[2]=Math.sin(a)*.65*amount;
+  rotation[2]=Math.sin(a)*1.4*amount;
+ }
+ if(spec.part==='petal'){
+  const a=phase+index*Math.PI/3;
+  position[0]=Math.cos(a)*1.8*amount;
+  position[1]=Math.sin(a)*.35*amount;
+  position[2]=Math.sin(a)*1.2*amount;
+  rotation[0]=Math.sin(a*2)*.5*amount;
+  rotation[1]=-Math.sin(a)*1.2*amount;
+  rotation[2]=Math.cos(a)*.22*amount;
+ }
  if(spec.story==='presence'){
   const joined=assembly(time),apart=(1-joined)*amount;
   if(spec.part==='participant'){position[0]=side*.62*apart;rotation[1]=-side*(.15+.55*(1-apart));rotation[0]=wave(t,11,5)*.055*amount;}
@@ -25,7 +64,7 @@ export function relationPose(spec,time,amount=1){
  }
  if(spec.story==='registration'){
   const apart=(1-assembly(time))*amount;
-  if(spec.part==='frame'){position[0]=side*.56*apart;position[2]=side*.38*apart;rotation[1]=side*.22*apart;}
+  if(spec.part==='frame'){position[0]=side*.56*apart;position[2]=side*.56*apart;rotation[1]=side*.65*apart;rotation[0]=Math.sin(phase*2)*.13*amount;}
   if(spec.part==='passage'){const visible=blend(t,10.5,11.5)*(1-blend(t,16,17))*amount;scale.fill(Math.max(.001,visible));position[2]=amount?1.15-2.3*blend(t,11,16):0;}
  }
  if(spec.story==='feedback'){
@@ -33,14 +72,16 @@ export function relationPose(spec,time,amount=1){
    const delay=(spec.index||0)*.10,centers=side<0?[1.6,20]:[9,13];
    const response=centers.reduce((sum,start)=>sum+wave(t,start+delay,3.4),0)*amount;
    position[2]=response*.34;scale[0]=1+response*.13;rotation[1]=side*response*.09;
+   rotation[0]=Math.sin(phase*2-index*.42+side)*.32*amount;
+   rotation[2]=Math.cos(phase*2-index*.42+side)*.10*amount;
   }
   if(spec.part==='pulse'){
    const p=clamp01((t-(side<0?4.5:15.5))/5),visible=blend(p,0,.16)*(1-blend(p,.84,1))*amount;
-   position[0]=amount?-side*(-1.28+2.56*p):0;scale.fill(Math.max(.001,visible));
+   position[0]=amount?-side*(-1.28+2.56*p):0;position[1]=Math.sin(p*Math.PI)*.65*side*amount;position[2]=Math.sin(p*Math.PI)*.7*amount;scale.fill(Math.max(.001,visible));
   }
  }
  if(spec.story==='cocreation'){
-  if(spec.part==='half'){const apart=(1-assembly(time,(spec.index||0)*.45))*amount;position[0]=side*.78*apart;position[2]=side*.22*apart;rotation[1]=side*.24*apart;}
+  if(spec.part==='half'){const apart=(1-assembly(time,(spec.index||0)*.45))*amount;position[0]=side*.78*apart;position[2]=side*.38*apart;rotation[1]=side*.66*apart;rotation[2]=side*.22*apart;}
   if(spec.part==='shared')scale[1]=Math.max(.04,1-(1-assembly(time,1))*.96*amount);
  }
  return {position,rotation,scale};

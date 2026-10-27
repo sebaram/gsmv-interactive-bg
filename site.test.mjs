@@ -17,6 +17,7 @@ test('public bundle works under a GitHub project path without exposing local med
   const clips=JSON.parse(await readFile(join(temp,'site/clips.json'),'utf8'));
   assert.ok(clips.every(c=>c.url==='previews/demo-motion.mp4'));
   assert.ok((await stat(join(temp,'site/previews/demo-motion.mp4'))).size>1000);
+  assert.ok((await stat(join(temp,'site/previews/meaning-motion.mp4'))).size>1000);
   await access(join(temp,'site/vendor/three.module.js'));
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/floor-wall-variations.json'),'utf8')).looks.length,16);
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/research-meaning-variations.json'),'utf8')).looks.length,16);

@@ -7,6 +7,7 @@ media/
 *.mov
 *.webm
 !previews/demo-motion.mp4
+!previews/meaning-motion.mp4
 _site/
 previews/qa-*
 previews/studio-initial.png
