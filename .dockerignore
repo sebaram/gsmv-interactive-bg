@@ -10,7 +10,8 @@ _site
 media
 data
 .env*
-docs
+docs/*
+!docs/scene-meanings.md
 qa_*.py
 *_test.py
 previews/qa-*
