@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -28,6 +28,8 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           for file in *.js scripts/*.mjs; do node --check "$file"; done
+      - name: Verify storage, authorization and media serving
+        run: python3 -m unittest server_storage_test -v
       - name: Build public studio
         run: npm run build
       - name: Package Pages site
@@ -51,3 +53,23 @@ jobs:
       - name: Publish studio
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-server:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: [self-hosted, Linux, X64, mvbg]
+    timeout-minutes: 15
+    concurrency:
+      group: mvbg-production
+      cancel-in-progress: false
+    environment:
+      name: mvbg-production
+      url: https://mvbg.arrc.app
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Deploy persistent server behind Caddy
+        env:
+          GSMV_ADMIN_PASSWORD_HASH: ${{ secrets.GSMV_ADMIN_PASSWORD_HASH }}
+        run: bash scripts/deploy-server.sh

@@ -12,3 +12,6 @@ previews/qa-*
 previews/studio-initial.png
 previews/studio-v2-initial.png
 .session*.json
+data/
+.env
+.env.*

@@ -2,7 +2,15 @@
 
 Real-time 3D backgrounds for interview shoots, with configurable display walls, research video, local playback and network control.
 
-**[Public studio](https://sebaram.github.io/gsmv-interactive-bg/)** · [Six background directions](previews/comparison.jpg)
+**[Studio](https://mvbg.arrc.app/)** · [Static preview](https://sebaram.github.io/gsmv-interactive-bg/) · [Six background directions](previews/comparison.jpg)
+
+## Server library
+
+At **mvbg.arrc.app**, open **Server library** below the on-set controls and sign in with the administrator password to save named looks, update/rename them, or delete them. Anyone can select and load a saved look. The existing **Save look** and **Load look** buttons still export/import JSON files; **Copy look link** still creates a bookmarkable arrangement.
+
+Under **Videos → Server videos**, signed-in administrators can upload MP4, MOV (ISO media container), or WebM files. Choose **Add to scene** on an uploaded item to use it. These videos have persistent server URLs, survive browser and server restarts, and play on other computers without choosing the file again. The separate **Add files** control keeps files in the current browser. Uploads are explicit; saving a look does not automatically upload local files. Defaults are 2 GiB per video and 20 GiB total media storage. Uploaded media and saved looks are publicly readable. A video used by a saved look cannot be deleted until that look is updated or deleted.
+
+Administrator sessions expire after 12 hours; logout revokes the session immediately. Password changes invalidate existing sessions. The deployment stores only a salted PBKDF2 hash in a GitHub Actions secret, never the password in the repository. The hosted renderer uses browser-local controls, so loading a saved look on one computer does not overwrite another computer's composition. For a live shared control room, use the LAN server below.
 
 ## Backgrounds
 
@@ -94,7 +102,7 @@ Placement and source aspect compensate for each screen's physical shape, includi
 
 Five primary examples have English titles and descriptions; the additional selected clips retain their supplied Korean titles and explanations. Poster images are real frames from those clips. Original video files remain outside Git.
 
-## Public browser mode
+## Public browser mode and static preview
 
 Open the public studio in Chrome or Edge. Choose a background, configure screens, and open each output in its own window. Controls synchronize windows in the **same browser**.
 
@@ -180,7 +188,15 @@ npm run build
 
 `npm run build` creates `_site/`, marks both HTML routes for browser-only playback, packages the demo and replaces private clip paths. It never packages Git data, the Python server or original research media.
 
-`.github/workflows/pages.yml` runs tests, syntax checks and the static build for pushes and pull requests. Pushes to `main` publish the artifact through GitHub Actions to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. Pull requests test the bundle without deploying it.
+`.github/workflows/pages.yml` runs JavaScript and Python storage/security tests, syntax checks and the static build for pushes and pull requests. Pushes to `main` publish to GitHub Pages and deploy the persistent server through the self-hosted runner labelled `mvbg`. Only trusted `main` deployments use that runner. Pages must use **GitHub Actions** as its publishing source. Pull requests test the bundle without deploying it.
+
+### Production container
+
+Caddy proxies `mvbg.arrc.app` to `127.0.0.1:8711`. `scripts/deploy-server.sh` builds the `Dockerfile`, checks a temporary candidate, then replaces `mvbg-site` on that port. The previous stopped container is retained for rollback; a failed health check restores it automatically. The Docker volume **mvbg-data** holds `/data/library.sqlite3` (looks, media metadata and hashed sessions) and `/data/media/` (video files). Deployment never deletes the volume. Back up both the database and media together before manually changing or removing this volume.
+
+Set the repository secret `GSMV_ADMIN_PASSWORD_HASH` to a hash produced by `server_storage.password_hash()`. The deploy script passes it privately through the environment. `GSMV_PUBLIC_ORIGIN` is `https://mvbg.arrc.app`; the API requires that Origin for writes and uses Secure, HttpOnly, SameSite cookies. `GSMV_MAX_UPLOAD` and `GSMV_STORAGE_QUOTA` accept byte counts if limits need changing. The production image serves only `_site/` and registered `/media/` URLs; it does not expose source files, database files or the LAN shared-state API. The container runs without root and binds only to loopback behind Caddy.
+
+Storage integration checks: `python3 -m unittest server_storage_test -v`. Browser flow (after `npm run build`, with Python Playwright and Chrome installed): `python qa_server_library.py`.
 
 For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. `python qa_preview_interaction.py` checks direct gestures, selection highlights and responsive previews; `python qa_delete_elements.py` checks deletion, copies and saved URLs. `python qa_element_list.py` checks the hierarchy, selection, CRUD and focus; `python qa_mv_variations.py` checks independent seeded MV instances and portable looks. `python qa_youtube.py` checks direct adding and the external YouTube API adapter; `python qa_preset_parts.py` checks individual preset parts. `python qa_authoring.py` checks the public bundle, authored elements and address restoration in fresh browser contexts. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
 

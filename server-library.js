@@ -1,0 +1,82 @@
+import {portableLook} from './video-layers.js';
+import {currentTime,timeline} from './state.js';
+
+const size=bytes=>bytes>=1024**3?(bytes/1024**3).toFixed(1)+' GB':(bytes/1024**2).toFixed(1)+' MB';
+
+export async function serverLibrary({getState,loadLook,addVideo,notify}){
+ if(document.documentElement.dataset.library!=='server')return;
+ let session;
+ try{const response=await fetch('/api/session',{cache:'no-store'});if(!response.ok)return;session=await response.json();if(typeof session.authenticated!=='boolean')return;}catch{return;}
+ const panel=document.createElement('section');panel.className='server-library';panel.setAttribute('aria-label','Server looks');
+ panel.innerHTML=`<h3>Server library</h3><p class="note" id="server-auth-status"></p><form id="server-login"><label for="admin-password">Admin password<input id="admin-password" type="password" autocomplete="current-password" required maxlength="256"></label><button type="submit">Sign in</button></form><button id="server-logout" type="button" class="subtle" hidden>Sign out</button><label for="server-project">Saved looks<select id="server-project"><option value="">Choose a saved look</option></select></label><button id="server-load" type="button" class="subtle">Load selected look</button><div id="server-project-admin" hidden><label for="server-project-name">Look name<input id="server-project-name" type="text" maxlength="160" placeholder="Interview setup"></label><div class="server-actions"><button id="server-save" type="button">Save new look</button><button id="server-update" type="button" class="subtle">Update selected</button><button id="server-rename" type="button" class="subtle">Rename selected</button><button id="server-delete" type="button" class="subtle">Delete selected</button></div></div><button id="server-refresh" type="button" class="subtle">Refresh library</button><p class="note" id="server-library-status" role="status"></p>`;
+ document.querySelector('.save-block').after(panel);
+ const videos=document.createElement('section');videos.className='server-videos';videos.setAttribute('aria-label','Server videos');
+ videos.innerHTML=`<h3>Server videos</h3><p class="note">Uploaded videos are available to anyone with their link and can play on other computers.</p><div id="server-upload-controls" hidden><label for="server-video-file">Upload MP4, MOV or WebM<input id="server-video-file" type="file" accept=".mp4,.mov,.webm,video/mp4,video/quicktime,video/webm"></label><p class="note" id="server-upload-limit"></p><progress id="server-upload-progress" max="100" value="0" hidden></progress></div><p class="note" id="server-media-status" role="status"></p><div id="server-media-items"></div>`;
+ document.querySelector('.video-section').append(videos);
+ const $=selector=>panel.querySelector(selector)||videos.querySelector(selector);
+ let projects=[],media=[],busy=false,uploading=false;
+ function authPaint(){
+  $('#server-auth-status').textContent=session.authenticated?'Signed in as admin. Save looks and upload videos.':'Sign in to save looks or upload videos. Loading and playback are public.';
+  $('#server-login').hidden=session.authenticated;$('#server-logout').hidden=!session.authenticated;
+  $('#server-project-admin').hidden=!session.authenticated;$('#server-upload-controls').hidden=!session.authenticated;
+  $('#server-upload-limit').textContent='Up to '+size(session.maxUpload)+' per video. '+size(session.quota)+' total storage.';
+ }
+ async function request(path,{method='GET',body}={}){
+  const response=await fetch(path,{method,cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
+  const data=await response.json();
+  if(!response.ok){if(response.status===401){session.authenticated=false;authPaint();}throw Error(data.error||'Server request failed');}return data;
+ }
+ function selected(){return $('#server-project').value;}
+ function controls(){
+  for(const id of ['server-load','server-update','server-rename','server-delete'])$('#'+id).disabled=busy||!selected();
+  $('#server-save').disabled=busy;$('#server-refresh').disabled=busy;$('#server-project').disabled=busy;
+ }
+ function mediaPaint(){
+  $('#server-media-items').replaceChildren();
+  for(const item of media){
+   const row=document.createElement('article'),info=document.createElement('span'),name=document.createElement('strong'),meta=document.createElement('small'),add=document.createElement('button');
+   row.className='server-media-row';name.textContent=item.name;meta.textContent=size(item.size);info.append(name,meta);add.type='button';add.className='subtle';add.textContent='Add to scene';add.dataset.serverVideo=item.id;
+   add.onclick=()=>{if(getState().videoLayers.length>=8){notify('Up to 8 videos. Remove an entry before adding another.');return;}addVideo(item);notify('Server video added');};row.append(info,add);
+   if(session.authenticated){const remove=document.createElement('button');remove.type='button';remove.className='subtle';remove.textContent='Delete';remove.setAttribute('aria-label','Delete server video '+item.name);remove.disabled=busy||uploading;
+    remove.onclick=()=>run(async()=>{if(!confirm('Delete “'+item.name+'” from the server? This also removes its public video link.'))return;await request('/api/media/'+item.id,{method:'DELETE'});await refresh();notify('Server video deleted');});row.append(remove);}
+   $('#server-media-items').append(row);
+  }
+ }
+ async function refresh(){
+  const old=selected(),[saved,files]=await Promise.all([request('/api/projects'),request('/api/media')]);projects=saved.projects;media=files.media;
+  const select=$('#server-project');select.replaceChildren(new Option('Choose a saved look',''));
+  for(const project of projects)select.add(new Option(project.name,project.id));
+  if(projects.some(p=>p.id===old))select.value=old;
+  $('#server-media-status').textContent=media.length+' video'+(media.length===1?'':'s')+' · '+size(files.used)+' of '+size(files.quota)+' used';mediaPaint();controls();
+ }
+ async function run(action){if(busy)return;busy=true;controls();$('#server-library-status').textContent='Working…';try{await action();$('#server-library-status').textContent='';}catch(error){$('#server-library-status').textContent=error.message;notify(error.message);}finally{busy=false;controls();mediaPaint();}}
+ $('#server-login').onsubmit=e=>{e.preventDefault();run(async()=>{try{session={...session,...await request('/api/login',{method:'POST',body:{password:$('#admin-password').value}})};}finally{$('#admin-password').value='';}authPaint();await refresh();notify('Signed in as admin');});};
+ $('#server-logout').onclick=()=>run(async()=>{await request('/api/logout',{method:'POST',body:{}});session.authenticated=false;authPaint();await refresh();});
+ $('#server-project').onchange=()=>{const project=projects.find(p=>p.id===selected());if(project)$('#server-project-name').value=project.name;controls();};
+ $('#server-load').onclick=()=>run(async()=>{const project=await request('/api/projects/'+selected());loadLook(project.look);$('#server-project-name').value=project.name;notify('Loaded '+project.name);});
+ async function save(update){
+  const look={...portableLook(getState()),offset:timeline(getState()),epoch:currentTime()},local=look.videoLayers.some(l=>l.fileName&&!l.customClip&&!l.youtube);
+  if(local&&!confirm('Some videos are only on this computer. The saved look will need those files chosen again. Upload them under Server videos for playback on other computers. Save anyway?'))return;
+  const project=await request('/api/projects'+(update?'/'+selected():''),{method:update?'PUT':'POST',body:{name:$('#server-project-name').value,look}});
+  await refresh();$('#server-project').value=project.id;controls();notify('Saved '+project.name+' to server');
+ }
+ $('#server-save').onclick=()=>run(()=>save(false));$('#server-update').onclick=()=>run(async()=>{if(confirm('Replace the selected saved look with the current scene?'))await save(true);});
+ $('#server-rename').onclick=()=>run(async()=>{const project=await request('/api/projects/'+selected());await request('/api/projects/'+project.id,{method:'PUT',body:{name:$('#server-project-name').value,look:project.look}});await refresh();notify('Look renamed');});
+ $('#server-delete').onclick=()=>run(async()=>{if(!confirm('Delete the selected saved look from the server?'))return;await request('/api/projects/'+selected(),{method:'DELETE'});await refresh();notify('Saved look deleted');});
+ $('#server-refresh').onclick=()=>run(refresh);
+ $('#server-video-file').onchange=async event=>{
+  const file=event.target.files[0];if(!file||uploading)return;
+  if(file.size>session.maxUpload){notify('This video exceeds the '+size(session.maxUpload)+' upload limit.');event.target.value='';return;}
+  uploading=true;event.target.disabled=true;$('#server-upload-progress').hidden=false;$('#server-upload-progress').value=0;mediaPaint();$('#server-media-status').textContent='Uploading '+file.name+'…';
+  try{
+   await new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST','/api/media');xhr.setRequestHeader('Content-Type',file.type||'application/octet-stream');xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));
+    xhr.upload.onprogress=e=>{if(e.lengthComputable)$('#server-upload-progress').value=e.loaded/e.total*100;};
+    xhr.onload=()=>{let data;try{data=JSON.parse(xhr.responseText);}catch{reject(Error('The server could not finish this upload.'));return;}
+     if(xhr.status>=200&&xhr.status<300)resolve(data);else{if(xhr.status===401){session.authenticated=false;authPaint();}reject(Error(data.error||'Upload failed'));}};
+    xhr.onerror=()=>reject(Error('Upload interrupted. Check your connection and try again.'));xhr.send(file);
+   });await refresh();notify('Video uploaded. Choose Add to scene to use it.');
+  }catch(error){$('#server-media-status').textContent=error.message;notify(error.message);}
+  finally{uploading=false;event.target.disabled=false;event.target.value='';$('#server-upload-progress').hidden=true;mediaPaint();}
+ };
+ authPaint();await run(refresh);
+}

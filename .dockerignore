@@ -1,0 +1,16 @@
+.git
+.github
+.hallmark
+.superpowers
+.venv
+node_modules
+__pycache__
+*.pyc
+_site
+media
+data
+.env*
+docs
+qa_*.py
+*_test.py
+previews/qa-*

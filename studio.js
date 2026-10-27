@@ -7,6 +7,7 @@ import {videoLayerControls} from './video-layer-controls.js';
 import {authoringControls} from './authoring-ui.js';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
 import {appearanceControls} from './appearance-ui.js';
+import {serverLibrary} from './server-library.js';
 const addressLook=decodeLook(location.hash);
 const storedLook=read();let state=addressLook||sanitize({...storedLook,videoLayers:portableLook(storedLook).videoLayers});save(state);
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
@@ -101,3 +102,4 @@ setInterval(()=>{
  $('#playback-status').classList.toggle('held',frozen||blocked);
 },600);
 paint();
+serverLibrary({getState:()=>state,loadLook:look=>{state=sanitize({...look,epoch:currentTime()});publish();},addVideo:media=>{const next=chooseVideo(state,{id:null,cue:state.cue},{url:media.url,name:media.name});author.commit(playVideo(next,next.activeVideoLayer));},notify:toast}).catch(()=>{});
