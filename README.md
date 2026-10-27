@@ -31,6 +31,14 @@ Serein Atelier and MV Light Court are composed for a floor-level **4.44 m × 2.5
 
 The **Astra 01A–08B** collection provides two authored variations of every preset. In the live **Server library**, choose a named Astra look and select **Load selected look**; public loading needs no administrator login. Compare right/left sculpture placements, restrained/stronger palettes, Daylight/Evening Atelier and red/blue versus blue-only Light Court. Each look keeps its editable layers, independent motion and both display configurations. Videos start off and remain available separately. The collection is also in [looks/floor-wall-variations.json](looks/floor-wall-variations.json); `python scripts/compose-floor-looks.py` recreates it, and `python qa_floor_looks.py` renders its comparison images against the static test server.
 
+### Meaning and research
+
+The original stages mostly establish atmosphere. The **Meaning 01A–08B** collection adds observable relationships: co-presence around a shared table, spatial frames finding shared coordinates, actions receiving a return response, and complementary parts building a pavilion. MV Symbiosis retains its direct relationship to the logo. These are editorial interpretations inspired by department research, rather than scientific simulations or officially assigned meanings.
+
+Open **Meaning and research** below the scene information to read the idea, follow its primary sources and load variation A or B. The same complete compositions are saved in the live Server library under **Meaning**. The original Astra collection remains available. The four relational sculptures can also be added, grouped, copied and edited individually through **Add an element**, with independent motion controls.
+
+[Compare the research versions](previews/meaning-variations.jpg) or read the [meaning and source audit](docs/scene-meanings.md). The [official identity](https://meta.kaist.ac.kr/logo) describes blue in terms of creativity and technology, red in terms of human warmth and inclusion. Physical/virtual is this production's additional color metaphor. The new collection is in [looks/research-meaning-variations.json](looks/research-meaning-variations.json); regenerate it with `python scripts/compose-research-looks.py` and check it with `python qa_research_meanings.py`.
+
 ### MV Symbiosis
 
 The new scene uses the six red and blue polylines copied directly from the official SVG, rather than an approximate M/V icon. Over a 36-second cycle, the facets become soft volumetric forms, move in complementary pairs, consolidate into the recognizable symbol, hold it, and unfold into another exchange. The red/blue connections represent mutual influence. Pause, speed, movement amount, reduced motion and every configured screen remain supported. The interview subject's area stays quieter toward the center-left.

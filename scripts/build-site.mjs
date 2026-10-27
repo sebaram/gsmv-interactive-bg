@@ -8,7 +8,7 @@ const out=resolve(index>=0?args[index+1]:join(root,'_site'));
 if(out===root)throw Error('The site output must be a separate directory');
 await mkdir(out,{recursive:true});
 const files=['index.html','wall.html','studio.css','wall.css','tokens.css','base.css','state.js','appearance.js','appearance-ui.js','motion.js','object-motion.js','logo-morph.js','logo-scene.js','video-library.js','youtube-source.js','youtube-player.js','authoring.js','authoring-scene.js','authoring-ui.js','element-list.js','look-url.js','video-layers.js','video-overlay.js','video-layer-controls.js','sync.js','sync-worker.js','scene.js','studio.js','screens-ui.js','README.md'];
-files.push('server-library.js','server-library.css','floor-scenes.js');
+files.push('server-library.js','server-library.css','floor-scenes.js','research-objects.js','meaning-ui.js');
 const sources=await Promise.all(files.map(file=>readFile(join(root,file),'utf8')));
 const version=createHash('sha256').update(sources.join('\n')).digest('hex').slice(0,12);
 for(let i=0;i<files.length;i++){
@@ -18,6 +18,8 @@ for(let i=0;i<files.length;i++){
  await writeFile(join(out,file),source);
 }
 for(const dir of ['assets','vendor','previews','looks'])await cp(join(root,dir),join(out,dir),{recursive:true,filter:path=>!path.split(/[\\/]/).at(-1).startsWith('qa-')});
+await mkdir(join(out,'docs'),{recursive:true});
+await copyFile(join(root,'docs/scene-meanings.md'),join(out,'docs/scene-meanings.md'));
 const demo=await stat(join(out,'previews/demo-motion.mp4'));
 if(demo.size<1000)throw Error('The public animation demo is missing');
 const clips=JSON.parse(await readFile(join(root,'clips.json'),'utf8')).map(c=>({...c,originalDuration:c.duration,url:'previews/demo-motion.mp4',duration:8,kind:'animation-demo'}));

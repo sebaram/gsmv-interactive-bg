@@ -1,0 +1,2185 @@
+{
+  "wall": {
+    "widthMeters": 4.444444444444445,
+    "heightMeters": 2.5,
+    "bottomMeters": 0
+  },
+  "subject": "Seated or standing",
+  "interpretation": "Editorial research metaphors, not official logo meanings or research simulations.",
+  "looks": [
+    {
+      "name": "Meaning 01A / Co-presence",
+      "look": {
+        "variant": 0,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "0": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "presence",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 82,
+                "y": 75,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "presence",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 82,
+                "y": 75,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 82,
+                "y": 60,
+                "size": 0.78,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 80,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "0": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#0a101a",
+            "glowColor": "#1c3855",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 01B / Co-presence",
+      "look": {
+        "variant": 0,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "0": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "presence",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 18,
+                "y": 75,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "presence",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 18,
+                "y": 75,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 17,
+                "y": 62,
+                "size": 0.72,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 20,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "0": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#111c2d",
+            "glowColor": "#43566d",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 02A / Co-creation",
+      "look": {
+        "variant": 1,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "1": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 82,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 82,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 84,
+                "y": 60,
+                "size": 0.7,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 80,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              },
+              "left-connecting-ribbon-1": {
+                "visible": false,
+                "y": 91
+              },
+              "left-connecting-ribbon-2": {
+                "visible": false,
+                "y": 93
+              }
+            }
+          }
+        },
+        "appearance": {
+          "1": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#101824",
+            "glowColor": "#27495f",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 02B / Co-creation",
+      "look": {
+        "variant": 1,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "1": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 18,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 18,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 82,
+                "y": 64,
+                "size": 0.78,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 20,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              },
+              "left-connecting-ribbon-1": {
+                "visible": true,
+                "y": 91
+              },
+              "left-connecting-ribbon-2": {
+                "visible": true,
+                "y": 93
+              }
+            }
+          }
+        },
+        "appearance": {
+          "1": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#21151e",
+            "glowColor": "#68424a",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 03A / Shared coordinates",
+      "look": {
+        "variant": 2,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "2": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "registration",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 82,
+                "y": 71,
+                "size": 1.05,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "registration",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 82,
+                "y": 71,
+                "size": 1.05,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 83,
+                "y": 59,
+                "size": 0.88,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 80,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              },
+              "front-pedestal-1": {
+                "x": 85.484724,
+                "y": 87.2540984,
+                "size": 0.88,
+                "visible": false
+              },
+              "left-pedestal-1": {
+                "x": 80.0,
+                "y": 85.3971588,
+                "size": 0.68,
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "2": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#c1beb5",
+            "glowColor": "#e0dcd1",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 03B / Shared coordinates",
+      "look": {
+        "variant": 2,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "2": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "registration",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 18,
+                "y": 71,
+                "size": 1.05,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "registration",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 18,
+                "y": 71,
+                "size": 1.05,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 83,
+                "y": 65,
+                "size": 0.72,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 20,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              },
+              "front-pedestal-1": {
+                "x": 85.032956,
+                "y": 88.1169896,
+                "size": 0.72,
+                "visible": false
+              },
+              "left-pedestal-1": {
+                "x": 20.0,
+                "y": 85.3971588,
+                "size": 0.68,
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "2": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#a99c88",
+            "glowColor": "#e0ceb1",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 04A / Mutual response",
+      "look": {
+        "variant": 3,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "3": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 82,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 82,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "front-research-network-1": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "x": 13,
+                "y": 82,
+                "size": 0.65,
+                "visible": false
+              },
+              "front-research-network-2": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "x": 84,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "left-research-network-1": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "x": 13,
+                "y": 82,
+                "size": 0.65,
+                "visible": false
+              },
+              "left-research-network-2": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "x": 84,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "left-sculptural-element-1": {
+                "visible": false
+              },
+              "left-sculptural-element-2": {
+                "visible": false
+              },
+              "left-sculptural-element-3": {
+                "visible": false
+              },
+              "left-sculptural-element-4": {
+                "visible": false
+              },
+              "left-sculptural-element-5": {
+                "visible": false
+              },
+              "left-sculptural-element-6": {
+                "visible": false
+              },
+              "left-sculptural-element-7": {
+                "visible": false
+              },
+              "front-sculptural-element-1": {
+                "visible": false
+              },
+              "front-sculptural-element-2": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "3": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#0b2029",
+            "glowColor": "#275855",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 04B / Mutual response",
+      "look": {
+        "variant": 3,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "3": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 18,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 18,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "front-research-network-1": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "x": 89,
+                "y": 82,
+                "size": 0.65,
+                "visible": false
+              },
+              "front-research-network-2": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "x": 17,
+                "y": 64,
+                "size": 0.58,
+                "visible": false
+              },
+              "left-research-network-1": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "x": 89,
+                "y": 82,
+                "size": 0.65,
+                "visible": false
+              },
+              "left-research-network-2": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "x": 17,
+                "y": 64,
+                "size": 0.58,
+                "visible": false
+              },
+              "left-sculptural-element-1": {
+                "visible": false
+              },
+              "left-sculptural-element-2": {
+                "visible": false
+              },
+              "left-sculptural-element-3": {
+                "visible": false
+              },
+              "left-sculptural-element-4": {
+                "visible": false
+              },
+              "left-sculptural-element-5": {
+                "visible": false
+              },
+              "left-sculptural-element-6": {
+                "visible": false
+              },
+              "left-sculptural-element-7": {
+                "visible": false
+              },
+              "front-sculptural-element-1": {
+                "visible": false
+              },
+              "front-sculptural-element-2": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "3": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#0b1723",
+            "glowColor": "#274955",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 05A / A place to meet",
+      "look": {
+        "variant": 4,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "4": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "registration",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 82,
+                "y": 71,
+                "size": 1.05,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "presence",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 82,
+                "y": 75,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 85,
+                "y": 61,
+                "size": 0.7,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 80,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              },
+              "left-connecting-ribbon-1": {
+                "visible": false,
+                "y": 91
+              },
+              "left-connecting-ribbon-2": {
+                "visible": false,
+                "y": 93
+              }
+            }
+          }
+        },
+        "appearance": {
+          "4": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#111929",
+            "glowColor": "#314761",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 05B / A place to meet",
+      "look": {
+        "variant": 4,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "4": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "registration",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 18,
+                "y": 71,
+                "size": 1.05,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "presence",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 18,
+                "y": 75,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "preset-main": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "front",
+                "x": 83,
+                "y": 65,
+                "size": 0.62,
+                "visible": false
+              },
+              "preset-companion": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "screen": "left",
+                "x": 20,
+                "y": 64,
+                "size": 0.68,
+                "visible": false
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              },
+              "left-connecting-ribbon-1": {
+                "visible": true,
+                "y": 91
+              },
+              "left-connecting-ribbon-2": {
+                "visible": true,
+                "y": 93
+              }
+            }
+          }
+        },
+        "appearance": {
+          "4": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#201723",
+            "glowColor": "#6a3b51",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 06A / MV Symbiosis",
+      "look": {
+        "variant": 5,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "5": {
+            "objects": [],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "left-connecting-ribbon-1": {
+                "visible": false,
+                "y": 91
+              },
+              "left-connecting-ribbon-2": {
+                "visible": false,
+                "y": 93
+              },
+              "preset-logo-front": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "x": 83,
+                "y": 63,
+                "size": 0.65,
+                "seed": 520,
+                "randomness": 0.65
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "preset-logo-left": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "x": 83,
+                "y": 63,
+                "size": 0.65,
+                "seed": 521,
+                "randomness": 0.65
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "5": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#0b1621",
+            "glowColor": "#234763",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 06B / MV Symbiosis",
+      "look": {
+        "variant": 5,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "5": {
+            "objects": [],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "left-connecting-ribbon-1": {
+                "visible": true,
+                "y": 91
+              },
+              "left-connecting-ribbon-2": {
+                "visible": true,
+                "y": 93
+              },
+              "preset-logo-front": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "x": 17,
+                "y": 63,
+                "size": 0.65,
+                "seed": 530,
+                "randomness": 0.65
+              },
+              "front-soft-shadow-1": {
+                "visible": false
+              },
+              "preset-logo-left": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "x": 17,
+                "y": 63,
+                "size": 0.65,
+                "seed": 531,
+                "randomness": 0.65
+              },
+              "left-soft-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "5": {
+            "floor": 0.55,
+            "lighting": 0.95,
+            "mode": "gradient",
+            "backgroundColor": "#101a25",
+            "glowColor": "#3b536e",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 07A / A commons made together",
+      "look": {
+        "variant": 6,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "6": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 84,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 84,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "atelier-leaves-front": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "atelier-leaves-left": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "front-low-limestone-plinth-1": {
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-1": {
+                "visible": false
+              },
+              "left-low-limestone-plinth-1": {
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "6": {
+            "floor": 1,
+            "lighting": 1.05
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 07B / A commons made together",
+      "look": {
+        "variant": 6,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "6": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 84,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "cocreation",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 84,
+                "y": 72,
+                "size": 1.1,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "atelier-leaves-front": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "front-limestone-bench-seat-1": {
+                "visible": false
+              },
+              "front-bench-support-1": {
+                "visible": false
+              },
+              "front-bench-support-2": {
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-2": {
+                "visible": false
+              },
+              "atelier-leaves-left": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "left-limestone-bench-seat-1": {
+                "visible": false
+              },
+              "left-bench-support-1": {
+                "visible": false
+              },
+              "left-bench-support-2": {
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-2": {
+                "visible": false
+              },
+              "front-low-limestone-plinth-1": {
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-1": {
+                "visible": false
+              },
+              "left-low-limestone-plinth-1": {
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "6": {
+            "floor": 1,
+            "lighting": 0.83,
+            "mode": "gradient",
+            "backgroundColor": "#777369",
+            "glowColor": "#b8ae98",
+            "glow": 0.65
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 08A / A responsive counterpart",
+      "look": {
+        "variant": 7,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "7": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 84,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              },
+              {
+                "id": "meaning-left",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 84,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.9,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 0
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "court-glass-front": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "court-red-front": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "court-glass-left": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "court-red-left": {
+                "motionSpeed": 0.45,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "front-graphite-sculpture-plinth-1": {
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-1": {
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-2": {
+                "visible": false
+              },
+              "left-graphite-sculpture-plinth-1": {
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-1": {
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-2": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "7": {
+            "floor": 1,
+            "lighting": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "Meaning 08B / A responsive counterpart",
+      "look": {
+        "variant": 7,
+        "screens": [
+          {
+            "id": "left",
+            "name": "Left tiled wall",
+            "width": 3840,
+            "height": 2160,
+            "mode": "tiles",
+            "cols": 3,
+            "rows": 2,
+            "tileW": 16,
+            "tileH": 9
+          },
+          {
+            "id": "front",
+            "name": "Front LED / 4.44 x 2.50 m",
+            "width": 3840,
+            "height": 2160,
+            "mode": "raster",
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "brightness": 85,
+        "speed": 1,
+        "motionAmount": 1,
+        "paused": false,
+        "offset": 0,
+        "epoch": 0,
+        "branding": true,
+        "headlines": false,
+        "interactive": false,
+        "showVideo": false,
+        "videoLayers": [],
+        "authored": {
+          "7": {
+            "objects": [
+              {
+                "id": "meaning-front",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "front",
+                "x": 84,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              },
+              {
+                "id": "meaning-left",
+                "type": "feedback",
+                "source": null,
+                "archived": false,
+                "screen": "left",
+                "x": 84,
+                "y": 73,
+                "size": 1.15,
+                "rotation": 0,
+                "visible": true,
+                "motionSpeed": 0.8,
+                "motionAmount": 1,
+                "motionAnchor": 0,
+                "motionOffset": 9
+              }
+            ],
+            "edits": {
+              "branding-front": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-front": {
+                "visible": false
+              },
+              "branding-left": {
+                "x": 7,
+                "y": 7,
+                "size": 0.62
+              },
+              "wall-caption-left": {
+                "visible": false
+              },
+              "court-glass-front": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "court-red-front": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-2": {
+                "visible": false
+              },
+              "court-glass-left": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "court-red-left": {
+                "motionSpeed": 0.35,
+                "motionAmount": 0.8,
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-2": {
+                "visible": false
+              },
+              "front-graphite-sculpture-plinth-1": {
+                "visible": false
+              },
+              "front-sculpture-contact-shadow-1": {
+                "visible": false
+              },
+              "left-graphite-sculpture-plinth-1": {
+                "visible": false
+              },
+              "left-sculpture-contact-shadow-1": {
+                "visible": false
+              }
+            }
+          }
+        },
+        "appearance": {
+          "7": {
+            "floor": 1,
+            "lighting": 1.15,
+            "mode": "gradient",
+            "backgroundColor": "#13212e",
+            "glowColor": "#345a6d",
+            "glow": 0.65
+          }
+        }
+      }
+    }
+  ]
+}

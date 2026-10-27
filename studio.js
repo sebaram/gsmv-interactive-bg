@@ -8,6 +8,7 @@ import {authoringControls} from './authoring-ui.js';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
 import {appearanceControls} from './appearance-ui.js';
 import {serverLibrary} from './server-library.js';
+import {meaningPanel,sceneMeanings,researchMeaningActive} from './meaning-ui.js';
 const addressLook=decodeLook(location.hash);
 const storedLook=read();let state=addressLook||sanitize({...storedLook,videoLayers:portableLook(storedLook).videoLayers});save(state);
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
@@ -24,16 +25,18 @@ const layers=videoLayerControls($('#video-layer-controls'),clips,{getState:()=>s
 document.querySelector('aside .panel-note').after($('#motion-demo'));$('#motion-demo').textContent='Enable playback';
 const author=authoringControls($('#authoring-controls'),{getState:()=>state,getElements:()=>{let art=[];try{art=document.querySelector('.paired iframe')?.contentWindow.META?.elements||[];}catch{}return [...art,...videoElements(state,clips)];},videoControls:layers,commit:next=>{state=next;publish();},notify:toast});
 const appearance=appearanceControls($('#scene-appearance'),{getState:()=>state,commit:next=>{state=next;publish();}});
+function loadLook(look){state=sanitize({...look,epoch:currentTime()});publish();}
+const meaning=meaningPanel({getState:()=>state,loadLook,notify:toast});
 $('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
 function publish(){state=sanitize(state);save(state);channel.postMessage(state);paint();sync.send(state);}
 function paint(){
  document.querySelectorAll('[data-variant]').forEach(el=>{const on=+el.dataset.variant===state.variant;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);el.querySelector('.chosen').textContent=on?'✓':'';});
- $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=variants[state.variant].desc;
+ $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=researchMeaningActive(state)?sceneMeanings[state.variant].idea:variants[state.variant].desc;
  $('#swatch').style.background=['#101d35','#874453','#ded9c9','#143e46','#565b93','#315e91'][state.variant];
  const visible=state.showVideo?state.videoLayers.filter(l=>!videoNeedsFile(l)&&state.screens.some(sc=>videoVisibleOn(l,sc.id))).length:0;
  $('#clear-local-video').disabled=state.videoLayers.length>=8;$('#local-video').disabled=state.videoLayers.length>=8;
  $('#monitor-video-status').textContent=visible?visible+' video'+(visible===1?'':'s')+' on screen':'Motion graphic only. Choose a video below.';
- $('#preview-caption').textContent=visible?'Video placement: '+(state.editVideos?'drag to move, corner to resize':'editing off'):state.variant===5?'Forms exchange, consolidate, and evolve':'Procedural motion';
+ $('#preview-caption').textContent=visible?'Video placement: '+(state.editVideos?'drag to move, corner to resize':'editing off'):researchMeaningActive(state)?sceneMeanings[state.variant].title:'Procedural motion';
  $('.paired').classList.toggle('editing-videos',state.editVideos&&!!visible);$('.paired').classList.toggle('editing-elements',state.editElements);
  $('#brightness').value=state.brightness;
  $('#brightness-value').textContent=state.brightness+'%';
@@ -44,7 +47,7 @@ function paint(){
  if(ids!==previewIds){previewIds=ids;$('.paired').innerHTML='';for(const sc of state.screens){const wrap=document.createElement('div');wrap.className='screen-preview';wrap.dataset.preview=sc.id;const iframe=document.createElement('iframe');iframe.src=`wall.html?view=${encodeURIComponent(sc.id)}&preview=1`+(buildVersion?'&v='+buildVersion:'');iframe.title=sc.name+' live preview';iframe.tabIndex=-1;const label=document.createElement('span');label.className='screen-label';wrap.append(iframe,label);$('.paired').append(wrap);}}
  for(const sc of state.screens){const wrap=document.querySelector(`[data-preview="${sc.id}"]`);wrap.style.aspectRatio=screenAspect(sc);wrap.querySelector('.screen-label').textContent=sc.name;}
  layoutPreviews();
- editor.paint();library.paint();layers.paint();author.paint();appearance.paint();paintOutputs();updateAddress();
+ editor.paint();library.paint();layers.paint();author.paint();appearance.paint();meaning.paint();paintOutputs();updateAddress();
 }
 function layoutPreviews(){
  const paired=$('.paired'),room=$('.preview-room'),total=state.screens.reduce((sum,sc)=>sum+screenAspect(sc),0),style=getComputedStyle(paired),padding=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
@@ -102,4 +105,4 @@ setInterval(()=>{
  $('#playback-status').classList.toggle('held',frozen||blocked);
 },600);
 paint();
-serverLibrary({getState:()=>state,loadLook:look=>{state=sanitize({...look,epoch:currentTime()});publish();},addVideo:media=>{const next=chooseVideo(state,{id:null,cue:state.cue},{url:media.url,name:media.name});author.commit(playVideo(next,next.activeVideoLayer));},notify:toast}).catch(()=>{});
+serverLibrary({getState:()=>state,loadLook,addVideo:media=>{const next=chooseVideo(state,{id:null,cue:state.cue},{url:media.url,name:media.name});author.commit(playVideo(next,next.activeVideoLayer));},notify:toast}).catch(()=>{});

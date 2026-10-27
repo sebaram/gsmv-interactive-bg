@@ -7,6 +7,44 @@ export function motionContext(object,time,amount=1){
  return {time,parentTime,amount,speed};
 }
 export function recordMotion(object,spec){object.userData.motionSpec={...spec,position:object.position.toArray(),rotation:[object.rotation.x,object.rotation.y,object.rotation.z],scale:object.scale.toArray()};}
+const clamp01=x=>Math.max(0,Math.min(1,x));
+const ease=x=>{x=clamp01(x);return x*x*x*(x*(x*6-15)+10);};
+const loop=(time,duration=28)=>(time%duration+duration)%duration;
+const blend=(time,start,end)=>ease((time-start)/(end-start));
+function assembly(time,delay=0){const t=loop(time-delay);return blend(t,3,10)*(1-blend(t,17,24));}
+function wave(time,start,duration){const p=(time-start)/duration;return p>0&&p<1?Math.sin(Math.PI*p)**2:0;}
+// Absolute-time stories make the relation legible: approach/hold/depart,
+// registration/passage, an outgoing response followed by a returning response,
+// and complementary pieces building one shared pavilion.
+export function relationPose(spec,time,amount=1){
+ const position=[0,0,0],rotation=[0,0,0],scale=[1,1,1],t=loop(time),side=spec.side||1;
+ if(spec.story==='presence'){
+  const joined=assembly(time),apart=(1-joined)*amount;
+  if(spec.part==='participant'){position[0]=side*.62*apart;rotation[1]=-side*(.15+.55*(1-apart));rotation[0]=wave(t,11,5)*.055*amount;}
+  if(spec.part==='contribution'){position[0]=side*.13*apart;position[1]=wave(t,11,5)*.055*amount;rotation[1]=side*.3*apart;}
+ }
+ if(spec.story==='registration'){
+  const apart=(1-assembly(time))*amount;
+  if(spec.part==='frame'){position[0]=side*.56*apart;position[2]=side*.38*apart;rotation[1]=side*.22*apart;}
+  if(spec.part==='passage'){const visible=blend(t,10.5,11.5)*(1-blend(t,16,17))*amount;scale.fill(Math.max(.001,visible));position[2]=amount?1.15-2.3*blend(t,11,16):0;}
+ }
+ if(spec.story==='feedback'){
+  if(spec.part==='fold'){
+   const delay=(spec.index||0)*.10,centers=side<0?[1.6,20]:[9,13];
+   const response=centers.reduce((sum,start)=>sum+wave(t,start+delay,3.4),0)*amount;
+   position[2]=response*.34;scale[0]=1+response*.13;rotation[1]=side*response*.09;
+  }
+  if(spec.part==='pulse'){
+   const p=clamp01((t-(side<0?4.5:15.5))/5),visible=blend(p,0,.16)*(1-blend(p,.84,1))*amount;
+   position[0]=amount?-side*(-1.28+2.56*p):0;scale.fill(Math.max(.001,visible));
+  }
+ }
+ if(spec.story==='cocreation'){
+  if(spec.part==='half'){const apart=(1-assembly(time,(spec.index||0)*.45))*amount;position[0]=side*.78*apart;position[2]=side*.22*apart;rotation[1]=side*.24*apart;}
+  if(spec.part==='shared')scale[1]=Math.max(.04,1-(1-assembly(time,1))*.96*amount);
+ }
+ return {position,rotation,scale};
+}
 export function sampledTransform(object,time,amount=1,pointer=null){
  const spec=object.userData.motionSpec;if(!spec)return {position:object.position.clone(),quaternion:object.quaternion.clone(),scale:object.scale.clone()};
  const position=new T.Vector3(...spec.position),rotation=new T.Euler(...spec.rotation),scale=new T.Vector3(...spec.scale),pose=motionPose(spec.type,time,spec.phase||0,amount),slow=time*.24;
@@ -18,6 +56,7 @@ export function sampledTransform(object,time,amount=1,pointer=null){
  if(spec.type==='hero'){position.y=Math.sin(time*.5*amount)*.24+spec.baseY;rotation.x=pointer?-pointer.y*.1:0;rotation.y=pointer?pointer.x*.12:0;}
  if(spec.type==='secondary')rotation.y=Math.sin(slow*.6*amount)*.13;
  if(spec.type==='sway')rotation.y+=Math.sin(time*spec.rate*amount+(spec.phase||0))*spec.angle*amount;
+ if(spec.type==='relation'){const p=relationPose(spec,time,amount);position.add(new T.Vector3(...p.position));rotation.x+=p.rotation[0];rotation.y+=p.rotation[1];rotation.z+=p.rotation[2];scale.multiply(new T.Vector3(...p.scale));}
  return {position,quaternion:new T.Quaternion().setFromEuler(rotation),scale};
 }
 export function applySample(object,time,amount,pointer=null){const sample=sampledTransform(object,time,amount,pointer);object.position.copy(sample.position);object.quaternion.copy(sample.quaternion);object.scale.copy(sample.scale);}

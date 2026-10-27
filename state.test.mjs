@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import { defaults, sanitize, timeline, setPaused, setSpeed, panorama, leftAspect, variants } from './state.js';
 import {encodeLook,decodeLook} from './look-url.js';
+import {sceneMeanings,researchMeaningActive} from './meaning-ui.js';
 
 test('invalid saved settings cannot break wall projection', () => {
   const s = sanitize({variant:99, frontW:0, leftH:'bad', brightness:900, speed:-2});
@@ -51,4 +52,18 @@ test('all sixteen floor-wall variations retain their authored composition in por
   assert.equal(saved.screens.find(s=>s.id==='front').width/saved.screens.find(s=>s.id==='front').height,16/9);
   assert.equal(saved.videoLayers.length,0);
  }
+});
+
+test('research compositions retain the relational objects and report when their interpretation is active',()=>{
+ const collection=JSON.parse(readFileSync(new URL('./looks/research-meaning-variations.json',import.meta.url),'utf8'));
+ assert.equal(collection.looks.length,16);assert.equal(sceneMeanings.length,variants.length);
+ for(const {look} of collection.looks){
+  const saved=decodeLook(encodeLook(look));assert.deepEqual(saved.authored,look.authored);
+  assert.equal(researchMeaningActive(saved),true);assert.deepEqual(saved.appearance,look.appearance);
+  assert.ok(sceneMeanings[saved.variant].sources.every(([,url])=>url.startsWith('https://')));
+ }
+ assert.equal(researchMeaningActive(sanitize({variant:0})),false);
+ assert.equal(researchMeaningActive(sanitize({variant:0,authored:{0:{objects:[{id:'object-1',type:'presence',visible:false}]}}})),false);
+ assert.equal(researchMeaningActive(sanitize({variant:0,authored:{0:{objects:[{id:'source',type:'presence',archived:true,visible:false},{id:'copy',type:'copy',source:'source'}]}}})),true);
+ assert.equal(researchMeaningActive(sanitize({variant:0,authored:{0:{objects:[{id:'a',type:'copy',source:'b'},{id:'b',type:'copy',source:'a'}]}}})),false);
 });

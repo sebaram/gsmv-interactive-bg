@@ -9,6 +9,7 @@ import {motionContext,recordMotion,applySample} from './object-motion.js';
 import {createLogoSculpture} from './logo-scene.js';
 import {appearanceFor,lightAppearance} from './appearance.js';
 import {sereinAtelier,mvLightCourt} from './floor-scenes.js';
+import {createResearchObject} from './research-objects.js';
 
 const params=new URLSearchParams(location.search),view=params.get('view')||'front',preview=params.has('preview');
 const fixedVariant=params.has('variant')?Math.max(0,Math.min(variants.length-1,+params.get('variant'))):null;
@@ -164,6 +165,7 @@ function mvSymbiosis(){
 }
 
 function createAuthorObject(type){
+ const research=createResearchObject(type,addMotion);if(research){group.add(research);return research;}
  const root=new T.Group();group.add(root);
  if(type==='logo'){const system=createLogoSculpture(color=>physical(color,.23,.42,{side:T.DoubleSide}));group.remove(root);group.add(system.root);system.root.name='MV sculpture';system.root.scale.setScalar(2.5);logoSystems.push(system);return system.root;}
  if(type==='network'){group.remove(root);return connectionNetwork(0,0,0,1);}

@@ -1,5 +1,6 @@
 import {sanitizeLayers} from './video-layers.js';
-export const objectTypes=[['logo','MV sculpture'],['ribbons','Real / virtual ribbons'],['orbits','Orbital sculpture'],['network','Research network'],['sphere','Sculptural sphere'],['arch','Architectural arch']];
+import {researchObjectTypes} from './research-objects.js';
+export const objectTypes=[['logo','MV sculpture'],['ribbons','Real / virtual ribbons'],['orbits','Orbital sculpture'],['network','Research network'],['sphere','Sculptural sphere'],['arch','Architectural arch'],...researchObjectTypes];
 const limit=(v,min,max)=>Math.min(max,Math.max(min,+v));
 export function cleanTransform(raw={}){
  const out={};for(const [key,min,max] of [['x',-50,150],['y',-50,150],['size',.05,6],['rotation',-180,180],['seed',0,999999],['randomness',0,2],['motionSpeed',0,3],['motionAmount',0,2],['motionAnchor',-1e10,1e10],['motionOffset',-1e10,1e10]])if(raw[key]!==undefined&&Number.isFinite(+raw[key]))out[key]=key==='seed'?Math.floor(limit(raw[key],min,max)):limit(raw[key],min,max);
