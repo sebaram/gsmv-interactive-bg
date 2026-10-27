@@ -4,13 +4,13 @@ import {connectSync} from './sync.js';
 import {videoOverlay} from './video-overlay.js';
 import {authoringScene} from './authoring-scene.js';
 import {presetEdits} from './authoring.js';
-import {decodeLook} from './look-url.js';
+import {decodeLook,liveOutputLook} from './look-url.js';
 import {motionPose} from './motion.js';
 import {createLogoSculpture} from './logo-scene.js';
 
 const params=new URLSearchParams(location.search),view=params.get('view')||'front',preview=params.has('preview');
 const fixedVariant=params.has('variant')?Math.max(0,Math.min(variants.length-1,+params.get('variant'))):null;
-let state=decodeLook(location.hash)||read();if(fixedVariant!==null)state.variant=fixedVariant;
+let state=decodeLook(location.hash)||read();try{if(location.hash&&opener?.METAStudio)state=liveOutputLook(state,opener.METAStudio.state);}catch{}if(fixedVariant!==null)state.variant=fixedVariant;
 const channel=new BroadcastChannel(KEY);
 document.body.classList.add(view==='front'?'front':'left');if(preview)document.body.classList.add('preview');
 document.title=`META / ${view} output`;

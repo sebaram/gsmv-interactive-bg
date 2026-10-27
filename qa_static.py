@@ -29,18 +29,16 @@ with sync_playwright() as p:
     print('PASS Public output opens at the correct subpath and follows controls',flush=True)
     page.locator('[data-variant="5"]').click();wall.wait_for_function('window.META.state.variant===5 && window.META.video')
     page.locator('#no-video').click();wall.wait_for_function('!window.META.video')
-    page.locator('#video-search').fill('P2-S5-01')
     assert page.locator('#video-preview').count()==0
-    assert 'AquaHaptics' in page.locator('.video-item strong').inner_text()
+    assert page.locator('#research-catalog').is_hidden() and page.locator('.video-item').count()==0
     source=next((APP.parent/'output'/'clips').glob('P2-S5-01*'))
-    with page.expect_file_chooser() as selected:page.locator('#use-video').click()
-    selected.value.set_files(source)
-    wall.wait_for_function('window.META.state.videoLayers[0]?.customClip && window.META.video && window.META.video.ready>=2')
-    assert wall.evaluate('window.META.state.videoLayers[0].customClip.url').startswith('blob:')
+    page.locator('#local-video').set_input_files(source)
+    wall.wait_for_function('window.META.state.videoLayers.at(-1)?.customClip && window.META.video && window.META.video.ready>=2')
+    assert wall.evaluate('window.META.state.videoLayers.at(-1).customClip.url').startswith('blob:')
     assert not wall.locator('#error').is_visible()
     assert wall.evaluate('window.META.state.variant')==5
     print('PASS Research video selected locally plays in the public wall output',flush=True)
-    page.locator('#clear-local-video').click();wall.wait_for_function('window.META.videos.length===2 && window.META.videos.every(v=>v.ready>=2)')
+    page.locator('#clear-local-video').click();page.locator('#play-videos-together').click();wall.wait_for_function('window.META.videos.length===3 && window.META.videos.every(v=>v.ready>=2)')
     assert not api,api
     assert not errors,errors
     page.screenshot(path=str(APP/'previews'/'public-studio.png'),full_page=True)

@@ -2,12 +2,12 @@ import {KEY,variants,cues,read,save,sanitize,setPaused,setSpeed,timeline,current
 import {connectSync,staticMode} from './sync.js';
 import {screenEditor} from './screens-ui.js';
 import {videoLibrary,chooseVideo} from './video-library.js';
-import {patchLayer,portableLook} from './video-layers.js';
+import {patchLayer,portableLook,playVideo,videoNeedsFile} from './video-layers.js';
 import {videoLayerControls} from './video-layer-controls.js';
 import {authoringControls} from './authoring-ui.js';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
 const addressLook=decodeLook(location.hash);
-let state=addressLook||read();save(state);
+const storedLook=read();let state=addressLook||sanitize({...storedLook,videoLayers:portableLook(storedLook).videoLayers});save(state);
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
 const buildVersion=document.querySelector('meta[name="studio-build"]')?.content||'';
 let addressTimer;
@@ -15,8 +15,9 @@ function updateAddress(){clearTimeout(addressTimer);addressTimer=setTimeout(()=>
 let previewIds='',networkOrigin=location.origin;
 const editor=screenEditor($('#screen-configs'),()=>state,next=>{state=next;publish();},toast);
 const clips=await fetch('./clips.json').then(r=>r.json());
-let pendingVideo=null;
-const library=videoLibrary($('#video-library'),clips,{getState:()=>state,commit:next=>{state=next;publish();},publicMode:staticMode,chooseFile:clip=>{pendingVideo=clip;$('#local-video').click();}});
+let pendingVideo=null,pendingVideoLayer=null;
+const library=videoLibrary($('#video-library'),clips,{getState:()=>state,commit:next=>{state=next;publish();},publicMode:staticMode,chooseFile:(clip,id)=>{pendingVideo=clip;pendingVideoLayer=id||null;$('#local-video').multiple=!id;$('#local-video').disabled=false;$('#local-video').click();}});
+$('#video-add-files').append($('#local-video-controls'));$('#video-properties-mount').append($('#video-layer-controls'));
 const layers=videoLayerControls($('#video-layer-controls'),clips,{getState:()=>state,commit:next=>{state=next;publish();}});
 const author=authoringControls($('#authoring-controls'),{getState:()=>state,getElements:()=>{try{return document.querySelector('.paired iframe')?.contentWindow.META?.elements||[];}catch{return [];}},commit:next=>{state=next;publish();},notify:toast});
 $('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
@@ -25,9 +26,9 @@ function paint(){
  document.querySelectorAll('[data-variant]').forEach(el=>{const on=+el.dataset.variant===state.variant;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);el.querySelector('.chosen').textContent=on?'✓':'';});
  $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=variants[state.variant].desc;
  $('#swatch').style.background=['#101d35','#874453','#ded9c9','#143e46','#565b93','#315e91'][state.variant];
- const visible=state.showVideo?state.videoLayers.length:0;
+ const visible=state.showVideo?state.videoLayers.filter(l=>!videoNeedsFile(l)&&state.screens.some(sc=>(l.screens[sc.id]?.enabled??l.enabled)!==false)).length:0;
  $('#clear-local-video').disabled=state.videoLayers.length>=8;$('#local-video').disabled=state.videoLayers.length>=8;
- $('#monitor-video-status').textContent=visible?visible+' video layer'+(visible===1?'':'s')+' added':'No video. Motion graphic only.';
+ $('#monitor-video-status').textContent=visible?visible+' video'+(visible===1?'':'s')+' on screen':'Motion graphic only. Choose a video below.';
  $('#preview-caption').textContent=visible?'Video placement: '+(state.editVideos?'drag to move, corner to resize':'editing off'):state.variant===5?'Forms exchange, consolidate, and evolve':'Procedural motion';
  $('.paired').classList.toggle('editing-videos',state.editVideos&&!!visible);$('.paired').classList.toggle('editing-elements',state.editElements);
  for(const k of ['brightness','speed','motionAmount'])$('#'+k).value=state[k];
@@ -75,9 +76,15 @@ window.addEventListener('hashchange',()=>{const next=decodeLook(location.hash);i
 window.addEventListener('storage',e=>{if(e.key===KEY){state=read();paint();}});
 const sync=connectSync(next=>{state=next;save(state);channel.postMessage(state);paint();},{controller:true,initial:state,preferInitial:!!addressLook,onStatus:ok=>{$('#network-status').textContent=staticMode?'Browser playback':ok?'Network ready':'Reconnecting';},onInfo:urls=>{networkOrigin=new URL(urls.front).origin;paintOutputs();}});
 if(staticMode){$('#network-help').textContent='Public preview controls synchronize windows in this browser. For separate computers, run the LAN server from the repository.';$('#local-video-controls').hidden=false;}
-$('#local-video').onchange=e=>{const file=e.target.files[0];if(!file)return;if(state.videoLayers.length>=8){toast('Up to 8 video layers. Remove one before adding another.');return;}const url=URL.createObjectURL(file);state=chooseVideo(state,pendingVideo||library.inspected,{url,name:file.name});pendingVideo=null;$('#local-video-status').textContent=file.name+' added (stays in this browser)';e.target.value='';publish();};
-$('#clear-local-video').onclick=()=>{state=chooseVideo(state,library.inspected,{url:'previews/demo-motion.mp4',name:'Demo animation'});publish();};
-window.METAStudio={now:currentTime,selectElement(id){author.closeMenu();author.select(id);},updateElement:(id,patch)=>author.updateElement(id,patch),elementKey:event=>author.keydown(event),elementMenu:(id,x,y)=>author.openMenu(id,x,y),beginElementGesture:()=>author.beginGesture(),endElementGesture:()=>author.endGesture(),get state(){return state;},selectVideoLayer(id,screen){state.activeVideoLayer=id;layers.setScope(screen);publish();},updateVideoLayer(id,patch,screen){state=patchLayer(state,id,patch,screen);publish();}};
+$('#local-video').oncancel=()=>{pendingVideo=null;pendingVideoLayer=null;$('#local-video').multiple=true;paint();};
+$('#local-video').onchange=e=>{
+ const files=[...e.target.files];if(!files.length)return;let added=0,first=null;
+ if(pendingVideoLayer){const layer=state.videoLayers.find(l=>l.id===pendingVideoLayer);if(layer){const file=files[0];state=patchLayer(state,layer.id,{customClip:{url:URL.createObjectURL(file),name:file.name},fileName:file.name});first=layer.id;added=1;}}
+ else for(const file of files){if(state.videoLayers.length>=8)break;state=chooseVideo(state,pendingVideo||{id:null,cue:state.cue},{url:URL.createObjectURL(file),name:file.name});first=first||state.activeVideoLayer;added++;}
+ if(first)state=playVideo(state,first);pendingVideo=null;pendingVideoLayer=null;e.target.multiple=true;e.target.value='';$('#local-video-status').textContent=added?added+' file'+(added===1?'':'s')+' ready in Your videos. Files stay in this browser.':'Your list is full. Remove a video before adding another.';if(added<files.length)toast('Up to 8 videos. Extra files were not added.');publish();
+};
+$('#clear-local-video').onclick=()=>{state=chooseVideo(state,{id:null,cue:state.cue},{url:'previews/demo-motion.mp4',name:'Demo animation'});state=playVideo(state,state.activeVideoLayer);publish();};
+window.METAStudio={now:currentTime,missingVideoFile(id,url){const layer=state.videoLayers.find(l=>l.id===id);if(layer?.fileName&&layer.customClip?.url===url){state=patchLayer(state,id,{customClip:undefined});publish();}},selectElement(id){author.closeMenu();author.select(id);},updateElement:(id,patch)=>author.updateElement(id,patch),elementKey:event=>author.keydown(event),elementMenu:(id,x,y)=>author.openMenu(id,x,y),beginElementGesture:()=>author.beginGesture(),endElementGesture:()=>author.endGesture(),get state(){return state;},selectVideoLayer(id,screen){state.activeVideoLayer=id;layers.setScope(screen);publish();},updateVideoLayer(id,patch,screen){state=patchLayer(state,id,patch,screen);publish();}};
 let previousTime=null;
 setInterval(()=>{
  const frames=[...document.querySelectorAll('.paired iframe')].map(f=>{try{return f.contentWindow.META;}catch{return null;}}).filter(Boolean),first=frames[0];

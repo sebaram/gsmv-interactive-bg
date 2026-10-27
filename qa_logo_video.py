@@ -18,6 +18,7 @@ with sync_playwright() as p:
  c=b.new_context(viewport={'width':1440,'height':1000},device_scale_factor=1)
  page=c.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  page.goto(BASE+'/backgrounds/');page.wait_for_function('document.querySelector("#video-result-count").textContent==="34 videos"')
+ page.locator('#research-catalog').evaluate('e=>e.open=true')
  assert 'Research cue' not in page.locator('body').inner_text()
  assert page.locator('#video-preview,#video-poster,.video-detail').count()==0
  assert page.locator('.video-item strong').first.inner_text()

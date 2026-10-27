@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
+import * as lookTools from './look-url.js';
 import {sanitize} from './state.js';
 
 const rawHash=value=>'#look=v1.'+Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -46,6 +47,13 @@ test('portable demo video URLs survive and local blob URLs are omitted',()=>{
  assert.equal(restored.videoLayers[1].customClip,undefined);
  assert.equal(hash.includes('blob:'),false);
  assert.equal(state.videoLayers[1].customClip.name,'Private');
+});
+
+test('a matching live editor supplies local files to a newly opened output without changing a bookmarked look',()=>{
+ assert.equal(typeof lookTools.liveOutputLook,'function');
+ const live=sanitize({variant:5,videoLayers:[{id:'file',customClip:{url:'blob:current',name:'Take.mp4'},enabled:true}]}),saved=decodeLook(encodeLook(live));
+ assert.equal(lookTools.liveOutputLook(saved,live).videoLayers[0].customClip.url,'blob:current');assert.equal(saved.videoLayers[0].customClip,undefined);
+ assert.equal(lookTools.liveOutputLook(saved,{...live,variant:1}),saved);assert.equal(lookTools.liveOutputLook(saved,null),saved);
 });
 
 test('decode sanitizes incoming values and ignores unapproved properties',()=>{

@@ -136,6 +136,7 @@ with sync_playwright() as p:
     check('Screen reordering propagates without changing output identity',extra.evaluate(f'window.META.state.screens[1].id==="{extra_id}"'))
     page.locator('#clean-btn').click();wait(left,'!window.META.state.calibration && !window.META.state.guide && window.META.state.screens.every(s=>!s.grid)')
     check('Clean take clears grids for every screen',not extra.locator('#tile-grid').is_visible())
+    page.locator('#research-catalog').evaluate('e=>e.open=true')
     clip_ids=['P2-S1-02','P2-S2-02','P2-S3-01','P2-S4-01','P2-S5-01']
     for cue,clip_id in enumerate(clip_ids):
         page.locator('#video-search').fill(clip_id)

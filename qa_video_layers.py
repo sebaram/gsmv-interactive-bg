@@ -15,7 +15,8 @@ with sync_playwright() as p:
  c=b.new_context(viewport={'width':1600,'height':1100},device_scale_factor=1)
  page=c.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  page.goto(BASE+'/backgrounds/');page.wait_for_function('window.METAStudio && document.querySelectorAll(".paired iframe").length===2')
- assert page.locator('#layer-empty').is_visible()
+ assert 'No videos added' in page.locator('#layer-empty').text_content()
+ page.locator('#research-catalog').evaluate('e=>e.open=true')
  with page.expect_popup() as opened:page.locator('#output-links a').first.click()
  wall=opened.value;wall.on('pageerror',lambda e:errors.append(str(e)))
  wall.wait_for_function('window.META && document.body.dataset.ready==="true"');assert wall.evaluate('window.META.video') is None
@@ -24,12 +25,12 @@ with sync_playwright() as p:
   page.locator('#use-video').click()
   wall.wait_for_function(f'window.META.state.variant==={variant} && window.META.video && window.META.video.ready>=2')
   assert wall.locator('.video-resize').count()==0
-  page.locator('#no-video').click();wall.wait_for_function('window.META.videos.length===0')
+  page.locator('#no-video').click();wall.wait_for_function('window.META.videos.length===0');page.locator('[data-remove-video]').click()
  print('PASS Video can be added and removed on all six backgrounds without changing styles',flush=True)
  page.locator('#use-video').click();wall.wait_for_function('window.META.video && window.META.video.ready>=2')
  first=page.evaluate('window.METAStudio.state.activeVideoLayer')
  wall.evaluate('window.firstDecoder=document.querySelector(".video-layer video")')
- page.locator('#video-search').fill('P2-S5-01');page.locator('#use-video').click()
+ page.locator('#video-search').fill('P2-S5-01');page.locator('#use-video').click();page.locator('#play-videos-together').click();page.locator('#video-placement-settings').evaluate('e=>e.open=true')
  wall.wait_for_function('window.META.videos.length===2 && window.META.videos.every(v=>v.ready>=2)')
  assert wall.evaluate('window.firstDecoder===document.querySelector(".video-layer video")')
  assert len(set(page.evaluate('window.METAStudio.state.videoLayers.map(l=>l.id)')))==2
@@ -86,4 +87,9 @@ with sync_playwright() as p:
  assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
  assert not errors,errors
  print('PASS Clean outputs, desktop/mobile layouts and no JavaScript errors',flush=True)
+ # A retained LAN snapshot must not revive an expired browser-only file.
+ expired={'variant':1,'showVideo':True,'videoLayers':[{'id':'expired','fileName':'Previous session.mp4','customClip':{'url':BASE.replace('http:','blob:http:')+'/expired','name':'Previous session.mp4'},'enabled':True}]}
+ page.close();urllib.request.urlopen(urllib.request.Request(BASE+'/api/state',data=json.dumps(expired).encode(),headers={'Content-Type':'application/json'})).close();reopened=b.new_context();reopened_page=reopened.new_page();reopened_page.goto(BASE+'/backgrounds/');reopened_page.wait_for_function('window.METAStudio?.state.videoLayers[0]?.fileName==="Previous session.mp4"&&!window.METAStudio.state.videoLayers[0].customClip')
+ assert 'Choose file again' in reopened_page.locator('[data-play-video="expired"]').inner_text();reopened.close()
+ print('PASS Expired local files in retained LAN state become relinkable instead of falsely ready',flush=True)
  remote.close();c.close();b.close()

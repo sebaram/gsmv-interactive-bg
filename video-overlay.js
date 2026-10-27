@@ -1,5 +1,5 @@
 import {timeline,screenAspect} from './state.js';
-import {placement} from './video-layers.js';
+import {placement,videoNeedsFile} from './video-layers.js';
 import {youtubePlayer} from './youtube-player.js';
 
 export function videoOverlay(container,clips,{view,preview,motionAllowed}){
@@ -16,7 +16,7 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
   const sc=state.screens.find(s=>s.id===view)||state.screens[0],v=entry.video;
   entry.rect=placement(entry.layer,sc.id,screenAspect(sc),entry.kind==='youtube'?entry.layer.sourceAspect:v.videoWidth/v.videoHeight||16/9);
   const r=entry.rect;Object.assign(entry.wrap.style,{left:r.x+'%',top:r.y+'%',width:r.width+'%',height:r.height+'%'});
-  entry.wrap.hidden=!state.showVideo||!r.enabled;
+  entry.wrap.hidden=!state.showVideo||!r.enabled||videoNeedsFile(entry.layer);
   entry.wrap.classList.toggle('editing',preview&&state.editVideos);
   entry.wrap.classList.toggle('selected',state.activeVideoLayer===entry.layer.id);
   if(preview)entry.wrap.tabIndex=state.editVideos?0:-1;
@@ -38,7 +38,7 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
    else entry.video=youtubePlayer(host,layer.youtube,{onReady:()=>{position(entry);sync(entry,true);},onEnded:()=>sync(entry,true),onPlaying:()=>entry.blocked=false,onBlocked:()=>entry.blocked=true,onError:message=>{entry.failed=true;label.textContent=message;label.hidden=false;entry.video?.pause();}});
   }else{
    const video=document.createElement('video');video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.preload='auto';entry.video=video;wrap.prepend(video);
-   video.onloadedmetadata=()=>{position(entry);sync(entry,true);const sourceAspect=video.videoWidth/video.videoHeight;if(preview&&Number.isFinite(sourceAspect)&&Math.abs(sourceAspect-entry.layer.sourceAspect)>.0001)parent.METAStudio?.updateVideoLayer(layer.id,{sourceAspect},'all');};video.onerror=()=>{label.hidden=false;};
+   video.onloadedmetadata=()=>{position(entry);sync(entry,true);const sourceAspect=video.videoWidth/video.videoHeight;if(preview&&Number.isFinite(sourceAspect)&&Math.abs(sourceAspect-entry.layer.sourceAspect)>.0001)parent.METAStudio?.updateVideoLayer(layer.id,{sourceAspect},'all');};video.onerror=()=>{label.hidden=false;if(preview&&entry.layer.fileName&&entry.url?.startsWith('blob:'))parent.METAStudio?.missingVideoFile(layer.id,entry.url);};
   }
   if(preview){
    const tag=document.createElement('span'),handle=document.createElement('button');tag.className='video-edit-label';handle.className='video-resize';handle.type='button';handle.setAttribute('aria-label','Resize video');tag.textContent='Move video';wrap.append(tag,handle);
@@ -63,7 +63,7 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
   for(const [id,entry] of entries)if(!state.videoLayers.some(l=>l.id===id)){dispose(entry);entries.delete(id);}
   for(const layer of state.videoLayers){
    let entry=entries.get(layer.id);if(entry&&(entry.kind!==(layer.youtube?'youtube':'file')||entry.layer.youtube?.id!==layer.youtube?.id||entry.layer.youtube?.start!==layer.youtube?.start)){dispose(entry);entries.delete(layer.id);entry=null;}if(!entry){entry=create(layer);entries.set(layer.id,entry);}entry.layer=layer;
-   const clip=layer.customClip||clips.find(c=>c.id===layer.videoId),url=clip?.url||'';
+   const clip=layer.customClip||(!layer.fileName&&clips.find(c=>c.id===layer.videoId)),url=clip?.url||'';
    if(entry.kind==='file'&&url!==entry.url){entry.video.pause();entry.url=url;entry.error.hidden=true;if(url)entry.video.src=url;else{entry.video.removeAttribute('src');entry.error.hidden=false;}entry.video.load();}
    position(entry);sync(entry,previous&&(previous.paused!==state.paused||previous.speed!==state.speed||previous.offset!==state.offset));
   }

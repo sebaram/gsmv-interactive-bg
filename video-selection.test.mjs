@@ -6,6 +6,7 @@ import * as videoLibraryModule from './video-library.js';
 import {encodeLook,decodeLook} from './look-url.js';
 import {sanitize} from './state.js';
 import {patchLayer,removeLayer,placement,portableLook} from './video-layers.js';
+import * as layerTools from './video-layers.js';
 test('every video is selectable by title, explanation, poster and playable source',async()=>{
  const clips=JSON.parse(await readFile(new URL('./clips.json',import.meta.url),'utf8'));
  assert.ok(clips.length>=5);for(const c of clips){assert.ok(c.title);assert.ok(c.description);assert.ok(c.poster);assert.ok(c.url);assert.ok(c.duration>0);}
@@ -39,6 +40,18 @@ test('fresh looks have no video; explicit legacy video looks migrate once',()=>{
  assert.equal(legacy.videoLayers.length,1);assert.equal(legacy.videoLayers[0].videoId,'P2-S1-02');
  assert.equal(sanitize(legacy).videoLayers.length,1);
  assert.equal(sanitize({showVideo:true,videoLayers:[]}).videoLayers.length,0);
+});
+
+test('playlist Play switches only visibility and selection while retaining per-screen placement',()=>{
+ assert.equal(typeof layerTools.playVideo,'function');
+ let state=chooseVideo(sanitize({variant:5}),{id:'one'});state=chooseVideo(state,{id:'two'});state=patchLayer(state,'video-1',{x:23,width:31,enabled:false},'left');state=patchLayer(state,'video-2',{x:81,enabled:true},'front');
+ const next=layerTools.playVideo({...state,showVideo:false},'video-1');assert.equal(next.activeVideoLayer,'video-1');assert.equal(next.showVideo,true);assert.equal(next.variant,5);assert.equal(next.videoLayers[0].x,state.videoLayers[0].x);assert.deepEqual(next.videoLayers[0].screens.left,{x:23,width:31});assert.deepEqual(next.videoLayers[1].screens.front,{x:81});assert.deepEqual(next.videoLayers.map(l=>l.enabled),[true,false]);assert.equal(layerTools.playVideo(state,'missing'),state);
+ assert.equal(typeof layerTools.playVideosTogether,'function');assert.ok(layerTools.playVideosTogether(next).videoLayers.every(l=>l.enabled));
+});
+
+test('bookmarked local playlist entries keep file names without browser blob references',()=>{
+ const state=chooseVideo(sanitize(),{id:null},{url:'blob:local-video',name:'Research take.mp4'}),restored=decodeLook(encodeLook(state));
+ assert.equal(restored.videoLayers[0].fileName,'Research take.mp4');assert.equal(restored.videoLayers[0].customClip,undefined);assert.ok(!encodeLook(state).includes('blob:'));
 });
 
 test('per-screen positions and visibility are independent; all-screen changes reach overrides',()=>{

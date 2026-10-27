@@ -19,4 +19,4 @@ export function parseYoutube(value){
   return source?{...source,sourceAspect:parts[0]==='shorts'?9/16:16/9}:null;
  }catch{return null;}
 }
-export function videoTitle(layer,clips=[]){return layer.youtube?.title||layer.customClip?.name||clips.find(c=>c.id===layer.videoId)?.title||'Video';}
+export function videoTitle(layer,clips=[]){return layer.youtube?.title||layer.customClip?.name||layer.fileName||clips.find(c=>c.id===layer.videoId)?.title||'Video';}

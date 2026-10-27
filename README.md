@@ -21,7 +21,7 @@ The original department signature is retained. The source identity and color gui
 
 The new scene uses the six red and blue polylines copied directly from the official SVG, rather than an approximate M/V icon. Over a 36-second cycle, the facets become soft volumetric forms, move in complementary pairs, consolidate into the recognizable symbol, hold it, and unfold into another exchange. The red/blue connections represent mutual influence. Pause, speed, movement amount, reduced motion and every configured screen remain supported. The interview subject's area stays quieter toward the center-left.
 
-Every background starts without video in a fresh studio. Switching backgrounds preserves any video layers you have added and their placement. Use the library to add footage wherever it suits the composition, or choose **No video** to remove all layers. Under an operating-system reduced-motion preference, it shows the assembled symbol until playback is explicitly enabled.
+Every background starts without video in a fresh studio. Switching backgrounds preserves any video layers you have added and their placement. Use **Videos** to add footage wherever it suits the composition, or choose **Hide video** to keep the list while showing only motion graphics. Under an operating-system reduced-motion preference, it shows the assembled symbol until playback is explicitly enabled.
 
 ## Author a preset and bookmark it
 
@@ -53,7 +53,11 @@ The URL contains configuration, not video bytes or file permissions. Choose loca
 
 The monitor now has a **34-clip video library** instead of research-cue buttons. Search titles, descriptions, topics or clip IDs, or browse with Previous/Next. Each card has an actual thumbnail, title, explanation, topic and duration, with a direct add button. There is no separate preview player or detail pane.
 
-**Add video** adds a separate layer to the current background, without changing the background. Add up to eight clips, including repeated clips. The on-set panel links directly to the library.
+The **Videos** section puts **Add files** and **Add YouTube** together. Select one or more files, or add a YouTube URL and optional title. Only sources you add appear in **Your videos**; empty research placeholders are omitted from the public studio. Up to eight entries are supported.
+
+Click an entry to show it by itself. A **Playing** or **On screen · paused** badge identifies what is visible. Switching retains each video's position, shape and screen placement. **Play together** shows ready entries simultaneously; use Placement to arrange the composition. **Hide video** and **Show video** preserve the entire visible composition and the list. **Remove** deletes an entry.
+
+Public and JSON look links retain file names, placement and YouTube sources. Local media itself is never saved or uploaded. Reopened files show **Choose file again**; reattaching replaces the missing source in place, retaining its ID and placement even when the list is full. Keep the editor open while live wall outputs use local files. LAN mode keeps the original catalog in **Browse server research clips**, collapsed by default.
 
 ### YouTube
 
@@ -61,12 +65,12 @@ Paste a YouTube watch, share (`youtu.be`), Shorts, live or embed link in **YouTu
 
 YouTube layers use the same per-screen placement, size, duplicate/remove and bookmark controls as local files. Choose **YouTube shape** for widescreen, portrait or square footage. YouTube links survive reopening a saved address without file selection or server storage. Playback needs internet and a video that permits embedding. YouTube can show branding, overlays or advertisements; use local files when those would interfere with a take. The adapter uses the [official YouTube IFrame API](https://developers.google.com/youtube/iframe_api_reference) and [supported player parameters](https://developers.google.com/youtube/player_parameters).
 
-The **Video layers** panel below the live monitor controls the composition:
+Choose **Placement** on an entry to open **Video placement and screen settings**:
 
 - Choose the selected layer; **Duplicate** or **Remove video** manages individual layers.
 - Enable **Edit in preview**, then drag a video to move it and drag its lower-right corner to resize. Arrow keys move a focused video; Shift moves faster.
 - Choose **All screens** or an individual screen before entering horizontal center, vertical center and width percentages. Dragging edits the screen you drag on. An All screens change replaces that property on every screen.
-- **Visible here** shows or hides a layer on the chosen screen. **Show videos** hides all layers while retaining their positions; **No video** removes every layer.
+- **Visible here** shows or hides a layer on the chosen screen. **Show videos** hides all entries while retaining their positions; **Remove video** deletes only the selected entry.
 - **Reset placement** resets the selected scope. Newly added screens inherit each layer's all-screen placement.
 
 Placement and source aspect compensate for each screen's physical shape, including tiled and portrait screens. Editing handles appear only in the monitor preview. YouTube retains its own player behavior and possible overlays. Saved looks retain every layer and per-screen placement; old single-video looks migrate automatically.
@@ -77,7 +81,7 @@ Five primary examples have English titles and descriptions; the additional selec
 
 Open the public studio in Chrome or Edge. Choose a background, configure screens, and open each output in its own window. Controls synchronize windows in the **same browser**.
 
-Video is optional. Original laboratory videos are not published. The library shows thumbnails and descriptions; **Choose file** on a card opens your local copy. You can also use **Add any video from this computer** or **Add demo animation**. Each chosen file becomes an independent layer. Files play directly from your computer as browser blobs and are not uploaded. Keep the editor open while outputs use that file. Pick it again after closing the browser; saved look files do not contain video files or reusable file permissions.
+Video is optional. Original laboratory videos are not published. Use **Add files**, **Add YouTube** or **Try demo animation**. The playlist appears after adding a source and shows only your entries. Files play directly from your computer and are not uploaded. The matching editor supplies its live file references when opening a wall output; bookmarked addresses retain names and placement and ask for local files again. Missing files remain absent from the wall until reattached.
 
 For synchronized playback across separate computers, use the LAN server below. GitHub Pages is static hosting and does not run the Python sync server.
 
@@ -163,7 +167,7 @@ npm run build
 
 For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. `python qa_preview_interaction.py` checks direct gestures, selection highlights and responsive previews; `python qa_delete_elements.py` checks deletion, copies and saved URLs. `python qa_element_list.py` checks the hierarchy, selection, CRUD and focus; `python qa_mv_variations.py` checks independent seeded MV instances and portable looks. `python qa_youtube.py` checks direct adding and the external YouTube API adapter; `python qa_preset_parts.py` checks individual preset parts. `python qa_authoring.py` checks the public bundle, authored elements and address restoration in fresh browser contexts. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
 
-`python qa_group_editor.py` checks protected groups, explicit ungrouping, long lines, two-pane layout and legacy selections. `python qa_author_shortcuts.py` checks mouse menus, keyboard editing, input guards, drag undo, copy provenance and saved URLs against the built site on port8770. Use `META_STATIC_URL` to point it at the deployed studio.
+`python qa_video_playlist.py` checks chosen-file/YouTube switching, placement, local file reattachment and saved names. `python qa_group_editor.py` checks protected groups, explicit ungrouping, long lines, two-pane layout and legacy selections. `python qa_author_shortcuts.py` checks mouse menus, keyboard editing, input guards, drag undo, copy provenance and saved URLs against the built site on port8770. Use `META_STATIC_URL` to point it at the deployed studio.
 
 ## Design and credits
 

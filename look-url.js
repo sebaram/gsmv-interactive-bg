@@ -34,3 +34,9 @@ export function decodeLook(hash){
 }
 
 export function lookUrl(state,base){return String(base).split('#',1)[0]+encodeLook(state);}
+
+// Live outputs may use files owned by their matching opener; bookmarks stay portable.
+export function liveOutputLook(saved,live){
+ if(!saved||!live)return saved;
+ try{if(encodeLook(saved)!==encodeLook(live))return saved;return sanitize({...saved,videoLayers:live.videoLayers,epoch:live.epoch,offset:live.offset});}catch{return saved;}
+}
