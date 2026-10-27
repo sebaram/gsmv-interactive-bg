@@ -1,10 +1,11 @@
 import * as T from './vendor/three.module.js';
-import {panorama,screenAspect} from './state.js';
+import {panorama,screenAspect,timeline} from './state.js';
 import {presetEdits,objectTypes,isElementDeleted,elementEditTarget} from './authoring.js';
+import {motionContext,applySample,sampledWorld} from './object-motion.js';
 
 // Animation remains inside a wrapper; authored transforms never overwrite it.
 export function authoringScene(group,camera,state,{background,hero,secondary,createObject,view,preview}){
- const entries=[],copies=[],wrappers=new Set(),p=panorama(state),full=camera.clone();full.clearViewOffset();full.left=-p.width/p.height*5;full.right=-full.left;full.updateProjectionMatrix();full.updateMatrixWorld();
+ const entries=[],copies=[],copyRoots=new Map(),wrappers=new Set(),p=panorama(state),full=camera.clone();full.clearViewOffset();full.left=-p.width/p.height*5;full.right=-full.left;full.updateProjectionMatrix();full.updateMatrixWorld();
  let current=state;const counts=new Map();
  const screenFor=x=>p.screens.find(sc=>x>=sc.x&&x<sc.x+sc.width)||p.screens.at(-1);
  // Existing root IDs are part of saved URLs, independent of improved display labels.
@@ -21,7 +22,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   const ndc=anchor.clone().project(full),pixel=(ndc.x+1)/2*p.width,sc=screenFor(pixel),name=defaultName(object,parent),key=(parent?.id||sc.id)+'-'+(parent?name:legacyName(object)).toLowerCase().replace(/[^a-z0-9]+/g,'-');
   const n=(counts.get(key)||0)+1;counts.set(key,n);
   const rootId=parent?.rootId||parent?.id,id=parent?rootId+'-part-'+path.join('-'):custom?.id||object.userData.authorId||(object===hero?'preset-main':object===secondary?'preset-companion':key+'-'+n);
-  const defaults={screen:sc.id,x:(pixel-sc.x)/sc.width*100,y:(1-ndc.y)/2*100,size:1,rotation:0,visible:true};
+  const defaults={screen:sc.id,x:(pixel-sc.x)/sc.width*100,y:(1-ndc.y)/2*100,size:1,rotation:0,visible:true,motionSpeed:1,motionAmount:1,motionAnchor:0,motionOffset:0};
   const originalParent=object.parent||group,parentMatrix=originalParent.matrixWorld.clone(),localAnchor=anchor.clone().applyMatrix4(parentMatrix.clone().invert()),wrap=new T.Group();originalParent.add(wrap);wrap.add(object);wrappers.add(wrap);
   const label=custom?(custom.type==='copy'?'Copy of '+(entries.find(e=>e.id===custom.source)?.name||'element'):objectTypes.find(t=>t[0]===custom.type)?.[1]||name):name+(n>1?' '+n:'');
   const entry={id,label,name:parent?parent.name+' / '+label:label,parentId:parent?.id||null,rootId:rootId||id,depth:parent?parent.depth+1:0,kind:(custom?.type==='copy'?entries.find(e=>e.id===custom.source)?.kind:custom?.type)||((object.name==='MV sculpture')?'logo':name==='Research network'?'network':null),object,wrap,anchor,localAnchor,parentMatrix,defaults,custom:!!custom,owner:parent?.owner||custom?.id||null};if(entry.kind==='logo'&&!parent){defaults.seed=0;defaults.randomness=0;}entries.push(entry);return entry;
@@ -33,7 +34,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  function cloneAnimated(source){
   const pairs=[];
   function cloneNode(object){if(wrappers.has(object))return cloneNode(object.children[0]);const clone=object.clone(false);pairs.push([object,clone]);for(const child of object.children)clone.add(cloneNode(child));return clone;}
-  const clone=cloneNode(source);copies.push({pairs,source,clone});baseWorld(source).decompose(clone.position,clone.quaternion,clone.scale);return clone;
+  const clone=cloneNode(source);copies.push({pairs,source,clone});copyRoots.set(clone,source);baseWorld(source).decompose(clone.position,clone.quaternion,clone.scale);return clone;
  }
  function baseWorld(object){const chain=[];for(let node=object;node&&node!==group;node=node.parent)if(!wrappers.has(node))chain.unshift(node);const matrix=new T.Matrix4();for(const node of chain){node.updateMatrix();matrix.multiply(node.matrix);}return matrix;}
  for(const custom of presetEdits(state).objects){
@@ -54,10 +55,11 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  function applyDom(entry){const r=resolved(entry);if(entry.defaults.screen!==view)return;const el=document.getElementById(entry.domId),edited=presetEdits(current).edits[entry.id],sc=current.screens.find(s=>s.id===view)||current.screens[0],correction=(innerWidth/innerHeight)/screenAspect(sc);el.style.left=edited?r.x+'%':'';el.style.top=edited?r.y+'%':'';el.style.bottom=edited?'auto':'';el.style.transform=`scaleX(${correction}) scale(${r.size}) rotate(${r.rotation}deg)`;el.style.transformOrigin='left top';el.style.display=(entry.domId==='headline'?current.headlines:current.branding)&&r.visible&&!r.deleted?'':'none';}
  function apply(next){current=next;for(const entry of entries){if(entry.domId){applyDom(entry);continue;}const r=resolved(entry),rotation=r.rotation*Math.PI/180;
   if(entry.kind==='logo'&&!entry.parentId)entry.object.userData.mvSettings={seed:r.seed||0,randomness:r.randomness||0};
+  entry.object.userData.authorMotion={motionSpeed:r.motionSpeed??1,motionAmount:r.motionAmount??1,motionAnchor:r.motionAnchor||0,motionOffset:r.motionOffset||0};
   const position=r.x===entry.defaults.x&&r.y===entry.defaults.y&&r.screen===entry.defaults.screen?entry.localAnchor.clone():target(r,entry.anchor.z).applyMatrix4(entry.parentMatrix.clone().invert());
   const anchor=entry.localAnchor.clone().multiplyScalar(r.size).applyAxisAngle(new T.Vector3(0,0,1),rotation);entry.wrap.scale.setScalar(r.size);entry.wrap.rotation.z=rotation;entry.wrap.position.copy(position.sub(anchor));entry.wrap.visible=r.visible&&!r.deleted;
  }}
- function draw(){for(const {pairs,source,clone} of copies){for(const [a,b] of pairs){b.position.copy(a.position);b.quaternion.copy(a.quaternion);b.scale.copy(a.scale);b.visible=a.visible;}baseWorld(source).decompose(clone.position,clone.quaternion,clone.scale);}drawHandle();}
+ function draw(time=timeline(current),amount=current.motionAmount){for(const {pairs,source,clone} of copies){for(const [a,b] of pairs){if(b!==clone){const clock=motionContext(b,time,amount);if(a.userData.motionSpec){const spec=b.userData.motionSpec;b.userData.motionSpec=a.userData.motionSpec;applySample(b,clock.time,clock.amount);b.userData.motionSpec=spec;}else{b.position.copy(a.position);b.quaternion.copy(a.quaternion);b.scale.copy(a.scale);}b.visible=a.visible;}}const clock=motionContext(clone,time,amount);sampledWorld(source,clock.time,clock.amount,wrappers,copyRoots).decompose(clone.position,clone.quaternion,clone.scale);}drawHandle();}
  function dragOrigin(entry){if(entry.domId)return null;group.updateMatrixWorld(true);return {world:entry.localAnchor.clone().applyMatrix4(entry.wrap.matrixWorld),inverseParent:entry.wrap.parent.matrixWorld.clone().invert()};}
  function dragPatch(entry,r,dx,dy,origin){
   if(!origin)return {x:r.x+dx/innerWidth*100,y:r.y+dy/innerHeight*100};
@@ -131,5 +133,5 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   if(!dragging&&pointerPosition){hovered=pickAt(pointerPosition.x,pointerPosition.y);document.querySelector('#scene').style.cursor=hovered?'grab':'default';}
   if(!dragging&&hovered&&hovered.id!==current.activeElement)paintMarker(hover,hovered);else hover.hidden=true;
  }
- apply(state);return {apply,draw,pick(x,y){const entry=pickAt?.(x,y);return entry?{id:entry.id,name:entry.name}:null;},get manifest(){return entries.filter(entry=>!isElementDeleted(current,entry.id)).map(entry=>({id:entry.id,name:entry.name,parentId:entry.parentId,rootId:entry.rootId,depth:entry.depth||0,owner:entry.owner,custom:entry.custom,dom:!!entry.domId,mv:entry.kind==='logo'&&!entry.parentId,base:entry.defaults,...resolved(entry)}));}};
+ apply(state);return {apply,draw,pick(x,y){const entry=pickAt?.(x,y);return entry?{id:entry.id,name:entry.name}:null;},get manifest(){return entries.filter(entry=>!isElementDeleted(current,entry.id)).map(entry=>{let animated=entry.kind==='logo'&&!entry.parentId;entry.object?.traverse(o=>{if(o.userData.motionSpec)animated=true;});return {id:entry.id,name:entry.name,parentId:entry.parentId,rootId:entry.rootId,depth:entry.depth||0,owner:entry.owner,custom:entry.custom,dom:!!entry.domId,mv:entry.kind==='logo'&&!entry.parentId,animated,clock:entry.object?motionContext(entry.object,timeline(current),current.motionAmount):null,base:entry.defaults,...resolved(entry)};});}};
 }

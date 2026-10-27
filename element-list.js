@@ -5,7 +5,7 @@ export function elementList(container,{select,toggleVisible,deleteElement,contex
  const search=container.querySelector('#element-search'),list=container.querySelector('#element-list'),status=container.querySelector('#element-list-status'),clear=container.querySelector('#clear-element-selection');
  const expanded=new Set(),rows=new Map();let elements=[],screens=[],selected='',previousSelection='',structure='',dirty=true;
  const children=new Map(),byId=new Map();
- function matching(element){const sc=screens.find(s=>s.id===element.screen);return [element.id,element.name,sc?.name,element.screen].join(' ').toLowerCase().includes(search.value.trim().toLowerCase());}
+ function matching(element){const sc=screens.find(s=>s.id===element.screen);return [element.id,element.name,sc?.name,element.screen,element.screenLabel].join(' ').toLowerCase().includes(search.value.trim().toLowerCase());}
  function ancestors(id){const result=[];let parent=byId.get(id)?.parentId;while(parent&&byId.has(parent)){result.push(parent);parent=byId.get(parent).parentId;}return result;}
  function render(){
   const query=search.value.trim(),shown=new Set();
@@ -32,7 +32,7 @@ export function elementList(container,{select,toggleVisible,deleteElement,contex
   const changedSelection=selected!==previousSelection;
   if(changedSelection&&selected){if(search.value&& !matching(byId.get(selected))){search.value='';dirty=true;}for(const id of ancestors(selected))if(!expanded.has(id)){expanded.add(id);dirty=true;}}
   if(dirty){render();dirty=false;}
-  for(const element of elements){const controls=rows.get(element.id);if(!controls)continue;const visible=element.visible!==false,hiddenParent=ancestors(element.id).some(id=>byId.get(id).visible===false),screen=screens.find(s=>s.id===element.screen)?.name||element.screen,parts=(children.get(element.id)||[]).length;
+  for(const element of elements){const controls=rows.get(element.id);if(!controls)continue;const visible=element.visible!==false,hiddenParent=ancestors(element.id).some(id=>byId.get(id).visible===false),screen=element.screenLabel||screens.find(s=>s.id===element.screen)?.name||element.screen,parts=(children.get(element.id)||[]).length;
    controls.row.classList.toggle('selected',element.id===selected);controls.row.classList.toggle('element-hidden',!visible||hiddenParent);controls.row.classList.toggle('element-locked',!!element.locked);controls.button.setAttribute('aria-pressed',String(element.id===selected));controls.detail.textContent=[screen,parts?(element.ungrouped?'Ungrouped':'Grouped')+' · '+parts:'',element.locked?'Part · ungroup to edit':!visible?'Hidden':hiddenParent?'Hidden by group':''].filter(Boolean).join(' · ');controls.visibility.setAttribute('aria-label',(visible?'Hide ':'Show ')+element.name);controls.visibility.title=element.locked?'Ungroup its parent to edit this part':(visible?'Hide ':'Show ')+element.name;controls.visibility.setAttribute('aria-pressed',String(visible));controls.visibility.disabled=!!element.locked;controls.remove.disabled=!!element.locked;controls.remove.title=element.locked?'Ungroup its parent to delete this part':'Delete '+element.name;
   }
   clear.disabled=!selected;

@@ -26,6 +26,7 @@ import * as T from './vendor/three.module.js';
 import {authoringScene} from './authoring-scene.js';
 import {encodeLook,decodeLook} from './look-url.js';
 import {createLogoSculpture} from './logo-scene.js';
+import {recordMotion,applySample,motionContext} from './object-motion.js';
 
 function fixture(){
  globalThis.innerWidth=1280;globalThis.innerHeight=720;
@@ -39,6 +40,16 @@ function fixture(){
 function makeAuthor(f,state=f.state){return authoringScene(f.group,f.camera,state,{hero:f.hero,view:'front',preview:false,createObject:()=>null});}
 function matrix(object){object.updateWorldMatrix(true,false);return object.matrixWorld.elements;}
 function closeMatrix(a,b){a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<1e-9,`matrix component ${i}: ${v} != ${b[i]}`));}
+
+test('generic animated copies sample their own clocks independently of a frozen source',()=>{
+ const f=fixture();recordMotion(f.ribbon,{type:'orbit',base:[0,0,0],phase:0});let state=patchElement(f.state,'preset-main',{motionSpeed:0});state=addElement(state,'copy',{},'preset-main');const author=makeAuthor(f,state);let copy;f.group.traverse(o=>{if(o.isMesh&&o!==f.ribbon&&o.geometry===f.ribbon.geometry)copy=o;});assert.ok(copy);
+ const draw=time=>{const clock=motionContext(f.ribbon,time,1);applySample(f.ribbon,clock.time,clock.amount);author.draw(time,1);};draw(2);const source=matrix(f.ribbon).slice(),first=matrix(copy).slice();draw(5);closeMatrix(source,matrix(f.ribbon));assert.notDeepEqual(first,matrix(copy));
+ state=patchElement(state,'preset-main',{motionSpeed:1});state=patchElement(state,'object-1',{motionSpeed:0});author.apply(state);draw(7);const held=matrix(copy).slice();draw(10);closeMatrix(held,matrix(copy));assert.notDeepEqual(source,matrix(f.ribbon));
+});
+
+test('copying a moving leaf again retains its original ancestor coordinate frame',()=>{
+ const f=fixture();recordMotion(f.ribbon,{type:'float',y:0,phase:0});let state=addElement(f.state,'copy',{},'preset-main-part-1');state=addElement(state,'copy',{},'object-1');const author=makeAuthor(f,state),copies=[];f.group.traverse(o=>{if(o.isMesh&&o!==f.ribbon&&o.geometry===f.ribbon.geometry)copies.push(o);});assert.equal(copies.length,2);author.draw(10,1);closeMatrix(matrix(copies[0]),matrix(copies[1]));
+});
 
 test('preset groups expose semantic, stable paths for each nested part without changing defaults',()=>{
  const f=fixture(),before=matrix(f.ribbon).slice(),author=makeAuthor(f),part=author.manifest.find(e=>e.parentId==='preset-main');

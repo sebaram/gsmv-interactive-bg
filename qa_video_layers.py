@@ -69,12 +69,13 @@ with sync_playwright() as p:
  times=other.evaluate('window.META.videos.map(v=>v.time)');other.wait_for_timeout(800)
  assert all(abs(a-b)<.05 for a,b in zip(times,other.evaluate('window.META.videos.map(v=>v.time)')))
  page.locator('#pause-btn').click();other.wait_for_function('window.META.videos.every(v=>!v.paused)')
+ page.locator('#video-speed').fill('1.4');other.wait_for_function('window.META.state.videoLayers.at(-1).motionSpeed===1.4&&document.querySelectorAll(".video-layer video")[1].playbackRate===1.4');assert other.evaluate('document.querySelector(".video-layer video").playbackRate')==1
  print('PASS All-screen placement and multi-video pause/resume synchronize to a separate playback client',flush=True)
  with page.expect_download() as download:page.locator('#save-look').click()
  saved=json.loads(Path(download.value.path()).read_text(encoding='utf-8'));assert len(saved['videoLayers'])==2 and not saved['editVideos']
  page.locator('#no-video').click();page.locator('#look-file').set_input_files({'name':'look.json','mimeType':'application/json','buffer':json.dumps(saved).encode()})
  wall.wait_for_function('window.META.videos.length===2')
- page.locator('#duplicate-video-layer').click();wall.wait_for_function('window.META.videos.length===3')
+ page.locator(f'.author-row-select[data-element-id="media:{saved["activeVideoLayer"]}"]').click();page.locator('#duplicate-video-layer').click();wall.wait_for_function('window.META.videos.length===3')
  page.locator('#remove-video-layer').click();wall.wait_for_function('window.META.videos.length===2')
  page.locator('#display-setup').evaluate('e=>e.open=true');page.locator('#add-screen').click()
  page.wait_for_function('window.METAStudio.state.screens.length===3')

@@ -1,6 +1,7 @@
 import {timeline,screenAspect} from './state.js';
-import {placement,videoNeedsFile} from './video-layers.js';
+import {placement,videoNeedsFile,videoElementId} from './video-layers.js';
 import {youtubePlayer} from './youtube-player.js';
+import {clockTime} from './motion.js';
 
 export function videoOverlay(container,clips,{view,preview,motionAllowed}){
  const entries=new Map();let state,lastSync=0;
@@ -8,9 +9,9 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
  function sync(entry,force=false){
   const v=entry.video;if(entry.failed||!v||v.readyState<1)return;
   const duration=v.duration,start=entry.layer.youtube?.start<duration?entry.layer.youtube.start:0;
-  if(Number.isFinite(duration)&&duration>0){const target=start+(motionAllowed()?timeline(state)%(duration-start):0);if(force||Math.abs(v.currentTime-target)>(entry.kind==='youtube'?1.5:.28))v.currentTime=target;}
-  if(!state.showVideo||!entry.rect.enabled||state.paused||state.speed===0||!motionAllowed())v.pause();
-  else {v.playbackRate=Math.max(.0625,state.speed);if(v.paused){if(entry.kind==='youtube')v.play();else v.play().then(()=>entry.blocked=false).catch(()=>entry.blocked=true);}}
+  if(Number.isFinite(duration)&&duration>0){const time=clockTime(timeline(state),entry.layer),length=duration-start,target=start+(motionAllowed()?((time%length)+length)%length:0);if(force||Math.abs(v.currentTime-target)>(entry.kind==='youtube'?1.5:.28))v.currentTime=target;}
+  if(!state.showVideo||!entry.rect.enabled||state.paused||state.speed===0||entry.layer.motionSpeed===0||!motionAllowed())v.pause();
+  else {v.playbackRate=Math.max(.0625,state.speed*(entry.layer.motionSpeed??1));if(v.paused){if(entry.kind==='youtube')v.play();else v.play().then(()=>entry.blocked=false).catch(()=>entry.blocked=true);}}
  }
  function position(entry){
   const sc=state.screens.find(s=>s.id===view)||state.screens[0],v=entry.video;
@@ -19,7 +20,7 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
   entry.wrap.hidden=!state.showVideo||!r.enabled||videoNeedsFile(entry.layer);
   entry.wrap.classList.toggle('editing',preview&&state.editVideos);
   entry.wrap.classList.toggle('selected',state.activeVideoLayer===entry.layer.id);
-  if(preview)entry.wrap.tabIndex=state.editVideos?0:-1;
+  if(preview)entry.wrap.tabIndex=0;
   if(entry.kind==='youtube'){
    const width=innerWidth*r.width/100,height=innerHeight*r.height/100,aspect=entry.layer.sourceAspect;
    const playerHeight=Math.max(height,200,200/aspect),playerWidth=playerHeight*aspect;
@@ -43,16 +44,18 @@ export function videoOverlay(container,clips,{view,preview,motionAllowed}){
   if(preview){
    const tag=document.createElement('span'),handle=document.createElement('button');tag.className='video-edit-label';handle.className='video-resize';handle.type='button';handle.setAttribute('aria-label','Resize video');tag.textContent='Move video';wrap.append(tag,handle);
    wrap.onpointerdown=e=>{
-    if(!state.editVideos||e.button!==0)return;e.preventDefault();e.stopPropagation();
+    if(e.button!==0)return;e.preventDefault();e.stopPropagation();wrap.focus({preventScroll:true});
     parent.METAStudio?.selectVideoLayer(layer.id,view);
+    parent.METAStudio?.beginElementGesture();
     const start={...entry.rect,pointerX:e.clientX,pointerY:e.clientY},resize=e.target===handle,pointer=e.pointerId;wrap.setPointerCapture(pointer);
     const change=event=>{
      const dx=(event.clientX-start.pointerX)/innerWidth*100,dy=(event.clientY-start.pointerY)/innerHeight*100;
      const patch=resize?{width:start.width+dx*2}:{x:start.x+dx,y:start.y+dy};
      parent.METAStudio?.updateVideoLayer(layer.id,patch,view);
     };
-    wrap.onpointermove=change;const finish=()=>{wrap.onpointermove=null;wrap.onpointerup=null;wrap.onpointercancel=null;if(wrap.hasPointerCapture(pointer))wrap.releasePointerCapture(pointer);};wrap.onpointerup=finish;wrap.onpointercancel=finish;
+    wrap.onpointermove=change;const finish=()=>{wrap.onpointermove=null;wrap.onpointerup=null;wrap.onpointercancel=null;if(wrap.hasPointerCapture(pointer))wrap.releasePointerCapture(pointer);parent.METAStudio?.endElementGesture();};wrap.onpointerup=finish;wrap.onpointercancel=finish;
    };
+   wrap.oncontextmenu=e=>{e.preventDefault();e.stopPropagation();const frame=frameElement.getBoundingClientRect();parent.METAStudio?.elementMenu(videoElementId(layer.id),frame.left+e.clientX,frame.top+e.clientY);};
    wrap.onkeydown=e=>{if(!state.editVideos||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const step=e.shiftKey?5:1,r=entry.rect;parent.METAStudio?.updateVideoLayer(layer.id,{x:r.x+(e.key==='ArrowLeft'?-step:e.key==='ArrowRight'?step:0),y:r.y+(e.key==='ArrowUp'?-step:e.key==='ArrowDown'?step:0)},view);};
   }
   return entry;

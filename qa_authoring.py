@@ -44,7 +44,7 @@ with sync_playwright() as p:
  page.locator('#author-element').select_option('object-1');page.locator('#author-visible').uncheck();left.wait_for_function('window.META.elements.find(e=>e.id==="object-1").visible===false');page.locator('#author-visible').check()
  page.locator('#add-element-type').select_option('logo');page.locator('#add-element').click();page.wait_for_function('window.METAStudio.state.authored[1].objects.length===2')
  page.wait_for_function('document.querySelector("#author-element").value==="object-2"');page.locator('#author-screen').select_option('front');page.locator('#author-size').fill('0.4')
- page.locator('#clear-local-video').click();front.wait_for_function('window.META.video && window.META.video.ready>=2');assert not page.locator('#edit-elements').is_checked()
+ page.locator('#clear-local-video').click();front.wait_for_function('window.META.video && window.META.video.ready>=2');assert not page.evaluate('window.METAStudio.state.editElements');assert page.locator('.author-video-properties').is_visible()
  print('PASS Per-screen identity placement, element visibility, added MV objects and optional video coexist',flush=True)
  # Read the WebGL buffer so native videos/hover handles composited above the
  # canvas cannot masquerade as movement in the procedural scene.
@@ -64,8 +64,8 @@ with sync_playwright() as p:
  detached=b.new_context();wall=detached.new_page();wall.goto(standalone);wall.wait_for_function('window.META && window.META.elements.some(e=>e.id==="object-1")')
  assert wall.evaluate('window.META.state.authored[1].edits["preset-main"].size')==1.25
  print('PASS Copied/bookmarked editor and standalone output addresses restore in fresh browser storage',flush=True)
- page.locator('[data-variant="5"]').click();page.locator('[data-variant="1"]').click();page.wait_for_function('window.METAStudio.state.authored[1].objects.length===2')
- page.locator('#reset-preset').click();page.wait_for_function('!window.METAStudio.state.authored[1]');assert page.evaluate('window.METAStudio.state.videoLayers.length')==1
+ page.locator('[data-variant="5"]').click();front.wait_for_function('window.META.state.variant===5');page.locator('[data-variant="1"]').click();front.wait_for_function('window.META.state.variant===1');page.wait_for_function('window.METAStudio.state.authored[1].objects.length===2')
+ page.locator('.author-row-select[data-element-id="preset-main"]').click();page.locator('#reset-preset').click();page.wait_for_function('!window.METAStudio.state.authored[1]');assert page.evaluate('window.METAStudio.state.videoLayers.length')==1
  page.set_viewport_size({'width':390,'height':844});page.screenshot(path=str(APP/'previews/qa-authoring-mobile.png'),full_page=True);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
  assert not errors,errors;assert not api,api
  print('PASS Preset reset preserves video layers, narrow controls fit, and no JS/API errors',flush=True)

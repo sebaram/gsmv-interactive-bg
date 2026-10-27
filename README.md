@@ -33,13 +33,17 @@ Open **Scene appearance** under Wall brightness in the on-set controls. **Preset
 
 Appearance settings belong to each preset and synchronize to the wall outputs. They are retained in saved JSON and look URLs. **Reset preset appearance** restores only this preset's colors, lighting and floor; authored elements, footage, wall brightness and motion settings remain available. Changes update existing shader/light settings without rebuilding objects or video decoders.
 
-Existing controls also cover overall Wall brightness, Motion speed, Movement amount, pause/resume, pointer interaction, signature/titles, screen ratios/grids, and element/video placement, size, rotation and visibility.
+Existing controls also cover overall Wall brightness, pause/resume, pointer interaction, signature/titles, screen ratios/grids, and element/video placement, size, rotation and visibility. Select an animated object to change its Motion speed and Movement amount in Properties.
 
 ### Elements
 
 All six backgrounds are starting **presets**. In **Author the preset**, select an element, choose its screen and set position, size, rotation and visibility. **Duplicate element** gives it an independent placement: for example, keep the main sculpture large on the front/right screen and put a smaller copy on the left. Copies keep their animation and survive removal of a custom source object. **Add element** offers MV sculptures, red/blue ribbons, orbital forms, networks, spheres and arches on any preset.
 
 The editor has a compact **Layers** pane on the left and selected **Properties** on the right. Expand groups to inspect their contents, search by name/part/screen, and use the eye or trash icons for visibility and deletion. Full names appear in Properties and row tooltips. The panes stack on narrow screens. Search **long** to find the red/blue **Long line** ribbon layers; their position, size, rotation and visibility are editable like other elements. Floor-grid connections are named **Connection line**.
+
+Animated objects and groups have their own **Motion speed** and **Movement amount** in Properties. Speed changes preserve their current phase; 0 freezes only that object. Group settings apply to animated descendants, and duplicates can move at different rates. Static parts explain when motion belongs to their parent group. Session Pause/Resume still controls the whole composition.
+
+Videos appear in the same Layers list. Choose **Video element** under Add an element for a blank placement, or add a file/YouTube source from Videos. Video Properties lets you name it, reuse another video's source, replace its file or YouTube link, select its assigned screens, and change its **Playback rate**. Duplicate to reuse footage in another position or assign a different source. Videos support the same selection, preview dragging, visibility, deletion, clipboard and undo commands as artwork. Each placement keeps its own source, screen assignments and playback rate in saved looks; local file bytes still need reattaching after reopening.
 
 Groups edit as one unit by default. Clicking a child in the preview or list selects its grouped ancestor; child Hide/Delete controls are disabled. Choose **Ungroup** in Properties or the right-click menu to edit individual parts. Nested groups keep their own boundary until ungrouped too. **Regroup** protects the artwork again. Expanding a group only shows its contents. Grouping choices support undo and are saved in look URLs; existing child transforms and animation are preserved.
 
@@ -77,13 +81,14 @@ Paste a YouTube watch, share (`youtu.be`), Shorts, live or embed link in **YouTu
 
 YouTube layers use the same per-screen placement, size, duplicate/remove and bookmark controls as local files. Choose **YouTube shape** for widescreen, portrait or square footage. YouTube links survive reopening a saved address without file selection or server storage. Playback needs internet and a video that permits embedding. YouTube can show branding, overlays or advertisements; use local files when those would interfere with a take. The adapter uses the [official YouTube IFrame API](https://developers.google.com/youtube/iframe_api_reference) and [supported player parameters](https://developers.google.com/youtube/player_parameters).
 
-Choose **Placement** on an entry to open **Video placement and screen settings**:
+Choose **Placement** on a playlist entry, or select its row in **Layers**, to open its **Properties**:
 
 - Choose the selected layer; **Duplicate** or **Remove video** manages individual layers.
-- Enable **Edit in preview**, then drag a video to move it and drag its lower-right corner to resize. Arrow keys move a focused video; Shift moves faster.
+- Click and drag a video in the preview to select and move it; drag its lower-right corner to resize. Arrow keys move a focused video; Shift moves faster.
+- Choose assigned screens to show this instance on one or several outputs. Solo/together playlist actions retain those assignments.
 - Choose **All screens** or an individual screen before entering horizontal center, vertical center and width percentages. Dragging edits the screen you drag on. An All screens change replaces that property on every screen.
 - **Visible here** shows or hides a layer on the chosen screen. **Show videos** hides all entries while retaining their positions; **Remove video** deletes only the selected entry.
-- **Reset placement** resets the selected scope. Newly added screens inherit each layer's all-screen placement.
+- **Reset placement** resets the selected scope. Instances assigned to all screens also include newly added screens; specific-screen assignments stay specific.
 
 Placement and source aspect compensate for each screen's physical shape, including tiled and portrait screens. Editing handles appear only in the monitor preview. YouTube retains its own player behavior and possible overlays. Saved looks retain every layer and per-screen placement; old single-video looks migrate automatically.
 
@@ -152,9 +157,9 @@ If the processor preserves a 16:9 picture rather than stretching it, select **Ma
 
 ## Motion and shoot controls
 
-- **Motion speed**, 0–3×, controls the shared timeline; 0 holds it.
-- **Movement amount**, 0–2×, adjusts the 3D movement. The previous very slow decorative motion has been replaced with clearly visible rotations and floating galleries.
-- **Show visible motion** resumes playback at 1× speed and 1.3× movement. It also explicitly overrides an operating-system reduced-motion preference.
+- **Motion speed**, 0–3×, belongs to the selected animated object/group in Properties; 0 holds that object.
+- **Movement amount**, 0–2×, adjusts the selected object's 3D movement. Video elements instead expose their own **Playback rate**.
+- **Enable playback** resumes the session and explicitly overrides an operating-system reduced-motion preference. Individual object motion and video rates remain as authored.
 - The live status reports render FPS, timeline progress, paused/held state, reduced-motion preference or blocked video playback. The still scene thumbnails are selectors; the live panorama and wall outputs animate.
 - **Pause** freezes both the scene and video. Resume continues from the held phase.
 - **Wall brightness** is a software adjustment. Match hardware wall brightness and camera exposure on set.
@@ -180,6 +185,8 @@ npm run build
 For browser checks, install Python Playwright and Chrome, run `python serve.py --port 8766` in a separate terminal, then `python qa_browser.py`, `python qa_video_layers.py` and `python qa_logo_video.py`. `python qa_preview_interaction.py` checks direct gestures, selection highlights and responsive previews; `python qa_delete_elements.py` checks deletion, copies and saved URLs. `python qa_element_list.py` checks the hierarchy, selection, CRUD and focus; `python qa_mv_variations.py` checks independent seeded MV instances and portable looks. `python qa_youtube.py` checks direct adding and the external YouTube API adapter; `python qa_preset_parts.py` checks individual preset parts. `python qa_authoring.py` checks the public bundle, authored elements and address restoration in fresh browser contexts. For public mode, build the site, serve this repository at port 8770 with Python's HTTP server, and run `python qa_static.py`. `QA.md` records the latest results. `make_previews.py` captures the actual rendered backgrounds.
 
 `python qa_video_playlist.py` checks chosen-file/YouTube switching, placement, local file reattachment and saved names. `python qa_group_editor.py` checks protected groups, explicit ungrouping, long lines, two-pane layout and legacy selections. `python qa_author_shortcuts.py` checks mouse menus, keyboard editing, input guards, drag undo, copy provenance and saved URLs against the built site on port8770. Use `META_STATIC_URL` to point it at the deployed studio.
+
+`python qa_media_elements.py` checks unified video/artwork Layers and Properties, independent object motion, media source replacement/reuse, screen assignments, per-video rate, drag selection, clipboard/history and saved links.
 
 ## Design and credits
 

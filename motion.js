@@ -1,4 +1,6 @@
 // Absolute-time transforms keep the same motion on browsers with different FPS.
+export function clockTime(time,settings={}){return (time-(settings.motionAnchor||0))*(settings.motionSpeed??1)+(settings.motionOffset||0);}
+export function retimeMotion(settings,speed,parentTime){return {motionSpeed:speed,motionAnchor:parentTime,motionOffset:clockTime(parentTime,settings)};}
 export function motionPose(type,time,phase=0,amount=1){
  const t=time*amount,s=t*.24;
  if(type==='ribbon')return {x:Math.sin(s*.55+phase)*.18,y:s*.74+phase*.15,z:Math.sin(s*.7+phase)*.3+(phase===2?.8:-.2),lift:Math.sin(t*.55+phase)*.12};

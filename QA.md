@@ -116,3 +116,11 @@ Review findings for reversible Show, missing-file wall boxes and stale stored bl
 Solid mode removes the CSS vignette as well as the shader gradient. Browser screenshot tests check actual delivered pixels in addition to the canvas buffer. Rendering comparisons bring the controller to the foreground so background-tab animation throttling cannot leave stale buffers. Desktop/mobile panel screenshots were inspected. Playlist, grouped authoring and YouTube adapter regressions pass. Read-only review's invisible-floor and vignette findings were reproduced, fixed and rechecked; no remaining important findings.
 
 A separate LAN playback browser context received changed appearance settings through the server and rendered the exact expected screenshot RGB, confirming synchronization beyond the controller's browser storage.
+
+## Video elements and object motion Properties
+
+76 automated tests pass. New coverage verifies continuous independent clocks, frozen originals versus animated copies, copied-leaf ancestor coordinates, source replacement/reuse, persistent video screen assignments, media manifests and preserving the selected video when another row is deleted. JavaScript syntax checks and public packaging pass.
+
+`qa_media_elements.py` verifies Motion speed and Movement amount in artwork Properties, freezing one MV while another advances, independent video duplication/source changes, front/left assignments, per-video pause rate, direct preview drag/list selection, in-place YouTube-to-file replacement, blank video creation, clipboard/delete/undo, unrelated-row deletion, saved motion/media settings and mobile fit. The two-pane video Properties layout was visually inspected.
+
+Static playback, YouTube adapter, playlist, appearance, grouped editor, shortcut, preset-part and authoring regressions pass. LAN composition verifies multiple native sources, preserved decoders, physical positioning, drag/resize, shared pause, saved looks, added screens and expired-file reattachment. The broader LAN suite passes 49 browser/server checks, including independent object clock updates across playback clients. Its generated report now goes under ignored previews rather than replacing this history. Read-only review reproduced two copy-coordinate/selection issues; dedicated regressions now pass and final review found no remaining important issues.

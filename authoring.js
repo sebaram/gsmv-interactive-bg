@@ -1,7 +1,8 @@
+import {sanitizeLayers} from './video-layers.js';
 export const objectTypes=[['logo','MV sculpture'],['ribbons','Real / virtual ribbons'],['orbits','Orbital sculpture'],['network','Research network'],['sphere','Sculptural sphere'],['arch','Architectural arch']];
 const limit=(v,min,max)=>Math.min(max,Math.max(min,+v));
 export function cleanTransform(raw={}){
- const out={};for(const [key,min,max] of [['x',-50,150],['y',-50,150],['size',.05,6],['rotation',-180,180],['seed',0,999999],['randomness',0,2]])if(raw[key]!==undefined&&Number.isFinite(+raw[key]))out[key]=key==='seed'?Math.floor(limit(raw[key],min,max)):limit(raw[key],min,max);
+ const out={};for(const [key,min,max] of [['x',-50,150],['y',-50,150],['size',.05,6],['rotation',-180,180],['seed',0,999999],['randomness',0,2],['motionSpeed',0,3],['motionAmount',0,2],['motionAnchor',-1e10,1e10],['motionOffset',-1e10,1e10]])if(raw[key]!==undefined&&Number.isFinite(+raw[key]))out[key]=key==='seed'?Math.floor(limit(raw[key],min,max)):limit(raw[key],min,max);
  if(typeof raw.screen==='string')out.screen=raw.screen.replace(/[^a-zA-Z0-9_-]/g,'').slice(0,50);
  if('visible' in raw)out.visible=raw.visible!==false;if('deleted' in raw)out.deleted=Boolean(raw.deleted);if('ungrouped' in raw)out.ungrouped=raw.ungrouped===true;return out;
 }
@@ -78,7 +79,7 @@ export function pasteElement(state,clipboard){
  }
  const source=ensureSource(clipboard.element.id);if(objects.length>=32)return state;
  const element=clipboard.element;
- let next=addElement({...state,authored:{...state.authored,[state.variant]:{objects,edits}}},'copy',{screen:element.screen,x:Math.min(140,element.x+5),y:element.y,size:element.size,rotation:element.rotation,visible:true},source);
+ let next=addElement({...state,authored:{...state.authored,[state.variant]:{objects,edits}}},'copy',{screen:element.screen,x:Math.min(140,element.x+5),y:element.y,size:element.size,rotation:element.rotation,visible:true,...Object.fromEntries(['motionSpeed','motionAmount','motionAnchor','motionOffset'].filter(k=>element[k]!==undefined).map(k=>[k,element[k]]))},source);
  const nextPreset=presetEdits(next),id=next.activeElement,prefix=clipboard.element.id+(clipboard.element.id.includes('-part-')?'-':'-part-');
  nextPreset.edits=Object.fromEntries(Object.entries(nextPreset.edits).filter(([part])=>!inElementSubtree(part,id)));
  for(const [part,patch] of Object.entries(snapshot.edits))if(part.startsWith(prefix))nextPreset.edits[id+'-part-'+part.slice(prefix.length)]={...patch};
@@ -87,8 +88,8 @@ export function pasteElement(state,clipboard){
 
 export function authoringHistory(){
  let past=[],future=[],observed=null,grouped=false,recorded=false;
- const stamp=state=>JSON.stringify(sanitizeAuthored(state.authored)),snapshot=state=>structuredClone({authored:sanitizeAuthored(state.authored),variant:state.variant,activeElement:state.activeElement,editElements:state.editElements,editVideos:state.editVideos});
+ const stamp=state=>JSON.stringify([sanitizeAuthored(state.authored),sanitizeLayers(state.videoLayers),!!state.showVideo]),snapshot=state=>structuredClone({authored:sanitizeAuthored(state.authored),videoLayers:sanitizeLayers(state.videoLayers),showVideo:!!state.showVideo,activeVideoLayer:state.activeVideoLayer,variant:state.variant,activeElement:state.activeElement,editElements:state.editElements,editVideos:state.editVideos});
  function observe(state){const key=stamp(state);if(observed!==null&&key!==observed){past=[];future=[];grouped=false;recorded=false;}observed=key;}
  function restore(state,from,to){if(!from.length)return state;to.push(snapshot(state));const saved=from.pop(),next={...state,...saved};observed=stamp(next);grouped=false;recorded=false;return next;}
- return {observe,begin(){grouped=true;recorded=false;},end(){grouped=false;recorded=false;},record(before,after){observe(before);if(stamp(before)===stamp(after))return;if(!grouped||!recorded){past.push(snapshot(before));if(past.length>40)past.shift();}recorded=true;future=[];observed=stamp(after);},undo(state){observe(state);return restore(state,past,future);},redo(state){observe(state);return restore(state,future,past);},get canUndo(){return past.length>0;},get canRedo(){return future.length>0;}};
+ return {observe,accept(state){observed=stamp(state);},begin(){grouped=true;recorded=false;},end(){grouped=false;recorded=false;},record(before,after){observe(before);if(stamp(before)===stamp(after))return;if(!grouped||!recorded){past.push(snapshot(before));if(past.length>40)past.shift();}recorded=true;future=[];observed=stamp(after);},undo(state){observe(state);return restore(state,past,future);},redo(state){observe(state);return restore(state,future,past);},get canUndo(){return past.length>0;},get canRedo(){return future.length>0;}};
 }

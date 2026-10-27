@@ -5,7 +5,7 @@ import {videoOverlay} from './video-overlay.js';
 import {authoringScene} from './authoring-scene.js';
 import {presetEdits} from './authoring.js';
 import {decodeLook,liveOutputLook} from './look-url.js';
-import {motionPose} from './motion.js';
+import {motionContext,recordMotion,applySample} from './object-motion.js';
 import {createLogoSculpture} from './logo-scene.js';
 import {appearanceFor,lightAppearance} from './appearance.js';
 
@@ -24,6 +24,7 @@ const scene=new T.Scene();
 const camera=new T.OrthographicCamera(-18,18,5,-5,.1,140);camera.position.set(0,3.8,32);camera.lookAt(0,0,0);
 const group=new T.Group();scene.add(group);
 const moving=[],logoSystems=[];
+function addMotion({o,...spec}){recordMotion(o,spec);moving.push({o,...spec});}
 let hero,secondary,background,layout,authoring,floorMaterial,lightingBase=[];
 let lastConfig='',pointer={x:0,y:0},lastFrame=-1,renderedTime=null;
 let frames=0,fps=0,statsEpoch=performance.now();
@@ -73,12 +74,12 @@ function blueHour(){
  atmosphere(false);stageFloor('#0a1830');const {hx,lx}=layout;
  hero=new T.Group();hero.position.set(hx,.1,0);group.add(hero);
  const pearl=physical('#6b9bdc',.12,.84);
- const shell=mesh(new T.TorusKnotGeometry(1.8,.47,220,32,2,3),pearl,hero);shell.rotation.set(.2,.5,-.35);moving.push({o:shell,type:'knot'});
- [[3.15,.055,'#8fb6e7',.8,.38,-.5],[2.85,.085,'#0066b3',-.8,.35,.5],[3.5,.035,'#abbdd7',1.15,-.3,.4]].forEach(([r,w,c,x,y,z],i)=>{const o=torus(r,w,c,hero);o.rotation.set(x,y,z);moving.push({o,type:'orbit',base:[x,y,z],phase:i});});
+ const shell=mesh(new T.TorusKnotGeometry(1.8,.47,220,32,2,3),pearl,hero);shell.rotation.set(.2,.5,-.35);addMotion({o:shell,type:'knot'});
+ [[3.15,.055,'#8fb6e7',.8,.38,-.5],[2.85,.085,'#0066b3',-.8,.35,.5],[3.5,.035,'#abbdd7',1.15,-.3,.4]].forEach(([r,w,c,x,y,z],i)=>{const o=torus(r,w,c,hero);o.rotation.set(x,y,z);addMotion({o,type:'orbit',base:[x,y,z],phase:i});});
  sphere(.27,'#ed1c24',-2.6,1.2,.6,hero);sphere(.45,'#c3d0e4',2.5,-1.5,1.5,hero);
  shadow(hx,-3.98,0,11,6,.5);
  secondary=new T.Group();secondary.position.set(lx,-.3,-3);group.add(secondary);
- for(let i=0;i<3;i++){const r=torus(2.2-i*.27,.055,i===1?'#377ac7':'#6c9ecb',secondary);r.rotation.set(.85+i*.18,-.7+i*.4,-.25);moving.push({o:r,type:'orbit',base:[r.rotation.x,r.rotation.y,r.rotation.z],phase:i+4});}
+ for(let i=0;i<3;i++){const r=torus(2.2-i*.27,.055,i===1?'#377ac7':'#6c9ecb',secondary);r.rotation.set(.85+i*.18,-.7+i*.4,-.25);addMotion({o:r,type:'orbit',base:[r.rotation.x,r.rotation.y,r.rotation.z],phase:i+4});}
  sphere(.7,'#2862a9',0,0,0,secondary);sphere(.2,'#ed1c24',1.6,1,1,secondary);
  for(let i=0;i<35;i++){const x=Math.sin(i*17.31)*layout.width*.48,y=Math.cos(i*13.73)*3.5,z=-4-Math.abs(Math.sin(i*4.4))*9;sphere(.018+(i%3)*.009,i%8===0?'#b77c8e':'#7b9ac4',x,y,z);}
  for(let i=0;i<5;i++){const y=-3.9+i*.02;line([[-layout.width,y,-i*6-2],[layout.width,y,-i*6-2]],'#2d4d75',.22);}
@@ -91,14 +92,14 @@ function ribbonGeometry(phase=0){
 function commonGround(){
  atmosphere(false);background.material.uniforms.uAccent.value.set('#e36b88');stageFloor('#151628');keyLight.color.set('#ffe4e1');rim.color.set('#538fff');
  const {hx,lx}=layout;hero=new T.Group();hero.position.set(hx-.6,.2,0);group.add(hero);
- const r1=mesh(ribbonGeometry(.3),physical('#0066b3',.22,.53,{side:T.DoubleSide}),hero);r1.rotation.set(.1,.4,-.2);moving.push({o:r1,type:'ribbon',phase:0});
- const r2=mesh(ribbonGeometry(1.1),physical('#ed1c24',.25,.35,{side:T.DoubleSide}),hero);r2.rotation.set(-.45,-.45,.8);r2.scale.setScalar(.81);r2.position.z=-.6;moving.push({o:r2,type:'ribbon',phase:2});
+ const r1=mesh(ribbonGeometry(.3),physical('#0066b3',.22,.53,{side:T.DoubleSide}),hero);r1.rotation.set(.1,.4,-.2);addMotion({o:r1,type:'ribbon',phase:0});
+ const r2=mesh(ribbonGeometry(1.1),physical('#ed1c24',.25,.35,{side:T.DoubleSide}),hero);r2.rotation.set(-.45,-.45,.8);r2.scale.setScalar(.81);r2.position.z=-.6;addMotion({o:r2,type:'ribbon',phase:2});
  sphere(.52,'#ccd6e2',.4,-.15,1.3,hero);sphere(.15,'#e08a8d',-2.2,2.5,1,hero);
  tube([[-layout.width/2-3,-2.6,-8],[lx-4,-2,-9],[lx+1,-1.8,-6],[layout.seam,-3,-8],[hx-4,-3.4,-6],[layout.width/2+5,-1.8,-6]],.105,'#366eaf');
  tube([[-layout.width/2-3,-2.85,-7],[lx-3,-2.35,-8],[lx+1,-2.15,-5.8],[layout.seam,-3.3,-7.8],[hx-4,-3.65,-5.8],[layout.width/2+5,-2.1,-5.8]],.075,'#c4596e');
  secondary=new T.Group();secondary.position.set(lx,.4,-1.5);group.add(secondary);
- const sr=mesh(ribbonGeometry(1),physical('#427ab8',.3,.45,{side:T.DoubleSide}),secondary);sr.scale.setScalar(.58);sr.rotation.set(.4,.5,-.6);moving.push({o:sr,type:'ribbon',phase:3});
- const s2=torus(1.7,.16,'#d35d70',secondary);s2.rotation.set(1,.5,.2);moving.push({o:s2,type:'orbit',base:[1,.5,.2],phase:5});
+ const sr=mesh(ribbonGeometry(1),physical('#427ab8',.3,.45,{side:T.DoubleSide}),secondary);sr.scale.setScalar(.58);sr.rotation.set(.4,.5,-.6);addMotion({o:sr,type:'ribbon',phase:3});
+ const s2=torus(1.7,.16,'#d35d70',secondary);s2.rotation.set(1,.5,.2);addMotion({o:s2,type:'orbit',base:[1,.5,.2],phase:5});
  shadow(hx,-3.98,0,12,6,.4);shadow(lx,-3.98,0,8,5,.3);
 }
 function arch(width,height,depth,material,parent=group){
@@ -110,16 +111,16 @@ function softArchitecture(){
  atmosphere(true);stageFloor('#d1cbbf');keyLight.color.set('#fff0dc');keyLight.intensity=4;rim.color.set('#c8dfff');rim.intensity=3;redLight.intensity=12;
  const {hx,lx}=layout;const porcelain=physical('#e8e3d9',.47,.07);hero=new T.Group();hero.position.set(hx,-.55,-1);group.add(hero);
  for(let i=0;i<4;i++){const a=arch(4.3-i*.15,6.5-i*.1,.4,porcelain,hero);a.position.set(-i*.38,0,-i*1.1);a.rotation.y=-.23+i*.03;}
- const stone=sphere(.87,'#547da5',-.25,-1.2,1.1,hero);moving.push({o:stone,type:'float',y:-1.2,phase:1});
- const little=sphere(.24,'#c56468',1.8,.2,2,hero);moving.push({o:little,type:'float',y:.2,phase:3});
+ const stone=sphere(.87,'#547da5',-.25,-1.2,1.1,hero);addMotion({o:stone,type:'float',y:-1.2,phase:1});
+ const little=sphere(.24,'#c56468',1.8,.2,2,hero);addMotion({o:little,type:'float',y:.2,phase:3});
  const base=mesh(new T.CylinderGeometry(3.7,3.85,.32,100),physical('#c9c5b9',.62,.05));base.position.set(hx,-3.7,-1);shadow(hx,-3.98,1,12,8,.25);
  secondary=new T.Group();secondary.position.set(lx,-.7,-2);group.add(secondary);
- const arc=torus(1.85,.38,'#dddbd2',secondary);arc.rotation.set(.2,.5,.2);moving.push({o:arc,type:'orbit',base:[.2,.5,.2],phase:0});
+ const arc=torus(1.85,.38,'#dddbd2',secondary);arc.rotation.set(.2,.5,.2);addMotion({o:arc,type:'orbit',base:[.2,.5,.2],phase:0});
  sphere(.65,'#7894ac',-.6,.1,1.2,secondary);sphere(.25,'#cb7776',1.5,-1,1,secondary);
  const pedestal=mesh(new T.CylinderGeometry(2.7,2.8,.22,80),physical('#cec9bb',.6,.03));pedestal.position.set(lx,-3.75,-1);shadow(lx,-3.98,1,8,6,.25);
  for(let i=0;i<6;i++){const a=arch(3.8,9,.22,physical('#d4cfc5',.7,0));a.position.set(-layout.width/2+1+i*5,-.1,-14);}
 }
-function connectionNetwork(x,y,z,size=1){const network=new T.Group();network.position.set(x,y,z);network.scale.setScalar(size);group.add(network);const nodes=[];for(let i=0;i<16;i++){const a=i*2.4,r=1.2+(i%3)*.48,p=[Math.cos(a)*r,Math.sin(a)*r,Math.sin(i*1.7)*.7];nodes.push(p);sphere(i%5===0?.16:.08,i%5===0?'#ed1c24':'#6bacae',...p,network);}for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){if(new T.Vector3(...nodes[i]).distanceTo(new T.Vector3(...nodes[j]))<1.8)line([nodes[i],nodes[j]],'#5d969f',.45,network);}moving.push({o:network,type:'network'});return network;}
+function connectionNetwork(x,y,z,size=1){const network=new T.Group();network.position.set(x,y,z);network.scale.setScalar(size);group.add(network);const nodes=[];for(let i=0;i<16;i++){const a=i*2.4,r=1.2+(i%3)*.48,p=[Math.cos(a)*r,Math.sin(a)*r,Math.sin(i*1.7)*.7];nodes.push(p);sphere(i%5===0?.16:.08,i%5===0?'#ed1c24':'#6bacae',...p,network);}for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){if(new T.Vector3(...nodes[i]).distanceTo(new T.Vector3(...nodes[j]))<1.8)line([nodes[i],nodes[j]],'#5d969f',.45,network);}addMotion({o:network,type:'network'});return network;}
 function livingResearch(){
  atmosphere(false);background.material.uniforms.uAccent.value.set('#4eb6b0');stageFloor('#0b2029');keyLight.color.set('#cff4f2');rim.color.set('#78c8d3');redLight.intensity=20;
  addResearchScreens(false);
@@ -138,8 +139,8 @@ function extraScreens(){
  for(const sc of layout.screens){
   if(sc.id===layout.main.id||sc.id===layout.companion.id)continue;
   const width=sc.width/1080*10,start=-layout.width/2+sc.x/1080*10,x=start+width*(state.variant===4?.28:.62);
-  if(state.variant===1||state.variant===4){const o=mesh(ribbonGeometry(.8),physical('#0066b3',.22,.5,{side:T.DoubleSide}));o.position.set(x,.2,-1);o.scale.setScalar(Math.min(.78,width*.07));moving.push({o,type:'ribbon',phase:3});const red=torus(Math.min(1.8,width*.13),.12,'#ed1c24');red.position.set(x,.2,-1);red.rotation.set(.7,.5,.4);moving.push({o:red,type:'orbit',base:[.7,.5,.4],phase:2});}
-  else if(state.variant===2){const o=torus(Math.min(1.8,width*.16),.25,'#dcdad2');o.position.set(x,0,-1);moving.push({o,type:'orbit',base:[.2,.4,.2],phase:3});}
+  if(state.variant===1||state.variant===4){const o=mesh(ribbonGeometry(.8),physical('#0066b3',.22,.5,{side:T.DoubleSide}));o.position.set(x,.2,-1);o.scale.setScalar(Math.min(.78,width*.07));addMotion({o,type:'ribbon',phase:3});const red=torus(Math.min(1.8,width*.13),.12,'#ed1c24');red.position.set(x,.2,-1);red.rotation.set(.7,.5,.4);addMotion({o:red,type:'orbit',base:[.7,.5,.4],phase:2});}
+  else if(state.variant===2){const o=torus(Math.min(1.8,width*.16),.25,'#dcdad2');o.position.set(x,0,-1);addMotion({o,type:'orbit',base:[.2,.4,.2],phase:3});}
   else if(state.variant===0)connectionNetwork(x,0,-1,Math.min(1,width*.07));
  }
 }
@@ -165,9 +166,9 @@ function createAuthorObject(type){
  const root=new T.Group();group.add(root);
  if(type==='logo'){const system=createLogoSculpture(color=>physical(color,.23,.42,{side:T.DoubleSide}));group.remove(root);group.add(system.root);system.root.name='MV sculpture';system.root.scale.setScalar(2.5);logoSystems.push(system);return system.root;}
  if(type==='network'){group.remove(root);return connectionNetwork(0,0,0,1);}
- if(type==='ribbons'){for(const [color,phase] of [['#0066b3',0],['#ed1c24',2]]){const o=mesh(ribbonGeometry(phase),physical(color,.24,.45,{side:T.DoubleSide}),root);o.scale.setScalar(.7);moving.push({o,type:'ribbon',phase});}}
- if(type==='orbits'){sphere(.7,'#347ac4',0,0,0,root);for(let i=0;i<3;i++){const o=torus(2.2-i*.25,.08,i===1?'#ed1c24':'#0066b3',root);moving.push({o,type:'orbit',base:[.8+i*.2,.3+i*.4,.1],phase:i});}}
- if(type==='sphere'){const o=sphere(1.6,'#377fc1',0,0,0,root);moving.push({o,type:'float',y:0,phase:1});}
+ if(type==='ribbons'){for(const [color,phase] of [['#0066b3',0],['#ed1c24',2]]){const o=mesh(ribbonGeometry(phase),physical(color,.24,.45,{side:T.DoubleSide}),root);o.scale.setScalar(.7);addMotion({o,type:'ribbon',phase});}}
+ if(type==='orbits'){sphere(.7,'#347ac4',0,0,0,root);for(let i=0;i<3;i++){const o=torus(2.2-i*.25,.08,i===1?'#ed1c24':'#0066b3',root);addMotion({o,type:'orbit',base:[.8+i*.2,.3+i*.4,.1],phase:i});}}
+ if(type==='sphere'){const o=sphere(1.6,'#377fc1',0,0,0,root);addMotion({o,type:'float',y:0,phase:1});}
  if(type==='arch'){const o=arch(3.6,5.7,.4,physical('#e8e3d9',.47,.07),root);o.rotation.y=-.2;}
  return root;
 }
@@ -177,6 +178,8 @@ function rebuild(){
  [blueHour,commonGround,softArchitecture,livingResearch,sharedReality,mvSymbiosis][state.variant]();
  if(state.variant<3)extraScreens();
  if(secondary&&layout.main.id===layout.companion.id)secondary.visible=false;
+ if(hero)addMotion({o:hero,type:'hero',baseY:state.variant===2?-.55:[1,4].includes(state.variant)?.2:0});
+ if(secondary&&state.variant!==2)addMotion({o:secondary,type:'secondary'});
  lightingBase=[hemisphere,keyLight,rim,redLight].map(light=>light.intensity);
  resize();authoring=authoringScene(group,camera,state,{background,hero,secondary,createObject:createAuthorObject,view,preview});applyOverlay();lastConfig=configKey();
 }
@@ -229,18 +232,9 @@ function draw(now){
  if(preview&&!params.has('capture')&&parent!==window&&parent.METAStudio)setClockOffset(parent.METAStudio.now()-Date.now());
  const t=motionAllowed()?timeline(state):0,slow=t*.24;
  if(background)background.material.uniforms.uTime.value=t*state.motionAmount;
- for(const system of logoSystems){system.update(t,state.motionAmount,{...system.root.userData.mvSettings,held:!motionAllowed()});system.root.rotation.y=state.interactive?pointer.x*.12:0;system.root.rotation.x=state.interactive?-pointer.y*.08:0;}
- for(const m of moving){const o=m.o;
-  const pose=motionPose(m.type,t,m.phase||0,state.motionAmount);
-  if(m.type==='orbit'){o.rotation.set(m.base[0]+pose.x,m.base[1]+pose.y,m.base[2]+pose.z);}
-  if(m.type==='knot'){o.rotation.set(.2+Math.sin(slow*state.motionAmount)*.2,.5+slow*.65*state.motionAmount,-.35+Math.sin(slow*.7*state.motionAmount)*.16);}
-  if(m.type==='ribbon'||m.type==='network')o.rotation.set(pose.x,pose.y,pose.z);
-  if(m.type==='float')o.position.y=m.y+pose.lift;
-  if(m.type==='gallery'){o.rotation.set(pose.x,pose.y,pose.z);o.position.y=m.y+pose.lift;}
- }
- if(hero){hero.position.y=Math.sin(t*.5*state.motionAmount)*.24+(state.variant===2?-.55:[1,4].includes(state.variant)?.2:0);if(state.interactive){hero.rotation.y+=(pointer.x*.12-hero.rotation.y)*.025;hero.rotation.x+=(-pointer.y*.1-hero.rotation.x)*.025;}else{hero.rotation.x=0;hero.rotation.y=0;}}
- if(secondary&&state.variant!==2)secondary.rotation.y=Math.sin(slow*.6*state.motionAmount)*.13;
- authoring?.draw();videoLayers.tick(now);
+ for(const system of logoSystems){const clock=motionContext(system.root,t,state.motionAmount);system.update(clock.time,clock.amount,{...system.root.userData.mvSettings,held:!motionAllowed()});system.root.rotation.y=state.interactive?pointer.x*.12:0;system.root.rotation.x=state.interactive?-pointer.y*.08:0;}
+ for(const {o} of moving){const clock=motionContext(o,t,state.motionAmount);applySample(o,clock.time,clock.amount,state.interactive?pointer:null);}
+ authoring?.draw(t,state.motionAmount);videoLayers.tick(now);
  renderer.render(scene,camera);renderedTime=t;
  frames++;if(now-statsEpoch>500){fps=frames*1000/(now-statsEpoch);frames=0;statsEpoch=now;}
  document.body.dataset.ready='true';document.body.dataset.variant=String(state.variant);

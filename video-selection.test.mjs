@@ -49,6 +49,20 @@ test('playlist Play switches only visibility and selection while retaining per-s
  assert.equal(typeof layerTools.playVideosTogether,'function');assert.ok(layerTools.playVideosTogether(next).videoLayers.every(l=>l.enabled));
 });
 
+test('video elements can reuse or replace sources without changing independent screen assignments',()=>{
+ assert.equal(typeof layerTools.assignVideoSource,'function');assert.equal(typeof layerTools.assignVideoScreens,'function');assert.equal(typeof layerTools.videoElements,'function');
+ let state=chooseVideo(sanitize(),{id:'clip-a'},{url:'previews/demo-motion.mp4',name:'First'});state=videoLibraryModule.chooseYoutube(state,'https://youtu.be/M7lc1UVf-VE','Second');
+ state=layerTools.assignVideoScreens(state,'video-1',['front']);state=layerTools.assignVideoScreens(state,'video-2',['left']);state=patchLayer(state,'video-1',{x:25,width:22});
+ const next=layerTools.assignVideoSource(state,'video-1',state.videoLayers[1]);assert.equal(next.videoLayers[0].youtube.id,'M7lc1UVf-VE');assert.equal(next.videoLayers[0].customClip,undefined);assert.equal(next.videoLayers[0].x,25);assert.equal(next.videoLayers[0].width,22);assert.equal(placement(next.videoLayers[0],'front',16/9).enabled,true);assert.equal(placement(next.videoLayers[0],'left',8/3).enabled,false);assert.equal(placement(next.videoLayers[1],'front',16/9).enabled,false);
+ const manifest=layerTools.videoElements(next);assert.equal(manifest.length,2);assert.equal(manifest[0].layerId,'video-1');assert.equal(manifest[0].video,true);assert.equal(manifest[0].screen,'front');
+ const solo=layerTools.playVideo(next,'video-1');assert.equal(placement(solo.videoLayers[0],'left',8/3).enabled,false);assert.equal(placement(solo.videoLayers[0],'front',16/9).enabled,true);const together=layerTools.playVideosTogether(solo);assert.equal(placement(together.videoLayers[1],'front',16/9).enabled,false);
+ const local=layerTools.assignVideoSource(next,'video-1',{customClip:{url:'blob:new',name:'New.mp4'},fileName:'New.mp4'});assert.equal(local.videoLayers[0].youtube,undefined);assert.equal(local.videoLayers[0].customClip.url,'blob:new');assert.deepEqual(decodeLook(encodeLook(local)).videoLayers[0].screens,local.videoLayers[0].screens);
+});
+
+test('deleting a different video preserves the selected media Properties target',()=>{
+ let state=chooseVideo(sanitize(),{id:'one'});state=chooseVideo(state,{id:'two'});state=chooseVideo(state,{id:'three'});state=layerTools.selectVideoElement(state,'video-1');state=removeLayer(state,'video-2');assert.equal(state.activeVideoLayer,'video-1');assert.equal(state.activeElement,'media:video-1');
+});
+
 test('bookmarked local playlist entries keep file names without browser blob references',()=>{
  const state=chooseVideo(sanitize(),{id:null},{url:'blob:local-video',name:'Research take.mp4'}),restored=decodeLook(encodeLook(state));
  assert.equal(restored.videoLayers[0].fileName,'Research take.mp4');assert.equal(restored.videoLayers[0].customClip,undefined);assert.ok(!encodeLook(state).includes('blob:'));

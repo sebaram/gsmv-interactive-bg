@@ -1,6 +1,14 @@
 import test from 'node:test';
+import * as motionTools from './motion.js';
 import assert from 'node:assert/strict';
 import {motionPose} from './motion.js';
+
+test('per-object clocks retime continuously and freeze independently',()=>{
+ assert.equal(typeof motionTools.clockTime,'function');assert.equal(typeof motionTools.retimeMotion,'function');
+ const changed=motionTools.retimeMotion({},2,10);assert.equal(motionTools.clockTime(10,changed),10);assert.equal(motionTools.clockTime(12,changed),14);
+ const held=motionTools.retimeMotion(changed,0,12);assert.equal(motionTools.clockTime(20,held),14);assert.equal(motionTools.clockTime(20,{}),20);
+ assert.equal(motionTools.clockTime(motionTools.clockTime(10,{motionSpeed:2}),{motionSpeed:.5}),10);
+});
 test('ribbons rotate visibly over a short take on both main and companion walls',()=>{
  for(const phase of [0,2,3]){const a=motionPose('ribbon',10,phase,1),b=motionPose('ribbon',12,phase,1);assert.ok(Math.abs(b.y-a.y)>.14);}
 });

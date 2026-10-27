@@ -47,7 +47,7 @@ with sync_playwright() as p:
  page.locator('#video-placement-settings').evaluate('e=>e.open=true')
  page.locator('#pause-btn').click();wall.wait_for_function('window.META.video.paused');before=wall.evaluate('window.META.video.time');wall.wait_for_timeout(650);assert abs(wall.evaluate('window.META.video.time')-before)<.02
  page.locator('#pause-btn').click();wall.wait_for_function('!window.META.video.paused')
- page.locator('#speed').fill('1.5');wall.wait_for_function('window.ytPlayers[0].rate===1.5')
+ page.locator('#video-speed').fill('1.5');wall.wait_for_function('window.ytPlayers[0].rate===1.5')
  page.locator('#video-placement-screen').select_option('front');page.locator('#video-x').fill('35');wall.wait_for_function('document.querySelector(".video-layer[data-provider=youtube]").style.left==="35%"')
  page.locator('#show-videos').uncheck();wall.wait_for_function('window.ytPlayers[0].state===2 && window.META.videos.length===0');page.locator('#show-videos').check();wall.wait_for_function('window.META.videos.length===1 && !window.META.video.paused')
  print('PASS YouTube player adapter starts muted, follows pause/rate/visibility and retains per-screen placement',flush=True)
