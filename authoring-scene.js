@@ -1,6 +1,6 @@
 import * as T from './vendor/three.module.js';
 import {panorama,screenAspect} from './state.js';
-import {presetEdits,objectTypes,isElementDeleted} from './authoring.js';
+import {presetEdits,objectTypes,isElementDeleted,elementEditTarget} from './authoring.js';
 
 // Animation remains inside a wrapper; authored transforms never overwrite it.
 export function authoringScene(group,camera,state,{background,hero,secondary,createObject,view,preview}){
@@ -12,7 +12,8 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  function defaultName(object,parent){if(object===hero)return 'Main sculpture';if(object===secondary)return 'Companion sculpture';if(object.name)return object.name;
   const type=object.geometry?.type||object.type,color=object.material?.color?.getHexString(),tint=color==='0066b3'?'Blue':color==='ed1c24'?'Red':'';
   if(parent?.object.name==='MV sculpture'||parent?.kind==='logo')return object.isLine?'MV connection link':(tint?tint+' ':'')+'MV facet';
-  if(object.isLine)return parent?'Network link':'Connection line';
+  if(object.isLine)return parent?'Network link':'Connection line · floor grid';
+  if(type==='TubeGeometry'&&!parent)return 'Long line · '+(object.material.color.r>object.material.color.b?'Red':'Blue')+' ribbon';
   return ({SphereGeometry:parent?.kind==='network'?'Network node':'Accent sphere',TorusGeometry:'Orbital ring',TorusKnotGeometry:'Central knot',TubeGeometry:'Connecting ribbon',CylinderGeometry:'Pedestal',ExtrudeGeometry:'Architectural arch',Group:'Research network',PlaneGeometry:object.material?.map?'Soft shadow':'Stage floor',BufferGeometry:(tint?tint+' ':'')+'Interwoven ribbon'})[type]||'Sculptural element';
  }
  function register(object,custom=null,parent=null,path=[]){
@@ -91,12 +92,12 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   handle=document.createElement('div');handle.className='element-handle';handle.hidden=true;handle.tabIndex=0;handle.setAttribute('role','group');handle.setAttribute('aria-label','Selected element. Drag its label to move the whole selection, or use arrow keys.');
   const title=document.createElement('span'),resize=document.createElement('button');title.className='element-handle-label';title.title='Drag this label to move the whole selection';resize.className='element-resize';resize.type='button';resize.setAttribute('aria-label','Resize selected element');handle.append(title,resize);
   hover=document.createElement('div');hover.className='element-hover';hover.hidden=true;hover.setAttribute('aria-hidden','true');hover.append(document.createElement('span'));layer.replaceChildren(hover,handle);
-  const raycaster=new T.Raycaster(),boxVersions=new WeakMap(),objectEntries=new Map(entries.filter(e=>e.object?.geometry).map(e=>[e.object,e]));
+  const raycaster=new T.Raycaster(),boxVersions=new WeakMap(),objectEntries=new Map(entries.filter(e=>e.object?.geometry).map(e=>[e.object,e])),entriesById=new Map(entries.map(e=>[e.id,e]));
   pickAt=(x,y)=>{
    group.updateMatrixWorld(true);for(const object of objectEntries.keys()){const g=object.geometry,version=g.attributes.position?.version||0;if(boxVersions.get(g)!==version){g.computeBoundingBox();boxVersions.set(g,version);}}const rect=canvas.getBoundingClientRect();raycaster.params.Line.threshold=Math.max(.09,50/Math.max(1,rect.height));
    raycaster.setFromCamera(new T.Vector2((x-rect.left)/rect.width*2-1,1-(y-rect.top)/rect.height*2),camera);
    const hits=raycaster.intersectObjects([...objectEntries.keys()],false).filter(hit=>{for(let o=hit.object;o;o=o.parent)if(!o.visible)return false;const materials=Array.isArray(hit.object.material)?hit.object.material:[hit.object.material];return materials.some(m=>m.visible!==false&&(!m.transparent||m.opacity>.03));});
-   const main=hits.find(hit=>!['Soft shadow','Stage floor'].includes(objectEntries.get(hit.object).label));return objectEntries.get((main||hits[0])?.object)||null;
+   const main=hits.find(hit=>!['Soft shadow','Stage floor'].includes(objectEntries.get(hit.object).label)),hit=objectEntries.get((main||hits[0])?.object);return entriesById.get(elementEditTarget(current,entriesById,hit?.id))||null;
   };
   function beginGesture(event,entry,resizing,owner){
    if(event.button!==0||!entry)return;event.preventDefault();event.stopPropagation();selectEntry(entry);owner.focus?.({preventScroll:true});
@@ -109,16 +110,16 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
    owner.addEventListener('pointermove',move);owner.addEventListener('pointerup',finish);owner.addEventListener('pointercancel',finish);
   }
   handle.onpointerdown=event=>{
-   const selected=entries.find(e=>e.id===current.activeElement);if(!selected)return;
+   const selected=entriesById.get(elementEditTarget(current,entriesById,current.activeElement));if(!selected)return;
    const bounds=handle.getBoundingClientRect(),resizing=!!event.target.closest('.element-resize')||(event.clientX>=bounds.right-14&&event.clientY>=bounds.bottom-14);
    const label=!!event.target.closest('.element-handle-label'),border=Math.min(event.clientX-bounds.left,bounds.right-event.clientX,event.clientY-bounds.top,bounds.bottom-event.clientY)<5;
    const entry=resizing||label||border||selected.domId?selected:pickAt(event.clientX,event.clientY)||selected;beginGesture(event,entry,resizing,handle);
   };
   function menuFor(event,entry){event.preventDefault();event.stopPropagation();const frame=frameElement.getBoundingClientRect();parent.METAStudio?.elementMenu(entry?.id||null,frame.left+event.clientX,frame.top+event.clientY);}
-  handle.oncontextmenu=event=>{const selected=entries.find(e=>e.id===current.activeElement);menuFor(event,event.target.closest('.element-handle-label,.element-resize')?selected:pickAt(event.clientX,event.clientY)||selected);};
+  handle.oncontextmenu=event=>{const selected=entriesById.get(elementEditTarget(current,entriesById,current.activeElement));menuFor(event,event.target.closest('.element-handle-label,.element-resize')?selected:pickAt(event.clientX,event.clientY)||selected);};
   canvas.oncontextmenu=event=>menuFor(event,pickAt(event.clientX,event.clientY));
   document.onkeydown=event=>parent.METAStudio?.elementKey(event);
-  const keys=event=>{if(event.key==='Escape'){event.preventDefault();selectEntry(null);return;}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;const entry=entries.find(e=>e.id===current.activeElement);if(!entry)return;event.preventDefault();const r=resolved(entry),step=event.shiftKey?5:1;parent.METAStudio?.updateElement(entry.id,dragPatch(entry,r,(event.key==='ArrowLeft'?-step:event.key==='ArrowRight'?step:0)*innerWidth/100,(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0)*innerHeight/100,dragOrigin(entry)));};
+  const keys=event=>{if(event.key==='Escape'){event.preventDefault();selectEntry(null);return;}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;const entry=entriesById.get(elementEditTarget(current,entriesById,current.activeElement));if(!entry)return;event.preventDefault();const r=resolved(entry),step=event.shiftKey?5:1;parent.METAStudio?.updateElement(entry.id,dragPatch(entry,r,(event.key==='ArrowLeft'?-step:event.key==='ArrowRight'?step:0)*innerWidth/100,(event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0)*innerHeight/100,dragOrigin(entry)));};
   handle.onpointermove=e=>{if(!dragging)pointerPosition={x:e.clientX,y:e.clientY};};handle.onpointerleave=()=>{if(!dragging){pointerPosition=null;hovered=null;hover.hidden=true;}};handle.onkeydown=keys;canvas.onkeydown=keys;canvas.tabIndex=0;canvas.setAttribute('aria-label','Interactive background preview. Click and drag an element to move it. Escape clears selection.');
   canvas.onpointerdown=event=>{if(event.button!==0)return;const entry=pickAt(event.clientX,event.clientY);if(entry)beginGesture(event,entry,false,canvas);else if(current.activeElement)selectEntry(null);};
   canvas.onpointermove=event=>{if(!dragging)pointerPosition={x:event.clientX,y:event.clientY};};canvas.onpointerleave=()=>{pointerPosition=null;hovered=null;hover.hidden=true;canvas.style.cursor='default';};
@@ -126,7 +127,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  }
  function drawHandle(){
   if(!handle)return;
-  const selected=entries.find(e=>e.id===current.activeElement);if(current.editElements&&selected)paintMarker(handle,selected,true);else handle.hidden=true;
+  const selected=entries.find(e=>e.id===elementEditTarget(current,entries,current.activeElement));if(current.editElements&&selected)paintMarker(handle,selected,true);else handle.hidden=true;
   if(!dragging&&pointerPosition){hovered=pickAt(pointerPosition.x,pointerPosition.y);document.querySelector('#scene').style.cursor=hovered?'grab':'default';}
   if(!dragging&&hovered&&hovered.id!==current.activeElement)paintMarker(hover,hovered);else hover.hidden=true;
  }

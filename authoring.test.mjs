@@ -95,7 +95,7 @@ test('copying a nested subgroup remaps deeper child edits to its new root',()=>{
 
 test('semantic part labels preserve legacy top-level element IDs in saved looks',()=>{
  const f=fixture(),line=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,0),new T.Vector3(1,1,0)]),new T.LineBasicMaterial());f.group.add(line);
- const author=makeAuthor(f),entry=author.manifest.find(e=>e.name==='Connection line');
+ const author=makeAuthor(f),entry=author.manifest.find(e=>e.name.startsWith('Connection line'));
  assert.ok(entry);assert.match(entry.id,/-sculptural-element-1$/);
 });
 
@@ -201,4 +201,14 @@ test('clipboard freezes a preset MV part’s source variation',()=>{
  let state=patchElement(sanitize({variant:5}),'preset-logo-front',{seed:17,randomness:.8});
  const clip=authoringTools.copyElement(state,{id:'preset-logo-front-part-1',screen:'front',x:50,y:50,size:1,rotation:0});state=patchElement(state,'preset-logo-front',{seed:99,randomness:2});state=authoringTools.pasteElement(state,clip);
  const objects=presetEdits(state).objects,copy=objects.find(o=>o.id===state.activeElement),source=objects.find(o=>copy.source===o.id+'-part-1');assert.ok(source);assert.equal(source.seed,17);assert.equal(source.randomness,.8);assert.equal(source.source,'preset-logo-front');
+});
+
+test('group editing protects descendants until explicitly ungrouped, including nested groups',()=>{
+ assert.equal(typeof authoringTools.elementEditTarget,'function');
+ const elements=[{id:'preset-main',parentId:null},{id:'preset-main-part-1',parentId:'preset-main'},{id:'preset-main-part-1-1',parentId:'preset-main-part-1'}];
+ let state=sanitize({variant:1});assert.equal(authoringTools.elementEditTarget(state,elements,elements[2].id),'preset-main');
+ state=patchElement(state,'preset-main',{ungrouped:true});assert.equal(authoringTools.elementEditTarget(state,elements,elements[2].id),'preset-main-part-1');
+ state=patchElement(state,'preset-main-part-1',{ungrouped:true});assert.equal(authoringTools.elementEditTarget(state,elements,elements[2].id),elements[2].id);
+ assert.equal(decodeLook(encodeLook(state)).authored[1].edits['preset-main'].ungrouped,true);
+ state=patchElement(state,'preset-main',{ungrouped:false});assert.equal(authoringTools.elementEditTarget(state,elements,elements[2].id),'preset-main');
 });

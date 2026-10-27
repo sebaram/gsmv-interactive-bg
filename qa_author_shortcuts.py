@@ -6,7 +6,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 BASE=os.environ.get('META_STATIC_URL','http://127.0.0.1:8770/_site/')
-state={'variant':1,'paused':True,'offset':3,'branding':True,'videoLayers':[]}
+state={'variant':1,'paused':True,'offset':3,'authored':{'1':{'edits':{'preset-main':{'ungrouped':True}},'objects':[]}},'branding':True,'videoLayers':[]}
 address=BASE.split('#')[0]+'#look=v1.'+base64.urlsafe_b64encode(json.dumps(state).encode()).decode().rstrip('=')
 with sync_playwright() as p:
  b=p.chromium.launch(channel='chrome',headless=True);page=b.new_page(viewport={'width':1600,'height':1000});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))

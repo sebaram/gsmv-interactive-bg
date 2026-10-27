@@ -16,12 +16,14 @@ with sync_playwright() as p:
     assert page.locator('#element-search').count() == 1, 'A visible searchable element list is required'
     page.locator('[data-variant="3"]').click()
     page.wait_for_function('window.METAStudio.state.variant === 3 && [...document.querySelectorAll(".paired iframe")].every(f => f.contentWindow.META?.state.variant === 3)')
-    page.wait_for_function('document.querySelector("#author-element").options.length === document.querySelector(".paired iframe").contentWindow.META.elements.length')
+    page.wait_for_function('document.querySelector("#author-element").options.length > 0')
     elements = page.evaluate('document.querySelector(".paired iframe").contentWindow.META.elements')
     first = next(e for e in elements if e.get('parentId'))
     root, part = first['parentId'], first['id']
     second = next(e['id'] for e in elements if e.get('parentId') == root and e['id'] != part)
-    total = page.locator('#author-element option').count()
+    total = len(elements)
+    page.locator('#author-element').select_option(root)
+    page.locator('#group-element').click()
     assert page.locator('.author-row-select:visible').count() < total
     page.locator(f'.author-disclosure[data-element-id="{root}"]').click()
     page.locator(f'.author-row-select[data-element-id="{part}"]').wait_for(state='visible')
@@ -39,7 +41,7 @@ with sync_playwright() as p:
     page.locator(f'.author-visibility[data-element-id="{part}"]').click()
     page.wait_for_function('(id) => window.METAStudio.state.authored[3].edits[id].visible === false', arg=part)
     assert page.locator(f'.author-row-select[data-element-id="{part}"]').get_attribute('aria-pressed') == 'true'
-    assert page.locator(f'.author-visibility[data-element-id="{part}"]').inner_text() == 'Show'
+    assert page.locator(f'.author-visibility[data-element-id="{part}"]').get_attribute('aria-label').startswith('Show ')
     page.locator('#clear-element-selection').click()
     page.wait_for_timeout(1300)
     assert page.evaluate('window.METAStudio.state.activeElement === null')

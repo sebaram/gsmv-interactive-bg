@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 BASE=os.environ.get('META_STATIC_URL','http://127.0.0.1:8770/_site/')
 APP=Path(__file__).resolve().parent
-state={'variant':1,'paused':True,'offset':3,'showVideo':False,'videoLayers':[],'branding':True}
+state={'variant':1,'paused':True,'offset':3,'authored':{'1':{'edits':{'preset-main':{'ungrouped':True}},'objects':[]}},'showVideo':False,'videoLayers':[],'branding':True}
 address=BASE.split('#')[0]+'#look=v1.'+base64.urlsafe_b64encode(json.dumps(state).encode()).decode().rstrip('=')
 with sync_playwright() as p:
  b=p.chromium.launch(channel='chrome',headless=True);context=b.new_context(viewport={'width':1600,'height':1000})

@@ -3,7 +3,7 @@ const limit=(v,min,max)=>Math.min(max,Math.max(min,+v));
 export function cleanTransform(raw={}){
  const out={};for(const [key,min,max] of [['x',-50,150],['y',-50,150],['size',.05,6],['rotation',-180,180],['seed',0,999999],['randomness',0,2]])if(raw[key]!==undefined&&Number.isFinite(+raw[key]))out[key]=key==='seed'?Math.floor(limit(raw[key],min,max)):limit(raw[key],min,max);
  if(typeof raw.screen==='string')out.screen=raw.screen.replace(/[^a-zA-Z0-9_-]/g,'').slice(0,50);
- if('visible' in raw)out.visible=raw.visible!==false;if('deleted' in raw)out.deleted=Boolean(raw.deleted);return out;
+ if('visible' in raw)out.visible=raw.visible!==false;if('deleted' in raw)out.deleted=Boolean(raw.deleted);if('ungrouped' in raw)out.ungrouped=raw.ungrouped===true;return out;
 }
 export function sanitizeAuthored(raw={}){
  const out={};for(let i=0;i<6;i++){
@@ -14,6 +14,12 @@ export function sanitizeAuthored(raw={}){
  }return out;
 }
 export function presetEdits(state){return state.authored[state.variant]||{edits:{},objects:[]};}
+export function elementEditTarget(state,elements,id){
+ const byId=elements instanceof Map?elements:new Map(elements.map(e=>[e.id,e]));let entry=byId.get(id);if(!entry)return null;
+ const preset=presetEdits(state),seen=new Set();let target=id;
+ while(entry?.parentId&&!seen.has(entry.parentId)){seen.add(entry.parentId);entry=byId.get(entry.parentId);if(!entry)break;const settings=entry.custom?preset.objects.find(o=>o.id===entry.id):preset.edits[entry.id];if(!settings?.ungrouped)target=entry.id;}
+ return target;
+}
 export function inElementSubtree(id,root){return typeof id==='string'&&(id===root||id.startsWith(root+(root.includes('-part-')?'-':'-part-')));}
 export function isElementDeleted(state,id){const preset=presetEdits(state);return Object.entries(preset.edits).some(([root,patch])=>patch.deleted&&inElementSubtree(id,root))||preset.objects.some(o=>(o.archived||o.deleted)&&inElementSubtree(id,o.id));}
 export function isLogoElement(state,id){if(!id||id.includes('-part-'))return false;const seen=new Set(),objects=presetEdits(state).objects;while(id&&!seen.has(id)){if(id.startsWith('preset-logo-'))return true;seen.add(id);const object=objects.find(o=>o.id===id);if(object?.type==='logo')return true;id=object?.type==='copy'?object.source:null;}return false;}
