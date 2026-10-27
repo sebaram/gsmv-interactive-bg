@@ -26,4 +26,6 @@
 - [x] Update video/browser regressions to the explicit playlist interaction.
 - [x] Review changes, run automated tests, syntax/build and focused browser checks; inspect desktop/mobile UI.
 - [x] Update README/QA and prepare the verified release.
-- [ ] Commit and push the authorized repository, wait for Pages CI/CD, and check the public playlist.
+- [x] Commit and push the authorized repository, wait for Pages CI/CD, and check the public playlist.
+
+Release `edb024e` passed all 69 automated tests, Pages run `40444002918`, and the public playlist and YouTube browser checks. LAN composition, expired-file recovery and authoring regressions also passed.
