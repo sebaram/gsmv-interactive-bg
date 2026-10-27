@@ -96,7 +96,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
   pickAt=(x,y)=>{
    group.updateMatrixWorld(true);for(const object of objectEntries.keys()){const g=object.geometry,version=g.attributes.position?.version||0;if(boxVersions.get(g)!==version){g.computeBoundingBox();boxVersions.set(g,version);}}const rect=canvas.getBoundingClientRect();raycaster.params.Line.threshold=Math.max(.09,50/Math.max(1,rect.height));
    raycaster.setFromCamera(new T.Vector2((x-rect.left)/rect.width*2-1,1-(y-rect.top)/rect.height*2),camera);
-   const hits=raycaster.intersectObjects([...objectEntries.keys()],false).filter(hit=>{for(let o=hit.object;o;o=o.parent)if(!o.visible)return false;const materials=Array.isArray(hit.object.material)?hit.object.material:[hit.object.material];return materials.some(m=>m.visible!==false&&(!m.transparent||m.opacity>.03));});
+   const hits=raycaster.intersectObjects([...objectEntries.keys()],false).filter(hit=>{for(let o=hit.object;o;o=o.parent)if(!o.visible)return false;const materials=Array.isArray(hit.object.material)?hit.object.material:[hit.object.material];return materials.some(m=>m.visible!==false&&(!m.transparent||m.opacity>.03)&&(m.uniforms?.uOpacity?.value??1)>.03);});
    const main=hits.find(hit=>!['Soft shadow','Stage floor'].includes(objectEntries.get(hit.object).label)),hit=objectEntries.get((main||hits[0])?.object);return entriesById.get(elementEditTarget(current,entriesById,hit?.id))||null;
   };
   function beginGesture(event,entry,resizing,owner){

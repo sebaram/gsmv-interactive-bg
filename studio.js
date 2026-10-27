@@ -6,6 +6,7 @@ import {patchLayer,portableLook,playVideo,videoNeedsFile} from './video-layers.j
 import {videoLayerControls} from './video-layer-controls.js';
 import {authoringControls} from './authoring-ui.js';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
+import {appearanceControls} from './appearance-ui.js';
 const addressLook=decodeLook(location.hash);
 const storedLook=read();let state=addressLook||sanitize({...storedLook,videoLayers:portableLook(storedLook).videoLayers});save(state);
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
@@ -20,6 +21,7 @@ const library=videoLibrary($('#video-library'),clips,{getState:()=>state,commit:
 $('#video-add-files').append($('#local-video-controls'));$('#video-properties-mount').append($('#video-layer-controls'));
 const layers=videoLayerControls($('#video-layer-controls'),clips,{getState:()=>state,commit:next=>{state=next;publish();}});
 const author=authoringControls($('#authoring-controls'),{getState:()=>state,getElements:()=>{try{return document.querySelector('.paired iframe')?.contentWindow.META?.elements||[];}catch{return [];}},commit:next=>{state=next;publish();},notify:toast});
+const appearance=appearanceControls($('#scene-appearance'),{getState:()=>state,commit:next=>{state=next;publish();}});
 $('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
 function publish(){state=sanitize(state);save(state);channel.postMessage(state);paint();sync.send(state);}
 function paint(){
@@ -40,7 +42,7 @@ function paint(){
  if(ids!==previewIds){previewIds=ids;$('.paired').innerHTML='';for(const sc of state.screens){const wrap=document.createElement('div');wrap.className='screen-preview';wrap.dataset.preview=sc.id;const iframe=document.createElement('iframe');iframe.src=`wall.html?view=${encodeURIComponent(sc.id)}&preview=1`+(buildVersion?'&v='+buildVersion:'');iframe.title=sc.name+' live preview';iframe.tabIndex=-1;const label=document.createElement('span');label.className='screen-label';wrap.append(iframe,label);$('.paired').append(wrap);}}
  for(const sc of state.screens){const wrap=document.querySelector(`[data-preview="${sc.id}"]`);wrap.style.aspectRatio=screenAspect(sc);wrap.querySelector('.screen-label').textContent=sc.name;}
  layoutPreviews();
- editor.paint();library.paint();layers.paint();author.paint();paintOutputs();updateAddress();
+ editor.paint();library.paint();layers.paint();author.paint();appearance.paint();paintOutputs();updateAddress();
 }
 function layoutPreviews(){
  const paired=$('.paired'),room=$('.preview-room'),total=state.screens.reduce((sum,sc)=>sum+screenAspect(sc),0),style=getComputedStyle(paired),padding=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);

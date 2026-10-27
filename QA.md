@@ -108,3 +108,11 @@ Shortcut, direct-preview, preset-part, deletion, list and authoring browser regr
 LAN composition checks pass across all six backgrounds, two sources, independent physical placement, preserved decoders, separate playback clients, pause/resume, saved looks, duplication/removal and added screens. The retained-expired-file test uses a fresh root controller after closing the importing controller; a bookmarked URL deliberately takes precedence over retained server state. Preview load failures mark stale local files as missing and preserve their names for reattachment. The MV/server catalog regression also passes.
 
 Review findings for reversible Show, missing-file wall boxes and stale stored blobs were reproduced and fixed. Missing sources do not render unavailable placeholders as video content. A newly opened live output can use its matching editor's runtime files, while saved URLs remain free of blob references. No backend or media uploads were added.
+
+## Per-preset scene appearance
+
+71 automated tests pass, including bounded appearance settings, strict hex colors, independent preset state and URL restoration. `qa_appearance.py` verifies all six presets, exact solid RGB values on both physical screen shapes and in a composited wall screenshot, glow/light/floor pixel differences, automatic bright-background identity contrast, missing-floor raycast exclusion, retained video decoder identity, bookmarked settings, responsive controls and appearance-only reset. After switching away and back, reset pixels match the original paused baseline exactly, guarding against compounded lighting.
+
+Solid mode removes the CSS vignette as well as the shader gradient. Browser screenshot tests check actual delivered pixels in addition to the canvas buffer. Rendering comparisons bring the controller to the foreground so background-tab animation throttling cannot leave stale buffers. Desktop/mobile panel screenshots were inspected. Playlist, grouped authoring and YouTube adapter regressions pass. Read-only review's invisible-floor and vignette findings were reproduced, fixed and rechecked; no remaining important findings.
+
+A separate LAN playback browser context received changed appearance settings through the server and rendered the exact expected screenshot RGB, confirming synchronization beyond the controller's browser storage.

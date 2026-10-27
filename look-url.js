@@ -2,7 +2,7 @@ import {sanitize} from './state.js';
 import {portableLook} from './video-layers.js';
 
 const PREFIX='#look=v1.',MAX_HASH_LENGTH=200000;
-const KEYS=['screens','variant','brightness','speed','motionAmount','paused','offset','branding','headlines','interactive','showVideo','videoId','cue','videoLayers','authored'];
+const KEYS=['screens','variant','brightness','speed','motionAmount','paused','offset','branding','headlines','interactive','showVideo','videoId','cue','videoLayers','authored','appearance'];
 const pick=state=>Object.fromEntries(KEYS.filter(key=>Object.hasOwn(state,key)).map(key=>[key,state[key]]));
 function configuration(state){
  const look=pick(portableLook(sanitize(pick(state))));

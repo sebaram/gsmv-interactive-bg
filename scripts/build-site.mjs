@@ -7,7 +7,7 @@ const args=process.argv.slice(2),index=args.indexOf('--out');
 const out=resolve(index>=0?args[index+1]:join(root,'_site'));
 if(out===root)throw Error('The site output must be a separate directory');
 await mkdir(out,{recursive:true});
-const files=['index.html','wall.html','studio.css','wall.css','tokens.css','base.css','state.js','motion.js','logo-morph.js','logo-scene.js','video-library.js','youtube-source.js','youtube-player.js','authoring.js','authoring-scene.js','authoring-ui.js','element-list.js','look-url.js','video-layers.js','video-overlay.js','video-layer-controls.js','sync.js','sync-worker.js','scene.js','studio.js','screens-ui.js','README.md'];
+const files=['index.html','wall.html','studio.css','wall.css','tokens.css','base.css','state.js','appearance.js','appearance-ui.js','motion.js','logo-morph.js','logo-scene.js','video-library.js','youtube-source.js','youtube-player.js','authoring.js','authoring-scene.js','authoring-ui.js','element-list.js','look-url.js','video-layers.js','video-overlay.js','video-layer-controls.js','sync.js','sync-worker.js','scene.js','studio.js','screens-ui.js','README.md'];
 const sources=await Promise.all(files.map(file=>readFile(join(root,file),'utf8')));
 const version=createHash('sha256').update(sources.join('\n')).digest('hex').slice(0,12);
 for(let i=0;i<files.length;i++){

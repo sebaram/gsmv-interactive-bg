@@ -25,6 +25,18 @@ Every background starts without video in a fresh studio. Switching backgrounds p
 
 ## Author a preset and bookmark it
 
+### Scene appearance
+
+Open **Scene appearance** under Wall brightness in the on-set controls. **Preset atmosphere** keeps the original direction; **Custom gradient** uses your base/glow colors; **Solid color** removes the background gradient and vignette. Pick colors with the swatches or enter hex values. Choosing a color from Preset atmosphere switches to Custom gradient.
+
+**Background glow** adjusts the atmospheric color strength. **3D lighting** scales the scene lights and reflections without dimming the background or footage. **Floor opacity** fades the floor shading; at zero the invisible floor no longer intercepts preview clicks. Solid mode disables irrelevant glow controls. Bright custom backgrounds automatically use the colored department mark and dark text for contrast.
+
+Appearance settings belong to each preset and synchronize to the wall outputs. They are retained in saved JSON and look URLs. **Reset preset appearance** restores only this preset's colors, lighting and floor; authored elements, footage, wall brightness and motion settings remain available. Changes update existing shader/light settings without rebuilding objects or video decoders.
+
+Existing controls also cover overall Wall brightness, Motion speed, Movement amount, pause/resume, pointer interaction, signature/titles, screen ratios/grids, and element/video placement, size, rotation and visibility.
+
+### Elements
+
 All six backgrounds are starting **presets**. In **Author the preset**, select an element, choose its screen and set position, size, rotation and visibility. **Duplicate element** gives it an independent placement: for example, keep the main sculpture large on the front/right screen and put a smaller copy on the left. Copies keep their animation and survive removal of a custom source object. **Add element** offers MV sculptures, red/blue ribbons, orbital forms, networks, spheres and arches on any preset.
 
 The editor has a compact **Layers** pane on the left and selected **Properties** on the right. Expand groups to inspect their contents, search by name/part/screen, and use the eye or trash icons for visibility and deletion. Full names appear in Properties and row tooltips. The panes stack on narrow screens. Search **long** to find the red/blue **Long line** ribbon layers; their position, size, rotation and visibility are editable like other elements. Floor-grid connections are named **Connection line**.

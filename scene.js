@@ -7,6 +7,7 @@ import {presetEdits} from './authoring.js';
 import {decodeLook,liveOutputLook} from './look-url.js';
 import {motionPose} from './motion.js';
 import {createLogoSculpture} from './logo-scene.js';
+import {appearanceFor,lightAppearance} from './appearance.js';
 
 const params=new URLSearchParams(location.search),view=params.get('view')||'front',preview=params.has('preview');
 const fixedVariant=params.has('variant')?Math.max(0,Math.min(variants.length-1,+params.get('variant'))):null;
@@ -23,7 +24,7 @@ const scene=new T.Scene();
 const camera=new T.OrthographicCamera(-18,18,5,-5,.1,140);camera.position.set(0,3.8,32);camera.lookAt(0,0,0);
 const group=new T.Group();scene.add(group);
 const moving=[],logoSystems=[];
-let hero,secondary,background,layout,authoring;
+let hero,secondary,background,layout,authoring,floorMaterial,lightingBase=[];
 let lastConfig='',pointer={x:0,y:0},lastFrame=-1,renderedTime=null;
 let frames=0,fps=0,statsEpoch=performance.now();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -38,7 +39,7 @@ const eg=ec.createLinearGradient(0,0,0,512);eg.addColorStop(0,'#dce7fa');eg.addC
 for(const [x,y,w,h] of [[100,60,100,300],[390,40,280,95],[800,100,70,260]]){ec.fillStyle='#f5fbff';ec.fillRect(x,y,w,h);}
 const envTexture=new T.CanvasTexture(envCanvas);envTexture.mapping=T.EquirectangularReflectionMapping;envTexture.colorSpace=T.SRGBColorSpace;
 const pmrem=new T.PMREMGenerator(renderer);const environment=pmrem.fromEquirectangular(envTexture);scene.environment=environment.texture;envTexture.dispose();pmrem.dispose();
-scene.add(new T.HemisphereLight(0xb3dcff,0x14213a,2.4));
+const hemisphere=new T.HemisphereLight(0xb3dcff,0x14213a,2.4);scene.add(hemisphere);
 const keyLight=new T.DirectionalLight(0xd9ebff,5);keyLight.position.set(-7,12,14);scene.add(keyLight);
 const rim=new T.DirectionalLight(0x5e9fff,4);rim.position.set(14,3,-7);scene.add(rim);
 const redLight=new T.PointLight(0xff6775,80,30);redLight.position.set(8,1,5);scene.add(redLight);
@@ -52,19 +53,19 @@ function tube(points,r,color,parent=group){return mesh(new T.TubeGeometry(new T.
 function shadow(x,y,z,sx,sy,opacity=.25){const c=document.createElement('canvas');c.width=c.height=128;const cx=c.getContext('2d'),g=cx.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,`rgba(0,0,0,${opacity})`);g.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=g;cx.fillRect(0,0,128,128);const tex=new T.CanvasTexture(c);const o=mesh(new T.PlaneGeometry(sx,sy),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));o.rotation.x=-Math.PI/2;o.position.set(x,y,z);}
 function stageFloor(color){
  const light=state.variant===2;
- const mat=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uLight:{value:light?1:0}},vertexShader:'varying vec3 vWorld;void main(){vec4 world=modelMatrix*vec4(position,1.);vWorld=world.xyz;gl_Position=projectionMatrix*viewMatrix*world;}',fragmentShader:'varying vec3 vWorld;uniform float uLight;void main(){float a=smoothstep(-23.,-3.,vWorld.z)*.65;vec3 dark=vec3(.025,.055,.105);vec3 pale=vec3(.72,.71,.67);gl_FragColor=vec4(mix(dark,pale,uLight),a);}'});
+ const mat=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uLight:{value:light?1:0},uOpacity:{value:1}},vertexShader:'varying vec3 vWorld;void main(){vec4 world=modelMatrix*vec4(position,1.);vWorld=world.xyz;gl_Position=projectionMatrix*viewMatrix*world;}',fragmentShader:'varying vec3 vWorld;uniform float uLight;uniform float uOpacity;void main(){float a=smoothstep(-23.,-3.,vWorld.z)*.65;vec3 dark=vec3(.025,.055,.105);vec3 pale=vec3(.72,.71,.67);gl_FragColor=vec4(mix(dark,pale,uLight),a*uOpacity);}'});floorMaterial=mat;
  const floor=mesh(new T.PlaneGeometry(180,100),mat);floor.rotation.x=-Math.PI/2;floor.position.set(0,-4,-7);
 }
 function atmosphere(light){
- const mat=new T.ShaderMaterial({depthWrite:false,uniforms:{uTime:{value:0},uLight:{value:light?1:0},uAccent:{value:new T.Color(cues[state.cue].color)}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:`varying vec2 vUv;uniform float uTime;uniform float uLight;uniform vec3 uAccent;
- void main(){vec2 p=vUv;float a=exp(-6.0*length((p-vec2(.76,.55))*vec2(1.,.8)));float b=exp(-7.0*length((p-vec2(.23,.48))*vec2(1.,.8)));float band=exp(-30.*abs(p.y-.35-.04*sin(p.x*4.+uTime*.02)));vec3 dark=vec3(.018,.038,.085)+vec3(.025,.09,.23)*a+vec3(.02,.05,.12)*b+uAccent*band*.018;vec3 pale=vec3(.78,.78,.74)+vec3(.13,.13,.12)*a-vec3(.035,.028,.02)*b;gl_FragColor=vec4(mix(dark,pale,uLight),1.);}`});
+ const mat=new T.ShaderMaterial({depthWrite:false,uniforms:{uTime:{value:0},uLight:{value:light?1:0},uAccent:{value:new T.Color(cues[state.cue].color)},uMode:{value:0},uBase:{value:new T.Color()},uGlowColor:{value:new T.Color()},uGlow:{value:1}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:`varying vec2 vUv;uniform float uTime;uniform float uLight;uniform vec3 uAccent;uniform float uMode;uniform vec3 uBase;uniform vec3 uGlowColor;uniform float uGlow;
+ void main(){vec2 p=vUv;float a=exp(-6.0*length((p-vec2(.76,.55))*vec2(1.,.8)));float b=exp(-7.0*length((p-vec2(.23,.48))*vec2(1.,.8)));float band=exp(-30.*abs(p.y-.35-.04*sin(p.x*4.+uTime*.02)));vec3 dark=vec3(.018,.038,.085)+(vec3(.025,.09,.23)*a+vec3(.02,.05,.12)*b+uAccent*band*.018)*uGlow;vec3 pale=vec3(.78,.78,.74)+(vec3(.13,.13,.12)*a-vec3(.035,.028,.02)*b)*uGlow;vec3 color=mix(dark,pale,uLight);if(uMode>0.5)color=uBase;if(uMode>1.5)color=mix(uBase,uGlowColor,clamp((a*.8+b*.18+band*.12)*uGlow,0.,1.));gl_FragColor=vec4(color,1.);}`});
  background=mesh(new T.PlaneGeometry(Math.max(170,layout.width+100),60),mat);background.position.set(0,0,-24);
 }
 function clear(){
  authoring=null;
  const geometries=new Set(),materials=new Set();group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
  for(const g of geometries)g.dispose();for(const m of materials){if(m.map&&m.map!==environment.texture)m.map.dispose();m.dispose();}
- group.clear();moving.length=0;logoSystems.length=0;hero=null;secondary=null;
+ group.clear();moving.length=0;logoSystems.length=0;hero=null;secondary=null;floorMaterial=null;
 }
 function positions(){const p=panorama(state),width=p.width/p.height*10,main=p.screens.find(sc=>sc.id==='front')||p.screens[0],companion=p.screens.find(sc=>sc.id==='left')||p.screens.find(sc=>sc.id!==main.id)||main,frontWidth=main.width/p.height*10,leftWidth=companion.width/p.height*10;return {width,leftWidth,frontWidth,main,companion,screens:p.screens,seam:-width/2+main.x/p.height*10,hx:-width/2+main.x/p.height*10+frontWidth*.75,lx:-width/2+companion.x/p.height*10+leftWidth*.53};}
 
@@ -172,10 +173,11 @@ function createAuthorObject(type){
 }
 function rebuild(){
  clear();document.querySelector('#error').hidden=true;layout=positions();
- keyLight.color.set('#d9ebff');keyLight.intensity=5;rim.color.set('#5e9fff');rim.intensity=4;redLight.intensity=80;
+ hemisphere.intensity=2.4;keyLight.color.set('#d9ebff');keyLight.intensity=5;rim.color.set('#5e9fff');rim.intensity=4;redLight.intensity=80;
  [blueHour,commonGround,softArchitecture,livingResearch,sharedReality,mvSymbiosis][state.variant]();
  if(state.variant<3)extraScreens();
  if(secondary&&layout.main.id===layout.companion.id)secondary.visible=false;
+ lightingBase=[hemisphere,keyLight,rim,redLight].map(light=>light.intensity);
  resize();authoring=authoringScene(group,camera,state,{background,hero,secondary,createObject:createAuthorObject,view,preview});applyOverlay();lastConfig=configKey();
 }
 function configKey(){return `${state.variant}/${state.cue}/`+JSON.stringify(presetEdits(state).objects.map(({id,type,source})=>({id,type,source})))+JSON.stringify(state.screens.map(({grid,name,...sc})=>sc));}
@@ -191,8 +193,13 @@ function resize(){
  document.querySelector('#calibration').style.setProperty('--aspect-correction',correction);videoLayers.resize();authoring?.apply(state);
 }
 function applyOverlay(){
- document.querySelector('#art').style.filter=`brightness(${state.brightness/100})`;document.body.classList.toggle('light',state.variant===2);
- document.querySelector('#wall-logo').src=state.variant===2?'assets/logo-color.png':'assets/logo-white.png';
+ const a=appearanceFor(state),light=lightAppearance(state),uniforms=background?.material.uniforms;
+ if(uniforms){uniforms.uMode.value={preset:0,solid:1,gradient:2}[a.mode];uniforms.uBase.value.set(a.backgroundColor).convertLinearToSRGB();uniforms.uGlowColor.value.set(a.glowColor).convertLinearToSRGB();uniforms.uGlow.value=a.glow;}
+ if(floorMaterial)floorMaterial.uniforms.uOpacity.value=a.floor;
+ [hemisphere,keyLight,rim,redLight].forEach((light,i)=>light.intensity=lightingBase[i]*a.lighting);scene.environmentIntensity=a.lighting;
+ document.querySelector('#art').style.filter=`brightness(${state.brightness/100})`;document.body.classList.toggle('light',light);
+ document.querySelector('#atmosphere').style.display=a.mode==='solid'?'none':'';
+ document.querySelector('#wall-logo').src=light?'assets/logo-color.png':'assets/logo-white.png';
  document.querySelector('#branding').style.display=state.branding?'':'none';
  document.querySelector('#headline').style.display=state.headlines?'':'none';
  videoLayers.update(state);authoring?.apply(state);
