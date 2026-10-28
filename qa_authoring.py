@@ -68,7 +68,7 @@ with sync_playwright() as p:
  assert wall.evaluate('window.META.state.authored[1].edits["preset-main"].size')==1.25
  print('PASS Copied/bookmarked editor and standalone output addresses restore in fresh browser storage',flush=True)
  page.locator('[data-variant="5"]').click();front.wait_for_function('window.META.state.variant===5');page.locator('[data-variant="1"]').click();front.wait_for_function('window.META.state.variant===1');page.wait_for_function('Object.keys(window.METAStudio.state.authored).length===0')
- page.goto(address);page.wait_for_function('window.METAStudio.state.authored[1]?.objects.length===2')
+ saved_base,saved_hash=address.split('#',1);page.goto(saved_base+('&' if '?' in saved_base else '?')+'restore=authoring#'+saved_hash);page.wait_for_function('window.METAStudio.state.authored[1]?.objects.length===2')
  page.locator('.author-row-select[data-element-id="preset-main"]').click();page.locator('#reset-preset').click();page.wait_for_function('!window.METAStudio.state.authored[1]');assert page.evaluate('window.METAStudio.state.videoLayers.length')==1
  page.set_viewport_size({'width':390,'height':844});page.screenshot(path=str(APP/'previews/qa-authoring-mobile.png'),full_page=True);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
  assert not errors,errors;assert not api,api
