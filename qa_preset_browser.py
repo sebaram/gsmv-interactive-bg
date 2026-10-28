@@ -28,7 +28,7 @@ with sync_playwright() as p:
     print('PASS Four independent kinetic preset cards keep per-preset edits',flush=True)
 
     page.locator('.element-gallery>summary').click()
-    choices=page.locator('[data-add-type]');assert choices.count()==11
+    choices=page.locator('[data-add-type]');assert choices.count()==12
     page.wait_for_function('Array.from(document.querySelectorAll(".element-gallery-item img")).every(i=>i.complete&&i.naturalWidth>0)')
     page.locator('.element-gallery').screenshot(path=str(ROOT/'previews/qa-element-gallery.png'))
     page.locator('[data-add-type="registration"]').click()
@@ -40,7 +40,7 @@ with sync_playwright() as p:
     page.locator('.element-gallery>summary').click();page.locator('[data-add-type="video"]').click()
     page.wait_for_function('window.METAStudio.state.videoLayers.length===1')
     assert page.locator('.author-screen-group[data-screen-id="unassigned"]').count()==1
-    print('PASS All eleven thumbnails load, visual insertion and Insert add the chosen type',flush=True)
+    print('PASS All twelve thumbnails load, visual insertion and Insert add the chosen type',flush=True)
 
     front=page.locator('.author-screen-group[data-screen-id="front"]')
     left=page.locator('.author-screen-group[data-screen-id="left"]')

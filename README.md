@@ -31,7 +31,7 @@ Administrator sessions expire after 12 hours; logout revokes the session immedia
 
 All twelve designs appear in **Background presets**. The four kinetic designs are independent presets, so switching between them retains each one's authored edits. They render on every configured screen and preserve the current display setup and video layers.
 
-In **Add an element**, open **Browse element thumbnails** to see the artwork before adding it. Every graphic type has a thumbnail rendered from the actual 3D scene; Video uses a film icon. Clicking a thumbnail adds that type immediately. The dropdown and Insert shortcut remain available.
+In **Add an element**, open **Browse element thumbnails** to see the artwork before adding it. Every graphic type has a thumbnail rendered from the actual 3D scene; Video and Text use matching film and type icons. Clicking a thumbnail adds that type immediately. The dropdown and Insert shortcut remain available.
 
 The layer list groups artwork beneath collapsible parents using the configured screen names, such as **Left tiled wall** and **Front LED wall**. Multi-screen videos appear under **Shared across screens**, and videos without an assigned screen appear under **Unassigned**. Search uses the current parent screen after an object moves. Selecting a layer from the preview reveals its screen and object ancestors automatically.
 
@@ -80,6 +80,21 @@ Videos appear in the same Layers list. Choose **Video element** under Add an ele
 Groups edit as one unit by default. Clicking a child in the preview or list selects its grouped ancestor; child Hide/Delete controls are disabled. Choose **Ungroup** in Properties or the right-click menu to edit individual parts. Nested groups keep their own boundary until ungrouped too. **Regroup** protects the artwork again. Expanding a group only shows its contents. Grouping choices support undo and are saved in look URLs; existing child transforms and animation are preserved.
 
 Click and drag visible artwork in the monitor to select and move it in one gesture. Grouped artwork moves together; after Ungroup, parts can be moved individually. Hover outlines show pickable parts; selecting an item in the list automatically highlights it in the preview and reveals its selection handles. Drag a selection label or frame border to move its whole group, or drag the lower-right corner to resize. Arrow keys move the focused selection and Escape clears it. The monitor and Pause control stay visible while using the list and controls, with preview proportions fitted to each screen, including portrait setups. The hierarchical element list exposes individual ribbons, rings, spheres, arches, network nodes/links and MV facets inside their parent sculptures. Child edits compose with parent motion and group transforms; originals and copied groups keep independent part edits. The element list also includes the preset's sculptures, decorative components and each screen's department signature, research titles and topic footer. Signatures and text are positioned separately per display; choose that display's existing copy. Position percentages describe the object's center for 3D elements and the upper-left anchor for signature/text. **Reset element** restores a preset component; **Reset this preset** clears only that preset's edits and added objects. Video layers remain independent.
+
+### Editable text
+
+Select **Topic footer**, **Research titles** or **Department signature** in a screen group, then use **Properties → Text**. Edit simple HTML and set font, size, weight, italic, color, alignment, text-box width, line height, letter spacing and opacity. Signature content edits its text; its logo stays with the signature layer. Explicit layer visibility and authored text can enable a layer independently of the default signature/title switches.
+
+Choose **Text element** under **Add an element** to make a separate layer. Text layers support preview dragging, resizing, screen assignment, duplication, clipboard, deletion and undo. Duplicate an existing footer or title to turn it into an independently placed text layer. **Reset text only** restores content and typography while keeping the placement.
+
+HTML supports paragraphs, headings, line breaks, lists, strong/bold, emphasis/italic, underline, strikeout, subscript, superscript and spans. Inline styles support a bounded set of colors/fonts, weight, italic, alignment and sizes in `em` or `px`. Pixel sizes refer to a2160-pixel-high4K output and scale with screen height. For example:
+
+```html
+<p>Physical and <strong>virtual</strong> together</p>
+<p><span style="color:#9bd2ff;font-size:1.2em">함께 만드는 공간</span></p>
+```
+
+Text, formatting and independent per-screen edits persist in look URLs, JSON files and server saves. Active HTML and external resources are removed. If a composition grows too large for an address, save it as JSON or a named server look instead.
 
 ### Multiple MV sculptures
 

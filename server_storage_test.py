@@ -159,6 +159,20 @@ class ServerLibraryTests(unittest.TestCase):
             self.assertIsNone(row['thumbnail'])
             self.assertEqual(row['look'], '{"variant":5}')
 
+    def test_authored_text_survives_server_save_and_reopen(self):
+        self.login()
+        look = {'variant': 8, 'authored': {'8': {'edits': {
+            'wall-caption-front': {'textHtml': '<p>Physical <strong>and virtual</strong></p>',
+                                   'textFont': 'serif', 'textSize': 72, 'textColor': '#ffcc88'}},
+            'objects': [{'id': 'object-1', 'type': 'text', 'screen': 'left', 'x': 15, 'y': 35,
+                         'textHtml': '<p>함께 만드는 공간</p>', 'textItalic': True}]}}}
+        code, _, body = self.request('POST', '/api/projects', {'name': 'Text composition', 'look': look})
+        self.assertEqual(code, 201, body)
+        project_id = json.loads(body)['id']
+        self.server.storage = Storage(self.root/'data', self.storage.password_hash, self.storage.origin)
+        saved = json.loads(self.request('GET', '/api/projects/'+project_id, authenticated=False)[2])
+        self.assertEqual(saved['look'], look)
+
     def test_private_paths_and_hosted_shared_state_are_unavailable(self):
         for route in ('/server_storage.py', '/serve.py', '/.git/config', '/data/library.sqlite3', '/api/state'):
             self.assertEqual(self.request('GET', route)[0], 404, route)

@@ -1,10 +1,11 @@
+import {cleanTextProperties,textDefaults,textPropertyKeys} from './text-content.js';
 import {sanitizeLayers} from './video-layers.js';
 import {researchObjectTypes} from './research-objects.js';
 import {PRESET_COUNT} from './preset-catalog.js';
-export const objectTypes=[['logo','MV sculpture'],['ribbons','Real / virtual ribbons'],['orbits','Orbital sculpture'],['network','Research network'],['sphere','Sculptural sphere'],['arch','Architectural arch'],...researchObjectTypes];
+export const objectTypes=[['logo','MV sculpture'],['ribbons','Real / virtual ribbons'],['orbits','Orbital sculpture'],['network','Research network'],['sphere','Sculptural sphere'],['arch','Architectural arch'],...researchObjectTypes,['text','Text element']];
 const limit=(v,min,max)=>Math.min(max,Math.max(min,+v));
 export function cleanTransform(raw={}){
- const out={};for(const [key,min,max] of [['x',-50,150],['y',-50,150],['size',.05,6],['rotation',-180,180],['seed',0,999999],['randomness',0,2],['motionSpeed',0,3],['motionAmount',0,2],['motionAnchor',-1e10,1e10],['motionOffset',-1e10,1e10]])if(raw[key]!==undefined&&Number.isFinite(+raw[key]))out[key]=key==='seed'?Math.floor(limit(raw[key],min,max)):limit(raw[key],min,max);
+ const out={...cleanTextProperties(raw)};for(const [key,min,max] of [['x',-50,150],['y',-50,150],['size',.05,6],['rotation',-180,180],['seed',0,999999],['randomness',0,2],['motionSpeed',0,3],['motionAmount',0,2],['motionAnchor',-1e10,1e10],['motionOffset',-1e10,1e10]])if(raw[key]!==undefined&&Number.isFinite(+raw[key]))out[key]=key==='seed'?Math.floor(limit(raw[key],min,max)):limit(raw[key],min,max);
  if(typeof raw.screen==='string')out.screen=raw.screen.replace(/[^a-zA-Z0-9_-]/g,'').slice(0,50);
  if('visible' in raw)out.visible=raw.visible!==false;if('deleted' in raw)out.deleted=Boolean(raw.deleted);if('ungrouped' in raw)out.ungrouped=raw.ungrouped===true;return out;
 }
@@ -34,7 +35,7 @@ export function addElement(state,type,transform={},source=null){
  // Descendant edits are copied once so each duplicate can be authored independently.
  if(type==='copy'&&source){const prefix=source+(source.includes('-part-')?'-':'-part-');for(const [part,patch] of Object.entries(preset.edits))if(part.startsWith(prefix))edits[id+'-part-'+part.slice(prefix.length)]={...patch};}
  const variation=type==='logo'||type==='copy'&&isLogoElement(state,source)?{seed:nextLogoSeed(state),randomness:1}:{};
- return {...state,authored:{...state.authored,[state.variant]:{...preset,edits,objects:[...preset.objects,{id,type,source,screen:state.screens[0].id,x:50,y:50,size:1,rotation:0,visible:true,...variation,...cleanTransform(transform)}]}},activeElement:id,editElements:true,editVideos:false};
+ return {...state,authored:{...state.authored,[state.variant]:{...preset,edits,objects:[...preset.objects,{id,type,source,screen:state.screens[0].id,x:type==='text'?7:50,y:50,size:1,rotation:0,visible:true,...variation,...(type==='text'?textDefaults():{}),...cleanTransform(transform)}]}},activeElement:id,editElements:true,editVideos:false};
 }
 export function removeElement(state,id){
  if(isElementDeleted(state,id))return state;
@@ -48,13 +49,19 @@ export function removeElement(state,id){
 }
 export function resetElement(state,id){const preset=presetEdits(state),edits={...preset.edits};delete edits[id];return {...state,authored:{...state.authored,[state.variant]:{...preset,edits}}};}
 
+export function resetTextElement(state,id){
+ const preset=presetEdits(state),strip=value=>Object.fromEntries(Object.entries(value||{}).filter(([key])=>!textPropertyKeys.includes(key)));
+ return {...state,authored:{...state.authored,[state.variant]:{...preset,edits:{...preset.edits,...(!preset.objects.some(o=>o.id===id)?{[id]:strip(preset.edits[id])}:{})},objects:preset.objects.map(o=>o.id===id?strip(o):o)}}};
+}
+
 // The clipboard stays in this editor tab. Its snapshot survives source deletion.
 export function copyElement(state,element){
- if(!element||element.dom||isElementDeleted(state,element.id))return null;
+ if(!element||element.dom&&!element.text||isElementDeleted(state,element.id))return null;
  return structuredClone({variant:state.variant,element,preset:presetEdits(state)});
 }
 export function pasteElement(state,clipboard){
  if(!clipboard||clipboard.variant!==state.variant)return state;
+ if(clipboard.element.text){const e=clipboard.element;return addElement(state,'text',{...cleanTransform(e),x:Math.min(140,e.x+4),visible:true});}
  const snapshot=clipboard.preset,preset=presetEdits(state),objects=[...preset.objects],edits={...preset.edits},mapped=new Map();
  const freeId=()=>{let n=1;while(objects.some(o=>o.id==='object-'+n))n++;return 'object-'+n;};
  function ensureSource(id){

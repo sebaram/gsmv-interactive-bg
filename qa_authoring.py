@@ -32,12 +32,14 @@ with sync_playwright() as p:
  left.wait_for_function('window.META.elements.some(e=>e.id==="object-1" && e.screen==="left" && e.size===.55)')
  state=page.evaluate('window.METAStudio.state.authored[1]');assert state['edits']['preset-main']['size']==1.25 and state['objects'][0]['size']==.55
  print('PASS A large object on the right and a smaller duplicate on the left retain independent transforms',flush=True)
+ page.locator('#pause-btn').click();left.wait_for_function('window.META.state.paused&&window.META.renderedTime===window.META.time')
  page.locator('.preview-room').scroll_into_view_if_needed();handle=left.locator('.element-handle[data-element-id="object-1"]');handle.wait_for(state='visible');box=handle.locator('.element-handle-label').bounding_box()
  page.mouse.move(box['x']+8,box['y']+5);page.mouse.down();page.mouse.move(box['x']+28,box['y']+13,steps=4);page.mouse.up()
  page.wait_for_function('window.METAStudio.state.authored[1].objects[0].x>26')
  resize=left.locator('.element-resize').bounding_box();before=page.evaluate('window.METAStudio.state.authored[1].objects[0].size')
  page.mouse.move(resize['x']+8,resize['y']+8);page.mouse.down();page.mouse.move(resize['x']+24,resize['y']+15,steps=4);page.mouse.up();page.wait_for_function('(s)=>window.METAStudio.state.authored[1].objects[0].size>s',arg=before)
  print('PASS Selected 3D elements drag and resize directly in the monitor',flush=True)
+ page.locator('#pause-btn').click();left.wait_for_function('!window.META.state.paused')
  # Identity uses its own per-display transform, separate from the global signature switch.
  page.locator('#author-element').select_option('branding-left');page.locator('#author-x').fill('12');page.locator('#author-size').fill('0.7')
  left.wait_for_function('document.querySelector("#branding").style.left==="12%"')

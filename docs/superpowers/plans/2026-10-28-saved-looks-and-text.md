@@ -33,8 +33,8 @@
 
 ## 4. Editable text
 
-- [ ] Add a bounded text schema and a simple HTML allowlist: paragraphs, line breaks, emphasis, lists and safe inline formatting; strip active content and remote resources.
-- [ ] Add Properties controls for existing topic footer and research text, including HTML, font family, size, weight, italic, color, alignment and line spacing. Add optional text elements through the existing element chooser.
-- [ ] Render text per screen, independently of the global branding/title switches when its visibility is explicitly authored. Keep grouped editing, drag/resize and copying consistent.
-- [ ] Verify exact persistence in URL/JSON/server records, separate screen content, formatting, visibility, reset, safe HTML, browser output and editable-text thumbnails.
-- [ ] Run relevant regression tests, commit and push, then verify the final deployment.
+- [x] Add a bounded text schema and a simple HTML allowlist: paragraphs, line breaks, emphasis, lists and safe inline formatting; strip active content and remote resources.
+- [x] Add Properties controls for existing topic footer and research text, including HTML, font family, size, weight, italic, color, alignment and line spacing. Add optional text elements through the existing element chooser.
+- [x] Render text per screen, independently of the global branding/title switches when its visibility is explicitly authored. Keep grouped editing, drag/resize and copying consistent.
+- [x] Verify exact persistence in URL/JSON/server records, separate screen content, formatting, visibility, reset, safe HTML, browser output and editable-text thumbnails.
+- [x] Run relevant regression tests, commit and push, then verify the final deployment.

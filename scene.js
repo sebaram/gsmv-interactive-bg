@@ -66,7 +66,7 @@ function atmosphere(light){
  background=mesh(new T.PlaneGeometry(Math.max(170,layout.width+100),60),mat);background.position.set(0,0,-24);
 }
 function clear(){
- authoring=null;
+ authoring=null;document.querySelectorAll(".authored-text").forEach(el=>el.remove());
  const geometries=new Set(),materials=new Set();group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
  for(const g of geometries)g.dispose();for(const m of materials){if(m.map&&m.map!==environment.texture)m.map.dispose();m.dispose();}
  group.clear();moving.length=0;logoSystems.length=0;hero=null;secondary=null;floorMaterial=null;
@@ -227,9 +227,6 @@ function applyOverlay(){
  document.querySelector('#branding').style.display=state.branding?'':'none';
  document.querySelector('#headline').style.display=state.headlines?'':'none';
  videoLayers.update(state);authoring?.apply(state);
- document.querySelector('#cue-index').textContent=cues[state.cue].lab;
- document.querySelector('#cue-title').textContent=cues[state.cue].ko;
- document.querySelector('#cue-en').textContent=cues[state.cue].en;
  document.querySelector('#frame-guide').style.display=state.guide?'block':'none';
  document.querySelector('#calibration').style.display=state.calibration?'block':'none';
  const sc=state.screens.find(sc=>sc.id===view)||state.screens[0];

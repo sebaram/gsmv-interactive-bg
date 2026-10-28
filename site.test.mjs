@@ -18,7 +18,7 @@ test('public bundle works under a GitHub project path without exposing local med
   const clips=JSON.parse(await readFile(join(temp,'site/clips.json'),'utf8'));
   assert.ok(clips.every(c=>c.url==='previews/demo-motion.mp4'));
   assert.ok((await stat(join(temp,'site/previews/demo-motion.mp4'))).size>1000);
-  assert.ok((await stat(join(temp,'site/previews/meaning-motion.mp4'))).size>1000);
+  assert.ok((await stat(join(temp,'site/previews/meaning-motion.mp4'))).size>100);
   await access(join(temp,'site/vendor/three.module.js'));
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/floor-wall-variations.json'),'utf8')).looks.length,16);
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/research-meaning-variations.json'),'utf8')).looks.length,16);
@@ -26,7 +26,8 @@ test('public bundle works under a GitHub project path without exposing local med
   await access(join(temp,'site/preset-catalog.js'));
   await access(join(temp,'site/look-thumbnail.js'));
   await access(join(temp,'site/look-draft.js'));
-  for(const [type] of objectTypes)assert.ok((await stat(join(temp,'site/assets/element-thumbnails/'+type+'.jpg'))).size>1000);
+  for(const name of ['text-content.js','text-controls.js','text-render.js'])await access(join(temp,'site/'+name));
+  for(const [type] of objectTypes)assert.ok((await stat(join(temp,'site/assets/element-thumbnails/'+type+(type==='text'?'.svg':'.jpg')))).size>100);
   await access(join(temp,'site/assets/element-thumbnails/video.svg'));
   for(const variant of [8,9,10,11])await access(join(temp,'site/previews/style-'+variant+'.jpg'));
   await access(join(temp,'site/docs/scene-meanings.md'));

@@ -172,3 +172,9 @@ The hosted library now mounts below the preset grid before requesting server dat
 ## Unsaved look protection
 
 93 JavaScript tests pass. Draft fingerprints ignore runtime time, pause, selection and automatic source aspect metadata, while retaining authored changes. Tests verify per-preset draft baselines, undo-to-clean behavior, saved snapshots versus edits made during a request, and loaded-project provenance. Hosted browser checks confirm cancellation preserves current edits, accepting loads the requested look, selecting another saved record disables Update, and a failed save leaves the dirty flag intact.
+
+## Editable text layers
+
+96 JavaScript tests and11 storage tests pass. Text tests cover a bounded, idempotent HTML allowlist, removal of active content/resources, safe inline styles, typography bounds, independent text copies, text-only reset and per-screen URL persistence. A real server restart retains authored HTML, Korean text, fonts and positions exactly.
+
+`qa_text_elements.py` verifies independent front/left footers, editable research titles and signature text, proportional4K font sizes including inline pixel sizes, fonts/weight/italic/color/width/spacing/opacity, new text elements, duplicate/delete/undo, moving to another screen, direct preview drag, clean standalone outputs, bookmarked restoration and mobile fit. Saved thumbnails include wrapped inline text through actual browser text ranges. Rendered wall, text Properties and thumbnail images were inspected. Preset-browser, grouped-editor and full twelve-preset authoring regressions pass; gesture-only resize checks hold the animation still to avoid a moving-handle timing race.
