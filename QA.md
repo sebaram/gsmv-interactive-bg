@@ -184,3 +184,7 @@ The hosted library now mounts below the preset grid before requesting server dat
 97 JavaScript tests and12 storage integration tests pass. Built-in metadata is frozen, and selecting a preset creates pristine artwork/appearance even when reselecting the active preset. The current display setup, videos and on-set brightness are retained. Browser checks verify fresh selection and separate saved-look recovery; authenticated POST/PUT/DELETE requests cannot modify built-in assets or a preset API. Editor copy describes edits as a working look rather than mutations to a preset.
 
 The32 legacy server records were compared against the bundled Astra/Meaning JSON by name and full look data. All32 were exact redundant copies, with no custom/modified records. They were backed up under ignored `data/backups/` and deleted through the authenticated API after a second unchanged-record check. All34 uploaded videos were retained.
+
+## Explicit insertion destination
+
+The Add an element area has an independent Add to screen selector, defaulting to the front display and tracking configured screen names. Browser coverage verifies thumbnail insertion to front, Insert to left, a blank video restricted to front, a new text layer placed on left, and that changing the selected layer does not change the insertion destination.97 JavaScript tests pass.

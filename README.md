@@ -31,6 +31,8 @@ Administrator sessions expire after 12 hours; logout revokes the session immedia
 
 All twelve designs appear in **Background presets**. Built-in designs are read-only starting points. Clicking any preset card, including the current one, starts a fresh look with its original artwork and appearance. Save or copy the address of a custom look before replacing it. They render on every configured screen and preserve the current display setup and video layers.
 
+Choose **Add to screen** to target **Front LED wall**, **Left tiled wall** or any configured display before adding an element. This destination applies to the Add button, thumbnail choices and Insert, independently of the selected layer. Blank video elements retain that screen assignment when a source is chosen.
+
 In **Add an element**, open **Browse element thumbnails** to see the artwork before adding it. Every graphic type has a thumbnail rendered from the actual 3D scene; Video and Text use matching film and type icons. Clicking a thumbnail adds that type immediately. The dropdown and Insert shortcut remain available.
 
 The layer list groups artwork beneath collapsible parents using the configured screen names, such as **Left tiled wall** and **Front LED wall**. Multi-screen videos appear under **Shared across screens**, and videos without an assigned screen appear under **Unassigned**. Search uses the current parent screen after an object moves. Selecting a layer from the preview reveals its screen and object ancestors automatically.

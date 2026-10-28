@@ -29,6 +29,10 @@ with sync_playwright() as p:
     page.locator('.author-row-select[data-element-id="preset-main"]').click();page.locator('#author-size').fill('1.5')
     page.locator('[data-variant="8"]').click();page.wait_for_function('Object.keys(window.METAStudio.state.authored).length===0')
     print('PASS Read-only preset cards create pristine drafts, including same-preset re-selection',flush=True)
+    destination=page.locator('#add-element-screen')
+    assert destination.count()==1
+    assert destination.input_value()=='front'
+    assert 'Front LED wall' in destination.text_content() and 'Left tiled wall' in destination.text_content()
 
     page.locator('.element-gallery>summary').click()
     choices=page.locator('[data-add-type]');assert choices.count()==12
@@ -36,14 +40,25 @@ with sync_playwright() as p:
     page.locator('.element-gallery').screenshot(path=str(ROOT/'previews/qa-element-gallery.png'))
     page.locator('[data-add-type="registration"]').click()
     page.wait_for_function('window.METAStudio.state.authored[8].objects.some(o=>o.type==="registration")')
+    assert page.evaluate('window.METAStudio.state.authored[8].objects[0].screen')=='front'
     page.wait_for_function('document.querySelector(".author-row-select[data-element-id=object-1]")')
     assert page.locator('.element-gallery').get_attribute('open') is None
-    page.keyboard.press('Insert')
+    destination.select_option('left');page.locator('#add-element').focus();page.keyboard.press('Insert')
     page.wait_for_function('window.METAStudio.state.authored[8].objects.length===2')
+    assert page.evaluate('window.METAStudio.state.authored[8].objects[1].screen')=='left'
+    destination.select_option('front')
     page.locator('.element-gallery>summary').click();page.locator('[data-add-type="video"]').click()
     page.wait_for_function('window.METAStudio.state.videoLayers.length===1')
+    assert page.evaluate('window.METAStudio.state.videoLayers[0].targets')==['front']
     assert page.locator('.author-screen-group[data-screen-id="unassigned"]').count()==1
     print('PASS All twelve thumbnails load, visual insertion and Insert add the chosen type',flush=True)
+    destination.select_option('left');page.locator('#add-element-type').select_option('text');page.locator('#add-element').click()
+    page.wait_for_function('document.querySelector(".author-row-select[data-element-id=object-3]")')
+    assert page.evaluate('window.METAStudio.state.authored[8].objects[2].type')=='text'
+    assert page.evaluate('window.METAStudio.state.authored[8].objects[2].screen')=='left'
+    page.locator('.author-row-select[data-element-id="object-3"]').click();page.keyboard.press('Delete');page.wait_for_function('window.METAStudio.state.authored[8].objects.length===2')
+    destination.select_option('front')
+    print('PASS Explicit destination applies to graphics, text, blank videos and Insert independently of selection',flush=True)
 
     front=page.locator('.author-screen-group[data-screen-id="front"]')
     left=page.locator('.author-screen-group[data-screen-id="left"]')
