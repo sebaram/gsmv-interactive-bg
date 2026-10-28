@@ -17,11 +17,11 @@
 
 ## 2. Saved editor thumbnails
 
-- [ ] Add optional `origin` and JPEG `thumbnail` columns to `projects`, preserving existing rows as legacy. Validate thumbnail payloads and retain thumbnails during rename.
-- [ ] Add `look-thumbnail.js` to capture the actual main-wall canvas and visible overlays at save/update time. Show thumbnail cards with explicit selected/loaded state and a fallback for earlier looks.
-- [ ] Put editor saves in Saved looks; retain previous records under Earlier saved looks, without deleting or rewriting their configurations.
-- [ ] Verify migration, thumbnail validation/persistence, save/update/rename, public cards and mobile layout in storage/browser tests.
-- [ ] Commit and push.
+- [x] Add optional `origin` and JPEG `thumbnail` columns to `projects`, preserving existing rows as legacy. Validate thumbnail payloads and retain thumbnails during rename.
+- [x] Add `look-thumbnail.js` to capture the actual main-wall canvas and visible overlays at save/update time. Show thumbnail cards with explicit selected/loaded state and a fallback for earlier looks.
+- [x] Put editor saves in Saved looks; retain previous records under Earlier saved looks, without deleting or rewriting their configurations.
+- [x] Verify migration, thumbnail validation/persistence, save/update/rename, public cards and mobile layout in storage/browser tests.
+- [x] Commit and push.
 
 ## 3. Unsaved edits and save targets
 

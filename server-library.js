@@ -1,5 +1,6 @@
 import {portableLook} from './video-layers.js';
-import {currentTime,timeline} from './state.js';
+import {currentTime,timeline,variants} from './state.js';
+import {captureLookThumbnail} from './look-thumbnail.js';
 
 const size=bytes=>bytes>=1024**3?(bytes/1024**3).toFixed(1)+' GB':(bytes/1024**2).toFixed(1)+' MB';
 
@@ -11,12 +12,12 @@ export async function serverLibrary(options){
  let session;
  try{const response=await fetch('/api/session',{cache:'no-store'});if(!response.ok)throw Error();session=await response.json();if(typeof session.authenticated!=='boolean')throw Error();}
  catch{panel.setAttribute('aria-busy','false');panel.innerHTML='<h4>Saved looks</h4><p class="note" role="status">Could not load saved looks. Check the connection and try again.</p><button type="button" class="subtle">Retry loading</button>';panel.querySelector('button').onclick=()=>{panel.remove();serverLibrary(options);};return;}
- panel.innerHTML=`<h4>Saved looks</h4><p class="note">Named compositions saved from the web editor. Load one to continue editing it.</p><p class="note" id="server-project-count" role="status">Loading saved looks…</p><p class="note" id="server-auth-status"></p><form id="server-login"><label for="admin-password">Admin password<input id="admin-password" type="password" autocomplete="current-password" required maxlength="256"></label><button type="submit">Sign in</button></form><button id="server-logout" type="button" class="subtle" hidden>Sign out</button><label for="server-project">Saved looks<select id="server-project"><option value="">Choose a saved look</option></select></label><button id="server-load" type="button" class="subtle">Load selected look</button><div id="server-project-admin" hidden><label for="server-project-name">Look name<input id="server-project-name" type="text" maxlength="160" placeholder="Interview setup"></label><div class="server-actions"><button id="server-save" type="button">Save new look</button><button id="server-update" type="button" class="subtle">Update selected</button><button id="server-rename" type="button" class="subtle">Rename selected</button><button id="server-delete" type="button" class="subtle">Delete selected</button></div></div><button id="server-refresh" type="button" class="subtle">Refresh library</button><p class="note" id="server-library-status" role="status"></p>`;
+ panel.innerHTML=`<h4>Saved looks</h4><p class="note">Named compositions saved from the web editor. Load one to continue editing it.</p><p class="note" id="server-project-count" role="status">Loading saved looks…</p><div id="saved-look-cards" class="saved-look-grid" aria-label="Saved editor looks"></div><details id="earlier-saved-looks" hidden><summary>Earlier saved looks</summary><p class="note">Previous starter variations. Load one and save it from the editor to capture your own composition.</p><div id="earlier-look-cards" class="saved-look-grid"></div></details><p class="note" id="server-auth-status"></p><form id="server-login"><label for="admin-password">Admin password<input id="admin-password" type="password" autocomplete="current-password" required maxlength="256"></label><button type="submit">Sign in</button></form><button id="server-logout" type="button" class="subtle" hidden>Sign out</button><label for="server-project">Saved looks<select id="server-project"><option value="">Choose a saved look</option></select></label><button id="server-load" type="button" class="subtle">Load selected look</button><div id="server-project-admin" hidden><label for="server-project-name">Look name<input id="server-project-name" type="text" maxlength="160" placeholder="Interview setup"></label><div class="server-actions"><button id="server-save" type="button">Save new look</button><button id="server-update" type="button" class="subtle">Update selected</button><button id="server-rename" type="button" class="subtle">Rename selected</button><button id="server-delete" type="button" class="subtle">Delete selected</button></div></div><button id="server-refresh" type="button" class="subtle">Refresh library</button><p class="note" id="server-library-status" role="status"></p>`;
  const videos=document.createElement('section');videos.className='server-videos';videos.setAttribute('aria-label','Server videos');
  videos.innerHTML=`<h3>Server videos</h3><p class="note">Uploaded videos are available to anyone with their link and can play on other computers.</p><div id="server-upload-controls" hidden><label for="server-video-file">Upload MP4, MOV or WebM<input id="server-video-file" type="file" accept=".mp4,.mov,.webm,video/mp4,video/quicktime,video/webm"></label><p class="note" id="server-upload-limit"></p><progress id="server-upload-progress" max="100" value="0" hidden></progress></div><p class="note" id="server-media-status" role="status"></p><div id="server-media-items"></div>`;
  document.querySelector('.video-section').append(videos);
  const $=selector=>panel.querySelector(selector)||videos.querySelector(selector);
- let projects=[],media=[],busy=false,uploading=false;
+ let projects=[],media=[],busy=false,uploading=false,loadedId=null;
  function authPaint(){
   $('#server-auth-status').textContent=session.authenticated?'Signed in as admin. Save looks and upload videos.':'Sign in to save looks or upload videos. Loading and playback are public.';
   $('#server-login').hidden=session.authenticated;$('#server-logout').hidden=!session.authenticated;
@@ -31,7 +32,7 @@ export async function serverLibrary(options){
  function selected(){return $('#server-project').value;}
  function controls(){
   for(const id of ['server-load','server-update','server-rename','server-delete'])$('#'+id).disabled=busy||!selected();
-  $('#server-save').disabled=busy;$('#server-refresh').disabled=busy;$('#server-project').disabled=busy;
+  for(const button of panel.querySelectorAll('[data-saved-look]'))button.disabled=busy;$('#server-save').disabled=busy;$('#server-refresh').disabled=busy;$('#server-project').disabled=busy;
  }
  function mediaPaint(){
   $('#server-media-items').replaceChildren();
@@ -44,22 +45,31 @@ export async function serverLibrary(options){
    $('#server-media-items').append(row);
   }
  }
+ function projectPaint(){
+  const editor=projects.filter(p=>p.origin==='editor'),earlier=projects.filter(p=>p.origin!=='editor');
+  $('#server-project-count').textContent=editor.length+' saved looks'+(editor.length?' from the editor.':' yet. Sign in and save your current composition.');
+  $('#earlier-saved-looks').hidden=!earlier.length;$('#earlier-saved-looks summary').textContent='Earlier saved looks ('+earlier.length+')';
+  for(const [target,items] of [['#saved-look-cards',editor],['#earlier-look-cards',earlier]]){
+   $(target).replaceChildren();
+   for(const project of items){const button=document.createElement('button'),image=document.createElement('img'),copy=document.createElement('span'),name=document.createElement('strong'),detail=document.createElement('small');button.type='button';button.className='saved-look-card subtle';button.dataset.savedLook=project.id;button.setAttribute('aria-label','Load '+project.name);button.setAttribute('aria-pressed',String(loadedId===project.id));image.src=project.thumbnail?.startsWith('data:image/jpeg;base64,')?project.thumbnail:'previews/style-'+(project.variant||0)+'.jpg';image.alt='Preview of '+project.name;image.width=480;image.height=270;image.loading='lazy';name.textContent=project.name;detail.textContent=loadedId===project.id?'Loaded in editor':variants[project.variant]?.name||'Saved composition';copy.append(name,detail);button.append(image,copy);button.onclick=()=>{$('#server-project').value=project.id;$('#server-project').onchange();$('#server-load').click();};$(target).append(button);}
+  }
+ }
  async function refresh(){
-  const old=selected(),[saved,files]=await Promise.all([request('/api/projects'),request('/api/media')]);projects=saved.projects;media=files.media;$('#server-project-count').textContent=projects.length+' saved looks'+(projects.length?' available.':' yet. Sign in and save your current composition.');
+  const old=selected(),[saved,files]=await Promise.all([request('/api/projects'),request('/api/media')]);projects=saved.projects;media=files.media;
   const select=$('#server-project');select.replaceChildren(new Option('Choose a saved look',''));
-  for(const project of projects)select.add(new Option(project.name,project.id));
+  for(const [title,items] of [['Saved from editor',projects.filter(p=>p.origin==='editor')],['Earlier saved looks',projects.filter(p=>p.origin!=='editor')]]){if(!items.length)continue;const group=document.createElement('optgroup');group.label=title;for(const project of items)group.append(new Option(project.name,project.id));select.append(group);}
   if(projects.some(p=>p.id===old))select.value=old;
-  $('#server-media-status').textContent=media.length+' video'+(media.length===1?'':'s')+' · '+size(files.used)+' of '+size(files.quota)+' used';mediaPaint();controls();
+  $('#server-media-status').textContent=media.length+' video'+(media.length===1?'':'s')+' · '+size(files.used)+' of '+size(files.quota)+' used';mediaPaint();projectPaint();controls();
  }
  async function run(action){if(busy)return;busy=true;panel.setAttribute('aria-busy','true');controls();$('#server-library-status').textContent='Working…';try{await action();$('#server-library-status').textContent='';}catch(error){$('#server-library-status').textContent=error.message;notify(error.message);}finally{busy=false;panel.setAttribute('aria-busy','false');controls();mediaPaint();}}
  $('#server-login').onsubmit=e=>{e.preventDefault();run(async()=>{try{session={...session,...await request('/api/login',{method:'POST',body:{password:$('#admin-password').value}})};}finally{$('#admin-password').value='';}authPaint();await refresh();notify('Signed in as admin');});};
  $('#server-logout').onclick=()=>run(async()=>{await request('/api/logout',{method:'POST',body:{}});session.authenticated=false;authPaint();await refresh();});
  $('#server-project').onchange=()=>{const project=projects.find(p=>p.id===selected());if(project)$('#server-project-name').value=project.name;controls();};
- $('#server-load').onclick=()=>run(async()=>{const project=await request('/api/projects/'+selected());loadLook(project.look);$('#server-project-name').value=project.name;notify('Loaded '+project.name);});
+ $('#server-load').onclick=()=>run(async()=>{const project=await request('/api/projects/'+selected());if(loadLook(project.look)===false)return;loadedId=project.id;projectPaint();$('#server-project-name').value=project.name;notify('Loaded '+project.name);});
  async function save(update){
-  const look={...portableLook(getState()),offset:timeline(getState()),epoch:currentTime()},local=look.videoLayers.some(l=>l.fileName&&!l.customClip&&!l.youtube);
+  const snapshot=structuredClone(getState()),look={...portableLook(snapshot),offset:timeline(snapshot),epoch:currentTime()},local=look.videoLayers.some(l=>l.fileName&&!l.customClip&&!l.youtube);
   if(local&&!confirm('Some videos are only on this computer. The saved look will need those files chosen again. Upload them under Server videos for playback on other computers. Save anyway?'))return;
-  const project=await request('/api/projects'+(update?'/'+selected():''),{method:update?'PUT':'POST',body:{name:$('#server-project-name').value,look}});
+  const thumbnail=await captureLookThumbnail(snapshot);const project=await request('/api/projects'+(update?'/'+selected():''),{method:update?'PUT':'POST',body:{name:$('#server-project-name').value,look,origin:'editor',...(thumbnail?{thumbnail}:{})}});loadedId=project.id;
   await refresh();$('#server-project').value=project.id;controls();notify('Saved '+project.name+' to server');
  }
  $('#server-save').onclick=()=>run(()=>save(false));$('#server-update').onclick=()=>run(async()=>{if(confirm('Replace the selected saved look with the current scene?'))await save(true);});

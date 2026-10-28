@@ -37,12 +37,19 @@ def check(base, password, page, browser):
     page.locator('#server-save').click()
     page.wait_for_function('document.querySelector("#server-project").value.length===32')
     project_id = page.locator('#server-project').input_value()
+    record = page.request.get(base+'api/projects/'+project_id).json()
+    assert record['origin'] == 'editor'
+    assert record['thumbnail'].startswith('data:image/jpeg;base64,')
+    page.wait_for_function('document.querySelector("#saved-look-cards img")?.naturalWidth===480')
+    assert page.locator('#saved-look-cards [data-saved-look="'+project_id+'"]').count() == 1
     page.locator('#server-project-name').fill('Renamed library check')
     page.locator('#server-rename').click()
     page.wait_for_function('document.querySelector("#server-project option:checked").textContent==="Renamed library check"')
+    assert page.request.get(base+'api/projects/'+project_id).json()['thumbnail'] == record['thumbnail']
     page.locator('#brightness').fill('55')
     page.locator('#server-update').click()
     page.wait_for_function('!document.querySelector("#server-update").disabled')
+    assert page.request.get(base+'api/projects/'+project_id).json()['thumbnail'] != record['thumbnail']
     page.locator('[data-variant="0"]').click()
     page.locator('#server-load').click()
     page.wait_for_function('window.METAStudio.state.variant===5')

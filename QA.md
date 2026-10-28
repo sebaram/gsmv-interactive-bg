@@ -164,3 +164,7 @@ The four kinetic graphics have independent preset IDs8–11; IDs0–7 retain the
 ## Saved-look placement
 
 The hosted library now mounts below the preset grid before requesting server data. The isolated hosted-browser suite verifies its parent group, empty count, failed-session retry, save/rename/update/load, public playback and mobile bounds.89 JavaScript tests pass.
+
+## Saved editor previews
+
+10 storage integration tests pass, including compatible migration of old project records, bounded JPEG validation, public thumbnails and thumbnail retention during rename. The hosted browser suite verifies actual480-pixel preview capture, new editor cards, changed previews after update, unchanged previews after rename and public loading. Earlier records remain in their own section.

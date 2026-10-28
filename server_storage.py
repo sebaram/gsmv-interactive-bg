@@ -1,5 +1,7 @@
 """Persistent public library with authenticated writes; standard library only."""
 from contextlib import contextmanager
+import base64
+import binascii
 import hashlib
 import hmac
 from http.cookies import CookieError, SimpleCookie
@@ -19,6 +21,38 @@ SESSION_SECONDS = 12 * 60 * 60
 JSON_LIMIT = 512 * 1024
 VIDEO_TYPES = {'.mp4': 'video/mp4', '.mov': 'video/quicktime', '.webm': 'video/webm'}
 ID = re.compile(r'^[a-f0-9]{32}$')
+
+
+def checked_thumbnail(value):
+    if value is None:
+        return None
+    prefix = 'data:image/jpeg;base64,'
+    if not isinstance(value, str) or not value.startswith(prefix) or len(value) > 120000:
+        raise APIError(400, 'Preview must be a small JPEG image')
+    try:
+        data = base64.b64decode(value[len(prefix):], validate=True)
+        if not data.startswith(b'\xff\xd8') or not data.endswith(b'\xff\xd9'):
+            raise ValueError()
+        offset = 2
+        while offset+4 <= len(data):
+            if data[offset] != 255:
+                raise ValueError()
+            while data[offset] == 255:
+                offset += 1
+            marker = data[offset];offset += 1
+            length = int.from_bytes(data[offset:offset+2], 'big')
+            if length < 2 or offset+length > len(data):
+                raise ValueError()
+            if marker in (0xc0, 0xc1, 0xc2):
+                height = int.from_bytes(data[offset+3:offset+5], 'big')
+                width = int.from_bytes(data[offset+5:offset+7], 'big')
+                if length >= 8 and 0 < width <= 640 and 0 < height <= 640:
+                    return value
+                raise ValueError()
+            offset += length
+    except (ValueError, IndexError, binascii.Error):
+        pass
+    raise APIError(400, 'Preview must be a JPEG image up to 640 pixels per side')
 
 
 def password_hash(password):
@@ -62,6 +96,11 @@ class Storage:
                 CREATE TABLE IF NOT EXISTS sessions (
                     token TEXT PRIMARY KEY, expires REAL NOT NULL, credential TEXT NOT NULL);
             ''')
+            columns = {row['name'] for row in db.execute('PRAGMA table_info(projects)')}
+            if 'origin' not in columns:
+                db.execute("ALTER TABLE projects ADD COLUMN origin TEXT NOT NULL DEFAULT 'legacy'")
+            if 'thumbnail' not in columns:
+                db.execute('ALTER TABLE projects ADD COLUMN thumbnail TEXT')
 
     @contextmanager
     def db(self):
@@ -196,8 +235,10 @@ class Storage:
                 db.execute('BEGIN IMMEDIATE')
             if method == 'GET':
                 if not project_id:
-                    rows = db.execute('SELECT id,name,updated FROM projects ORDER BY updated DESC').fetchall()
-                    return handler.json_response({'projects': [dict(row) for row in rows]})
+                    rows = db.execute('SELECT * FROM projects ORDER BY updated DESC').fetchall()
+                    return handler.json_response({'projects': [{key: row[key] for key in
+                        ('id', 'name', 'updated', 'origin', 'thumbnail')} |
+                        {'variant': json.loads(row['look']).get('variant', 0)} for row in rows]})
                 row = db.execute('SELECT * FROM projects WHERE id=?', (project_id,)).fetchone()
                 if not row:
                     raise APIError(404, 'Look not found')
@@ -211,6 +252,9 @@ class Storage:
                 raise APIError(405, 'Method not allowed')
             data = self.read_json(handler)
             name, look = data.get('name'), data.get('look')
+            previous = db.execute('SELECT origin,thumbnail FROM projects WHERE id=?', (project_id,)).fetchone() if project_id else None
+            thumbnail = checked_thumbnail(data['thumbnail']) if 'thumbnail' in data else previous['thumbnail'] if previous else None
+            origin = 'editor' if not project_id or data.get('origin') == 'editor' else previous['origin'] if previous else 'editor'
             if not isinstance(name, str) or not name.strip() or len(name) > 160:
                 raise APIError(400, 'Enter a look name of 1–160 characters')
             if not isinstance(look, dict) or type(look.get('variant')) is not int or look['variant'] not in range(12):
@@ -233,14 +277,16 @@ class Storage:
             encoded = json.dumps(look, ensure_ascii=False, allow_nan=False)
             updated = time.time()
             if project_id:
-                if not db.execute('UPDATE projects SET name=?,look=?,updated=? WHERE id=?',
-                                  (name.strip(), encoded, updated, project_id)).rowcount:
+                if not db.execute('UPDATE projects SET name=?,look=?,updated=?,origin=?,thumbnail=? WHERE id=?',
+                                  (name.strip(), encoded, updated, origin, thumbnail, project_id)).rowcount:
                     raise APIError(404, 'Look not found')
             else:
                 project_id = uuid.uuid4().hex
-                db.execute('INSERT INTO projects VALUES (?,?,?,?)', (project_id, name.strip(), encoded, updated))
+                db.execute('INSERT INTO projects (id,name,look,updated,origin,thumbnail) VALUES (?,?,?,?,?,?)',
+                           (project_id, name.strip(), encoded, updated, origin, thumbnail))
             db.commit()
-            handler.json_response({'id': project_id, 'name': name.strip(), 'look': look, 'updated': updated},
+            handler.json_response({'id': project_id, 'name': name.strip(), 'look': look, 'updated': updated,
+                                   'origin': origin, 'thumbnail': thumbnail},
                                   200 if method == 'PUT' else 201)
 
     def media(self, handler, method, media_id):

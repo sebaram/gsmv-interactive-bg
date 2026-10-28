@@ -1,9 +1,11 @@
 """Exercise real HTTP/storage boundaries using isolated persistent data."""
 import http.client
+import base64
 import json
 from pathlib import Path
 import tempfile
 import socket
+import sqlite3
 import threading
 import unittest
 from http.server import ThreadingHTTPServer
@@ -122,6 +124,40 @@ class ServerLibraryTests(unittest.TestCase):
             self.assertEqual(code, 200)
             self.assertEqual(json.loads(body)['look'], look)
         self.assertEqual(self.request('POST', '/api/projects', {'name': 'Invalid', 'look': {'variant': 12}})[0], 400)
+
+    def test_editor_thumbnails_survive_updates_and_legacy_migration(self):
+        self.login()
+        thumbnail = 'data:image/jpeg;base64,' + base64.b64encode(
+            (Path(__file__).parent/'assets/element-thumbnails/sphere.jpg').read_bytes()).decode()
+        code, _, body = self.request('POST', '/api/projects', {
+            'name': 'Editor look', 'look': {'variant': 8}, 'origin': 'editor', 'thumbnail': thumbnail})
+        self.assertEqual(code, 201, body)
+        project = json.loads(body)
+        self.assertEqual(project['thumbnail'], thumbnail)
+        self.assertEqual(project['origin'], 'editor')
+        self.assertEqual(self.request('PUT', '/api/projects/'+project['id'], {
+            'name': 'Renamed', 'look': {'variant': 8}})[0], 200)
+        saved = json.loads(self.request('GET', '/api/projects/'+project['id'])[2])
+        self.assertEqual(saved['thumbnail'], thumbnail)
+        listed = json.loads(self.request('GET', '/api/projects')[2])['projects'][0]
+        self.assertEqual(listed['thumbnail'], thumbnail)
+        self.assertEqual(listed['variant'], 8)
+        for invalid in ['data:image/svg+xml;base64,PHN2Zz4=', 'https://example.com/image.jpg',
+                        'data:image/jpeg;base64,aW52YWxpZA==', 'data:image/jpeg;base64,'+'a'*130000]:
+            self.assertEqual(self.request('PUT', '/api/projects/'+project['id'], {
+                'name': 'Bad preview', 'look': {'variant': 8}, 'thumbnail': invalid})[0], 400)
+        directory = self.root/'legacy';directory.mkdir()
+        old_id = 'a'*32
+        with sqlite3.connect(directory/'library.sqlite3') as db:
+            db.execute('CREATE TABLE projects (id TEXT PRIMARY KEY, name TEXT, look TEXT, updated REAL)')
+            db.execute('INSERT INTO projects VALUES (?,?,?,?)', (old_id, 'Earlier look', '{"variant":5}', 1))
+        db.close()
+        migrated = Storage(directory, self.storage.password_hash, self.storage.origin)
+        with migrated.db() as db:
+            row = db.execute('SELECT * FROM projects WHERE id=?', (old_id,)).fetchone()
+            self.assertEqual(row['origin'], 'legacy')
+            self.assertIsNone(row['thumbnail'])
+            self.assertEqual(row['look'], '{"variant":5}')
 
     def test_private_paths_and_hosted_shared_state_are_unavailable(self):
         for route in ('/server_storage.py', '/serve.py', '/.git/config', '/data/library.sqlite3', '/api/state'):

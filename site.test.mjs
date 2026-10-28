@@ -24,6 +24,7 @@ test('public bundle works under a GitHub project path without exposing local med
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/research-meaning-variations.json'),'utf8')).looks.length,16);
   await access(join(temp,'site/meaning-ui.js'));
   await access(join(temp,'site/preset-catalog.js'));
+  await access(join(temp,'site/look-thumbnail.js'));
   for(const [type] of objectTypes)assert.ok((await stat(join(temp,'site/assets/element-thumbnails/'+type+'.jpg'))).size>1000);
   await access(join(temp,'site/assets/element-thumbnails/video.svg'));
   for(const variant of [8,9,10,11])await access(join(temp,'site/previews/style-'+variant+'.jpg'));
