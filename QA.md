@@ -188,3 +188,7 @@ The32 legacy server records were compared against the bundled Astra/Meaning JSON
 ## Explicit insertion destination
 
 The Add an element area has an independent Add to screen selector, defaulting to the front display and tracking configured screen names. Browser coverage verifies thumbnail insertion to front, Insert to left, a blank video restricted to front, a new text layer placed on left, and that changing the selected layer does not change the insertion destination.97 JavaScript tests pass.
+
+## Preview startup synchronization
+
+A production check reproduced a left preview missing a preset change while its clip-list request was still pending. `qa_preview_startup.py` holds that exact request, changes the preset, releases it, and requires both first ready frames to use the new preset. The test failed before the fix and passes after refreshing controller/local state immediately before the first rebuild. Explicit bookmarked output states remain authoritative. The complete preset/destination browser check also passes.

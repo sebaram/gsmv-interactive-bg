@@ -243,6 +243,9 @@ addEventListener('pointerleave',()=>{pointer.x=pointer.y=0;});
 addEventListener('click',()=>{if(preview)return;document.body.classList.remove('show-hint');if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});videoLayers.play();});
 function send(next){save(next);channel.postMessage(next);update(next);sync.send(next);}
 addEventListener('keydown',e=>{if(preview)return;if(e.code==='Space'){e.preventDefault();send(setPaused(state,!state.paused));}if(/^[1-9]$/.test(e.key)&&+e.key<=variants.length)send({...state,variant:+e.key-1});if(e.key.toLowerCase()==='g')send({...state,guide:!state.guide});});
+// Module startup awaits the clip list before installing the update handlers.
+// A controller change during that wait must be reflected in the first frame.
+if(!location.hash){state=read();if(preview&&parent!==window)try{if(parent.METAStudio)state=sanitize(parent.METAStudio.state);}catch{}if(fixedVariant!==null)state.variant=fixedVariant;}
 rebuild();
 const sync=params.has('capture')||preview?{send(){}}:connectSync(update);
 function draw(now){
