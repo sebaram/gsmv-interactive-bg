@@ -8,10 +8,14 @@ import {authoringControls} from './authoring-ui.js';
 import {encodeLook,decodeLook,lookUrl} from './look-url.js';
 import {appearanceControls} from './appearance-ui.js';
 import {serverLibrary} from './server-library.js';
+import {draftTracker} from './look-draft.js';
 import {meaningPanel,sceneMeanings,researchMeaningActive} from './meaning-ui.js';
 const addressLook=decodeLook(location.hash);
 const storedLook=read();let state=addressLook||sanitize({...storedLook,videoLayers:portableLook(storedLook).videoLayers});save(state);
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
+const drafts=draftTracker(state);
+const draftStatus=document.createElement('p');draftStatus.id='look-edit-status';draftStatus.className='note draft-status';draftStatus.setAttribute('role','status');document.querySelector('.style-grid').before(draftStatus);
+function confirmReplace(name){return !drafts.dirty(state)||confirm('This look has unsaved edits. '+name+' will replace the current composition. Continue? Save a look or copy its link to keep these edits.');}
 const buildVersion=document.querySelector('meta[name="studio-build"]')?.content||'';
 let addressTimer;
 function updateAddress(){clearTimeout(addressTimer);addressTimer=setTimeout(()=>{try{const hash=encodeLook(state);if(location.hash!==hash)history.replaceState(null,'',location.pathname+location.search+hash);}catch{}},180);}
@@ -25,11 +29,13 @@ const layers=videoLayerControls($('#video-layer-controls'),clips,{getState:()=>s
 document.querySelector('aside .panel-note').after($('#motion-demo'));$('#motion-demo').textContent='Enable playback';
 const author=authoringControls($('#authoring-controls'),{getState:()=>state,getElements:()=>{let art=[];try{art=document.querySelector('.paired iframe')?.contentWindow.META?.elements||[];}catch{}return [...art,...videoElements(state,clips)];},videoControls:layers,commit:next=>{state=next;publish();},notify:toast});
 const appearance=appearanceControls($('#scene-appearance'),{getState:()=>state,commit:next=>{state=next;publish();}});
-function loadLook(look){state=sanitize({...look,epoch:currentTime()});publish();}
+function loadLook(look,{project=null,label='Loading another look'}={}){if(!confirmReplace(label))return false;state=sanitize({...look,epoch:currentTime()});drafts.load(state,project);publish();return true;}
 const meaning=meaningPanel({getState:()=>state,loadLook,notify:toast});
 $('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
 function publish(){state=sanitize(state);save(state);channel.postMessage(state);paint();sync.send(state);}
 function paint(){
+ drafts.visit(state);const dirty=drafts.dirty(state);draftStatus.textContent=dirty?'Unsaved edits. Save this look or copy its link before replacing it.':drafts.project?'Editing saved look: '+drafts.project.name:'Current composition has no new edits.';draftStatus.classList.toggle('unsaved',dirty);
+ document.dispatchEvent(new Event('meta-look-state'));
  document.querySelectorAll('[data-variant]').forEach(el=>{const on=+el.dataset.variant===state.variant;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);el.querySelector('.chosen').textContent=on?'✓':'';});
  $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=researchMeaningActive(state)?sceneMeanings[state.variant].idea:variants[state.variant].desc;
  $('#swatch').style.background=variants[state.variant].tone;
@@ -64,7 +70,7 @@ function paintOutputs(){
  if(staticMode){for(const link of document.querySelectorAll('a[href^="wall.html?"]')){const url=new URL(link.href);url.hash=encodeLook(state);link.href=url.href;}for(const input of net.querySelectorAll('input')){const url=new URL(input.value);url.hash=encodeLook(state);input.value=url.href;}}
  if(buildVersion){for(const link of document.querySelectorAll('a[href^="wall.html?"]')){const url=new URL(link.href);url.searchParams.set('v',buildVersion);link.href=url.href;}if(staticMode)for(const input of net.querySelectorAll('input')){const url=new URL(input.value);url.searchParams.set('v',buildVersion);input.value=url.href;}}
 }
-document.querySelectorAll('[data-variant]').forEach(el=>el.onclick=()=>{state.variant=+el.dataset.variant;if(state.variant===5){state.offset=10/Math.max(.1,state.motionAmount);state.epoch=currentTime();}publish();});
+document.querySelectorAll('[data-variant]').forEach(el=>el.onclick=()=>{const variant=+el.dataset.variant;if(variant===state.variant)return;if(!confirmReplace('Switching to '+variants[variant].name))return;state={...state,variant};drafts.visit(state);drafts.leaveProject();if(state.variant===5){state.offset=10/Math.max(.1,state.motionAmount);state.epoch=currentTime();}publish();});
 for(const k of ['branding','headlines','interactive','calibration'])$('#'+k).onchange=e=>{state[k]=e.target.checked;publish();};
 for(const k of ['brightness'])$('#'+k).oninput=e=>{state[k]=+e.target.value;publish();};
 
@@ -73,13 +79,14 @@ $('#guide-btn').onclick=()=>{state.guide=!state.guide;publish();};
 $('#motion-demo').onclick=()=>{state=setPaused(state,false);state=setSpeed(state,1);state.motionAmount=1;state.motionConsent=true;publish();};
 $('#add-screen').onclick=()=>editor.add();
 $('#clean-btn').onclick=()=>{Object.assign(state,{guide:false,calibration:false,interactive:false,editVideos:false,editElements:false,bezel:0,screens:state.screens.map(sc=>({...sc,grid:false}))});publish();toast('Clean take ready · all screen overlays off');};
-$('#save-look').onclick=()=>{const blob=new Blob([JSON.stringify({...portableLook(state),offset:timeline(state),epoch:currentTime(),savedAt:new Date().toISOString(),styleName:variants[state.variant].name},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='META-'+variants[state.variant].name.toLowerCase().replaceAll(' ','-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Look and screen setup saved');};
-$('#copy-look-link').onclick=async()=>{try{const url=lookUrl(state,location.href);history.replaceState(null,'',url);await navigator.clipboard.writeText(url);toast('Look link copied. Bookmark it to reopen this arrangement.');}catch{toast('The current address contains your look. Copy it from the address bar.');}};
+$('#save-look').onclick=()=>{const blob=new Blob([JSON.stringify({...portableLook(state),offset:timeline(state),epoch:currentTime(),savedAt:new Date().toISOString(),styleName:variants[state.variant].name},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='META-'+variants[state.variant].name.toLowerCase().replaceAll(' ','-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);drafts.saved(state);paint();toast('Look and screen setup saved');};
+$('#copy-look-link').onclick=async()=>{try{const url=lookUrl(state,location.href);history.replaceState(null,'',url);await navigator.clipboard.writeText(url);drafts.saved(state);paint();toast('Look link copied. Bookmark it to reopen this arrangement.');}catch{toast('The current address contains your look. Copy it from the address bar.');}};
 $('#load-look').onclick=()=>$('#look-file').click();
-$('#look-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const raw=JSON.parse(await f.text());if(typeof raw!=='object'||raw===null||!Number.isInteger(raw.variant))throw Error();state=sanitize({...raw,epoch:currentTime()});publish();toast('Look and screen setup loaded');}catch{toast('Choose a META look JSON file');}e.target.value='';};
+$('#look-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const raw=JSON.parse(await f.text());if(typeof raw!=='object'||raw===null||!Number.isInteger(raw.variant))throw Error();if(loadLook(raw,{label:'Loading this JSON file'}))toast('Look and screen setup loaded');}catch{toast('Choose a META look JSON file');}e.target.value='';};
 let toastTimer;function toast(t){$('#toast').textContent=t;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
 channel.onmessage=e=>{state=sanitize(e.data);paint();};
-window.addEventListener('hashchange',()=>{const next=decodeLook(location.hash);if(next){state=next;publish();}});
+window.addEventListener('hashchange',()=>{const next=decodeLook(location.hash);if(next&&!loadLook(next,{label:'Opening another look address'}))history.replaceState(null,'',lookUrl(state,location.href));});
+window.addEventListener('beforeunload',event=>{if(drafts.dirty(state)){event.preventDefault();event.returnValue='';}});
 window.addEventListener('storage',e=>{if(e.key===KEY){state=read();paint();}});
 const sync=connectSync(next=>{state=next;save(state);channel.postMessage(state);paint();},{controller:true,initial:state,preferInitial:!!addressLook,onStatus:ok=>{$('#network-status').textContent=staticMode?'Browser playback':ok?'Network ready':'Reconnecting';},onInfo:urls=>{networkOrigin=new URL(urls.front).origin;paintOutputs();}});
 if(staticMode){$('#network-help').textContent='Public preview controls synchronize windows in this browser. For separate computers, run the LAN server from the repository.';$('#local-video-controls').hidden=false;}
@@ -105,4 +112,4 @@ setInterval(()=>{
  $('#playback-status').classList.toggle('held',frozen||blocked);
 },600);
 paint();
-serverLibrary({getState:()=>state,loadLook,addVideo:media=>{const next=chooseVideo(state,{id:null,cue:state.cue},{url:media.url,name:media.name});author.commit(playVideo(next,next.activeVideoLayer));},notify:toast}).catch(()=>{});
+serverLibrary({getState:()=>state,loadLook,getLoadedProject:()=>drafts.project,canUpdate:id=>drafts.canUpdate(state,id),onSaved:(snapshot,project)=>{drafts.saved(snapshot,project);paint();},onRenamed:project=>{drafts.rename(project);paint();},onDeleted:id=>{drafts.forget(id);paint();},addVideo:media=>{const next=chooseVideo(state,{id:null,cue:state.cue},{url:media.url,name:media.name});author.commit(playVideo(next,next.activeVideoLayer));},notify:toast}).catch(()=>{});

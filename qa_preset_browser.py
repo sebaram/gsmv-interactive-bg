@@ -9,6 +9,7 @@ with sync_playwright() as p:
     browser=p.chromium.launch(channel='chrome',headless=True)
     context=browser.new_context(viewport={'width':1600,'height':1200})
     page=context.new_page();errors=[]
+    page.on('dialog',lambda dialog:dialog.accept())
     context.on('page',lambda pg:pg.on('pageerror',lambda e:errors.append(str(e))))
     page.goto(BASE);page.wait_for_function('window.METAStudio&&document.querySelectorAll("[data-variant]").length===12')
     for variant in range(8,12):

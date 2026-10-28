@@ -25,11 +25,11 @@
 
 ## 3. Unsaved edits and save targets
 
-- [ ] Add a pure authored-configuration fingerprint and draft tracker; exclude animation time, playback and selection from dirty detection.
-- [ ] Guard preset changes, saved-look/research/JSON loads and page exit when edits are unsaved. Keep per-preset drafts in the existing state.
-- [ ] Track loaded project separately from the dropdown selection; permit Update only for that project and prevent an accidental write to another look. Mark only the submitted snapshot saved after a successful response.
-- [ ] Test cancel/continue, undo-to-clean, playing without false alerts, failed saves, wrong-target updates and fresh loads.
-- [ ] Commit and push.
+- [x] Add a pure authored-configuration fingerprint and draft tracker; exclude animation time, playback and selection from dirty detection.
+- [x] Guard preset changes, saved-look/research/JSON loads and page exit when edits are unsaved. Keep per-preset drafts in the existing state.
+- [x] Track loaded project separately from the dropdown selection; permit Update only for that project and prevent an accidental write to another look. Mark only the submitted snapshot saved after a successful response.
+- [x] Test cancel/continue, undo-to-clean, playing without false alerts, failed saves, wrong-target updates and fresh loads.
+- [x] Commit and push.
 
 ## 4. Editable text
 

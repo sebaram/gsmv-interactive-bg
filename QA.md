@@ -168,3 +168,7 @@ The hosted library now mounts below the preset grid before requesting server dat
 ## Saved editor previews
 
 10 storage integration tests pass, including compatible migration of old project records, bounded JPEG validation, public thumbnails and thumbnail retention during rename. The hosted browser suite verifies actual480-pixel preview capture, new editor cards, changed previews after update, unchanged previews after rename and public loading. Earlier records remain in their own section.
+
+## Unsaved look protection
+
+93 JavaScript tests pass. Draft fingerprints ignore runtime time, pause, selection and automatic source aspect metadata, while retaining authored changes. Tests verify per-preset draft baselines, undo-to-clean behavior, saved snapshots versus edits made during a request, and loaded-project provenance. Hosted browser checks confirm cancellation preserves current edits, accepting loads the requested look, selecting another saved record disables Update, and a failed save leaves the dirty flag intact.

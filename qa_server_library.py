@@ -14,7 +14,11 @@ APP = Path(__file__).resolve().parent
 def check(base, password, page, browser):
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
-    page.on('dialog', lambda dialog: dialog.accept())
+    decisions = {'accept': True, 'messages': []}
+    def decide(dialog):
+        decisions['messages'].append(dialog.message)
+        dialog.accept() if decisions['accept'] else dialog.dismiss()
+    page.on('dialog', decide)
     page.goto(base)
     page.locator('#server-login').wait_for()
     page.wait_for_function('window.METAStudio')
@@ -55,6 +59,45 @@ def check(base, password, page, browser):
     page.wait_for_function('window.METAStudio.state.variant===5')
     assert page.evaluate('window.METAStudio.state.brightness') == 55
     print('PASS Admin login, video upload, named look save/rename/load', flush=True)
+    other = page.request.post(base+'api/projects', headers={'Origin':base.rstrip('/')}, data={
+        'name': 'Other saved look', 'look': {'variant': 8, 'brightness': 24}}).json()
+    page.locator('#server-refresh').click()
+    page.wait_for_function('document.querySelector("#server-project").options.length===3')
+    page.locator('#brightness').fill('56')
+    decisions['accept'] = False
+    page.locator('[data-variant="8"]').click()
+    assert page.evaluate('window.METAStudio.state.variant') == 5
+    assert 'unsaved edits' in decisions['messages'][-1]
+    page.locator('#server-project').select_option(other['id'])
+    assert page.locator('#server-update').is_disabled()
+    assert 'Load this saved look' in page.locator('#server-update-hint').text_content()
+    page.locator('#server-load').click()
+    page.wait_for_function('!document.querySelector("#server-load").disabled')
+    assert page.evaluate('window.METAStudio.state.variant') == 5
+    assert page.evaluate('window.METAStudio.state.brightness') == 56
+    decisions['accept'] = True
+    page.locator('#server-load').click()
+    page.wait_for_function('window.METAStudio.state.variant===8')
+    assert page.evaluate('window.METAStudio.state.brightness') == 24
+    assert page.locator('#server-update').is_enabled()
+    page.locator('#server-project').select_option(project_id)
+    page.locator('#server-load').click()
+    page.wait_for_function('window.METAStudio.state.variant===5')
+    page.locator('#brightness').fill('57')
+    page.route('**/api/projects', lambda route: route.fulfill(status=503, body='{"error":"Test save failure"}')
+               if route.request.method == 'POST' else route.continue_())
+    page.locator('#server-project-name').fill('Failed save check')
+    page.locator('#server-save').click()
+    page.wait_for_function('document.querySelector("#server-library-status").textContent.includes("Test save failure")')
+    assert 'Unsaved edits' in page.locator('#look-edit-status').text_content()
+    page.unroute('**/api/projects')
+    page.locator('#server-load').click()
+    page.wait_for_function('window.METAStudio.state.brightness===55')
+    page.request.delete(base+'api/projects/'+other['id'], headers={'Origin':base.rstrip('/')})
+    page.locator('#server-refresh').click()
+    page.wait_for_function('document.querySelector("#server-project").options.length===2')
+    assert 'Unsaved edits' not in page.locator('#look-edit-status').text_content()
+    print('PASS Cancel/continue replacement, wrong-target update prevention and failed-save draft retention', flush=True)
     fresh = browser.new_context(viewport={'width': 1440, 'height': 1000})
     public = fresh.new_page()
     public.on('pageerror', lambda error: errors.append(str(error)))

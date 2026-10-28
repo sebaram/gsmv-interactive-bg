@@ -6,6 +6,7 @@ BASE=os.environ.get('META_STATIC_URL','http://127.0.0.1:8770/_site/')
 def address(state):return BASE.split('#')[0]+'#look=v1.'+base64.urlsafe_b64encode(json.dumps(state).encode()).decode().rstrip('=')
 with sync_playwright() as p:
  b=p.chromium.launch(channel='chrome',headless=True);page=b.new_page(viewport={'width':1600,'height':1100});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ page.on('dialog',lambda dialog:dialog.accept())
  page.goto(address({'variant':1,'paused':True,'offset':3}));page.wait_for_function('window.METAStudio && document.querySelector("#author-element option[value=preset-main]")')
  page.locator('.author-row-select[data-element-id="preset-main"]').click();front=next(f for f in page.frames if 'view=front' in f.url)
  point=front.evaluate('''()=>{for(let y=innerHeight*.1;y<innerHeight*.8;y+=4)for(let x=innerWidth*.5;x<innerWidth*.98;x+=4){const hit=window.META.pickElement(x,y);if(hit?.id==="preset-main")return {x,y};}return null;}''');assert point,'A visible group surface must pick the whole group'

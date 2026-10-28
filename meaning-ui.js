@@ -32,7 +32,7 @@ export function meaningPanel({getState,loadLook,notify}){
   for(const [i,[title,url]] of meaning.sources.entries()){if(i)$('#meaning-sources').append(document.createTextNode(' / '));const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=title;$('#meaning-sources').append(a);}
  }
  $('#load-research-look').onclick=async()=>{const button=$('#load-research-look'),variant=getState().variant,alternate=+$('#meaning-variation').value;button.disabled=true;
-  try{const response=await fetch('./looks/research-meaning-variations.json');if(!response.ok)throw Error('Could not load the research collection.');const data=await response.json(),item=data.looks[variant*2+alternate];if(!item||item.look.variant!==variant)throw Error('This research version is unavailable.');if(getState().variant!==variant)throw Error('Choose the research version again after changing presets.');loadLook(item.look);$('#meaning-result').textContent='Loaded '+item.name;notify('Research composition loaded.');}
+  try{const response=await fetch('./looks/research-meaning-variations.json');if(!response.ok)throw Error('Could not load the research collection.');const data=await response.json(),item=data.looks[variant*2+alternate];if(!item||item.look.variant!==variant)throw Error('This research version is unavailable.');if(getState().variant!==variant)throw Error('Choose the research version again after changing presets.');if(loadLook(item.look,{label:'Loading '+item.name})===false)return;$('#meaning-result').textContent='Loaded '+item.name;notify('Research composition loaded.');}
   catch(error){$('#meaning-result').textContent=error.message;}finally{button.disabled=false;}
  };
  paint();return {paint};
