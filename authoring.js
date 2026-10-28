@@ -1,5 +1,6 @@
 import {sanitizeLayers} from './video-layers.js';
 import {researchObjectTypes} from './research-objects.js';
+import {PRESET_COUNT} from './preset-catalog.js';
 export const objectTypes=[['logo','MV sculpture'],['ribbons','Real / virtual ribbons'],['orbits','Orbital sculpture'],['network','Research network'],['sphere','Sculptural sphere'],['arch','Architectural arch'],...researchObjectTypes];
 const limit=(v,min,max)=>Math.min(max,Math.max(min,+v));
 export function cleanTransform(raw={}){
@@ -8,7 +9,7 @@ export function cleanTransform(raw={}){
  if('visible' in raw)out.visible=raw.visible!==false;if('deleted' in raw)out.deleted=Boolean(raw.deleted);if('ungrouped' in raw)out.ungrouped=raw.ungrouped===true;return out;
 }
 export function sanitizeAuthored(raw={}){
- const out={};for(let i=0;i<8;i++){
+ const out={};for(let i=0;i<PRESET_COUNT;i++){
   const preset=raw?.[i];if(!preset||typeof preset!=='object')continue;
   const edits={};for(const [id,patch] of Object.entries(preset.edits||{}).slice(0,4096))if(/^[a-zA-Z0-9_-]{1,160}$/.test(id)&&patch&&typeof patch==='object')edits[id]=cleanTransform(patch);
   const ids=new Set(),objects=(Array.isArray(preset.objects)?preset.objects:[]).slice(0,32).filter(o=>o&&typeof o==='object'&&[...objectTypes.map(t=>t[0]),'copy'].includes(o.type)).map((o,i)=>{let id=String(o.id||'object-'+(i+1)).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);while(ids.has(id))id+='-2';ids.add(id);return {id,type:o.type,source:typeof o.source==='string'?o.source.slice(0,160):null,archived:Boolean(o.archived),...cleanTransform(o)};});

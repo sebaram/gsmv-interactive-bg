@@ -213,7 +213,7 @@ class Storage:
             name, look = data.get('name'), data.get('look')
             if not isinstance(name, str) or not name.strip() or len(name) > 160:
                 raise APIError(400, 'Enter a look name of 1–160 characters')
-            if not isinstance(look, dict) or type(look.get('variant')) is not int or look['variant'] not in range(8):
+            if not isinstance(look, dict) or type(look.get('variant')) is not int or look['variant'] not in range(12):
                 raise APIError(400, 'Invalid look')
             layers = look.get('videoLayers', [])
             if not isinstance(layers, list) or len(layers) > 8:

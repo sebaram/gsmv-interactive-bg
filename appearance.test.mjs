@@ -13,7 +13,7 @@ test('scene appearance has safe defaults and independent per-preset adjustments'
 });
 
 test('appearance rejects invalid colors and bounds lighting, glow and floor settings',()=>{
- const state=sanitize({variant:5,appearance:{5:{mode:'injected',backgroundColor:'url(evil)',glowColor:'#fff',glow:900,lighting:-1,floor:100,unknown:'x'},9:{mode:'solid'}}});
- const a=stateTools.appearanceFor(state);assert.equal(a.mode,'preset');assert.equal(a.glowColor,'#ffffff');assert.equal(a.glow,2);assert.equal(a.lighting,0);assert.equal(a.floor,1);assert.equal(state.appearance[9],undefined);assert.equal(state.appearance[5].unknown,undefined);assert.notEqual(a.backgroundColor,'url(evil)');
+ const state=sanitize({variant:5,appearance:{5:{mode:'injected',backgroundColor:'url(evil)',glowColor:'#fff',glow:900,lighting:-1,floor:100,unknown:'x'},12:{mode:'solid'}}});
+ const a=stateTools.appearanceFor(state);assert.equal(a.mode,'preset');assert.equal(a.glowColor,'#ffffff');assert.equal(a.glow,2);assert.equal(a.lighting,0);assert.equal(a.floor,1);assert.equal(state.appearance[12],undefined);assert.equal(state.appearance[5].unknown,undefined);assert.notEqual(a.backgroundColor,'url(evil)');
  assert.equal(stateTools.appearanceFor(sanitize({appearance:null})).lighting,1);
 });

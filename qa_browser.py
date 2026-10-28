@@ -46,7 +46,7 @@ with sync_playwright() as p:
     page=controller.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(BASE+'/backgrounds/')
     wait(page,"document.querySelector('#network-status').textContent.toLowerCase()==='network ready'")
-    check('All eight directions are selectable',page.locator('[data-variant]').count()==8)
+    check('All twelve directions are selectable',page.locator('[data-variant]').count()==12)
     clients=[]
     for view,skew,width,height in [('front',-90000,960,540),('left',70000,960,360)]:
         context=browser.new_context(viewport={'width':width,'height':height},device_scale_factor=1)

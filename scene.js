@@ -10,6 +10,7 @@ import {createLogoSculpture} from './logo-scene.js';
 import {appearanceFor,lightAppearance} from './appearance.js';
 import {sereinAtelier,mvLightCourt} from './floor-scenes.js';
 import {createResearchObject} from './research-objects.js';
+import {kineticPresets} from './preset-catalog.js';
 
 const params=new URLSearchParams(location.search),view=params.get('view')||'front',preview=params.has('preview');
 const fixedVariant=params.has('variant')?Math.max(0,Math.min(variants.length-1,+params.get('variant'))):null;
@@ -55,7 +56,7 @@ function line(points,color,opacity=.2,parent=group){const g=new T.BufferGeometry
 function tube(points,r,color,parent=group){return mesh(new T.TubeGeometry(new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p))),150,r,12,false),physical(color,.28,.45),parent);}
 function shadow(x,y,z,sx,sy,opacity=.25){const c=document.createElement('canvas');c.width=c.height=128;const cx=c.getContext('2d'),g=cx.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,`rgba(0,0,0,${opacity})`);g.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=g;cx.fillRect(0,0,128,128);const tex=new T.CanvasTexture(c);const o=mesh(new T.PlaneGeometry(sx,sy),new T.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));o.rotation.x=-Math.PI/2;o.position.set(x,y,z);}
 function stageFloor(color){
- const light=state.variant===2;
+ const light=state.variant===2||!!kineticPresets.find(p=>p.id===state.variant)?.light;
  const mat=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uLight:{value:light?1:0},uOpacity:{value:1}},vertexShader:'varying vec3 vWorld;void main(){vec4 world=modelMatrix*vec4(position,1.);vWorld=world.xyz;gl_Position=projectionMatrix*viewMatrix*world;}',fragmentShader:'varying vec3 vWorld;uniform float uLight;uniform float uOpacity;void main(){float a=smoothstep(-23.,-3.,vWorld.z)*.65;vec3 dark=vec3(.025,.055,.105);vec3 pale=vec3(.72,.71,.67);gl_FragColor=vec4(mix(dark,pale,uLight),a*uOpacity);}'});floorMaterial=mat;
  const floor=mesh(new T.PlaneGeometry(180,100),mat);floor.rotation.x=-Math.PI/2;floor.position.set(0,-4,-7);
 }
@@ -175,21 +176,31 @@ function createAuthorObject(type){
  if(type==='arch'){const o=arch(3.6,5.7,.4,physical('#e8e3d9',.47,.07),root);o.rotation.y=-.2;}
  return root;
 }
+function kineticBackground(preset){
+ atmosphere(preset.light);stageFloor();background.material.uniforms.uAccent.value.set(preset.glow);
+ if(preset.light){hemisphere.color.set('#e3dfd5');redLight.intensity=0;rim.intensity=1.7;}
+ for(const sc of layout.screens){
+  const width=sc.width/1080*10,start=-layout.width/2+sc.x/1080*10,object=createResearchObject(preset.type,addMotion);
+  object.name=preset.name;object.position.set(start+width*.80,-2,0);object.scale.setScalar(Math.min(1.05,width*.15));group.add(object);
+  if(sc.id===layout.main.id)hero=object;else if(sc.id===layout.companion.id)secondary=object;else object.userData.authorId='kinetic-'+sc.id;
+ }
+}
 function rebuild(){
  clear();document.querySelector('#error').hidden=true;layout=positions();
  hemisphere.color.set('#b3dcff');hemisphere.intensity=2.4;keyLight.color.set('#d9ebff');keyLight.intensity=5;rim.color.set('#5e9fff');rim.intensity=4;redLight.intensity=80;
  if(state.variant<6)[blueHour,commonGround,softArchitecture,livingResearch,sharedReality,mvSymbiosis][state.variant]();
- else {
+ else if(state.variant<8){
   const warm=state.variant===6;
   hemisphere.color.set(warm?'#e3d5bd':'#afcbe0');hemisphere.intensity=warm?1.7:1.35;
   keyLight.color.set(warm?'#ffe4bb':'#c4def2');keyLight.intensity=warm?3.1:2.8;
   rim.color.set(warm?'#d6e2ee':'#368ed0');rim.intensity=warm?1.5:2.6;redLight.intensity=warm?0:12;
   ({background,floorMaterial}=[sereinAtelier,mvLightCourt][state.variant-6]({group,layout,addMotion}));
  }
+ else kineticBackground(kineticPresets.find(p=>p.id===state.variant));
  if(state.variant<3)extraScreens();
  if(secondary&&layout.main.id===layout.companion.id)secondary.visible=false;
- if(hero)addMotion({o:hero,type:'hero',baseY:state.variant===2?-.55:[1,4].includes(state.variant)?.2:0});
- if(secondary&&state.variant!==2)addMotion({o:secondary,type:'secondary'});
+ if(hero&&state.variant<8)addMotion({o:hero,type:'hero',baseY:state.variant===2?-.55:[1,4].includes(state.variant)?.2:0});
+ if(secondary&&state.variant!==2&&state.variant<8)addMotion({o:secondary,type:'secondary'});
  lightingBase=[hemisphere,keyLight,rim,redLight].map(light=>light.intensity);
  resize();authoring=authoringScene(group,camera,state,{background,hero,secondary,createObject:createAuthorObject,view,preview});applyOverlay();lastConfig=configKey();
 }

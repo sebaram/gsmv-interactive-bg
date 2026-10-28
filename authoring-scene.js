@@ -10,7 +10,7 @@ export function authoringScene(group,camera,state,{background,hero,secondary,cre
  const screenFor=x=>p.screens.find(sc=>x>=sc.x&&x<sc.x+sc.width)||p.screens.at(-1);
  // Existing root IDs are part of saved URLs, independent of improved display labels.
  function legacyName(object){if(object===hero)return 'Main sculpture';if(object===secondary)return 'Companion sculpture';if(object.name)return object.name;const type=object.geometry?.type||object.type;return ({SphereGeometry:'Accent sphere',TorusGeometry:'Orbital ring',TubeGeometry:'Connecting ribbon',CylinderGeometry:'Pedestal',ExtrudeGeometry:'Architectural arch',Line:'Connection line',Group:'Research network',PlaneGeometry:object.material?.map?'Soft shadow':'Stage floor'})[type]||'Sculptural element';}
- function defaultName(object,parent){if(object===hero)return 'Main sculpture';if(object===secondary)return 'Companion sculpture';if(object.name)return object.name;
+ function defaultName(object,parent){if(state.variant>=8&&(object===hero||object===secondary))return object.name;if(object===hero)return 'Main sculpture';if(object===secondary)return 'Companion sculpture';if(object.name)return object.name;
   const type=object.geometry?.type||object.type,color=object.material?.color?.getHexString(),tint=color==='0066b3'?'Blue':color==='ed1c24'?'Red':'';
   if(parent?.object.name==='MV sculpture'||parent?.kind==='logo')return object.isLine?'MV connection link':(tint?tint+' ':'')+'MV facet';
   if(object.isLine)return parent?'Network link':'Connection line · floor grid';

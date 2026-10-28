@@ -32,7 +32,7 @@ function publish(){state=sanitize(state);save(state);channel.postMessage(state);
 function paint(){
  document.querySelectorAll('[data-variant]').forEach(el=>{const on=+el.dataset.variant===state.variant;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);el.querySelector('.chosen').textContent=on?'✓':'';});
  $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=researchMeaningActive(state)?sceneMeanings[state.variant].idea:variants[state.variant].desc;
- $('#swatch').style.background=['#101d35','#874453','#ded9c9','#143e46','#565b93','#315e91'][state.variant];
+ $('#swatch').style.background=variants[state.variant].tone;
  const visible=state.showVideo?state.videoLayers.filter(l=>!videoNeedsFile(l)&&state.screens.some(sc=>videoVisibleOn(l,sc.id))).length:0;
  $('#clear-local-video').disabled=state.videoLayers.length>=8;$('#local-video').disabled=state.videoLayers.length>=8;
  $('#monitor-video-status').textContent=visible?visible+' video'+(visible===1?'':'s')+' on screen':'Motion graphic only. Choose a video below.';

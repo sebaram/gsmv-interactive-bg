@@ -1,6 +1,7 @@
 import {sanitizeLayers} from './video-layers.js';
 import {sanitizeAuthored} from './authoring.js';
 import {sanitizeAppearance} from './appearance.js';
+import {kineticPresets} from './preset-catalog.js';
 export {appearanceFor,patchAppearance} from './appearance.js';
 export const KEY='gsmv-interview-walls-v1';
 export const variants=[
@@ -11,7 +12,8 @@ export const variants=[
  {name:'Shared Reality',tag:'REAL + VIRTUAL + RESEARCH',tone:'#b6baff',desc:'Living research inside Common Ground. Red reality and blue virtual ribbons flow around your research, connecting each screen.',use:'Combined direction · recommended'},
  {name:'MV Symbiosis',tag:'LOGO / TRANSFORMATION',tone:'#91c9f4',desc:'Six facets from the MV symbol become soft forms, exchange shape and position, consolidate into the mark, and unfold together again.',use:'Department identity · real and virtual in symbiosis'},
  {name:'Serein Atelier',tag:'LIMESTONE / BRONZE / LIGHT',tone:'#d5bb92',desc:'A warm limestone atelier with a recessed alcove and slowly turning bronze leaves. Grounded architecture frames a quiet center for seated or standing interviews.',use:'Floor-level LED · warm architectural interview'},
- {name:'MV Light Court',tag:'REAL / VIRTUAL / MATERIAL',tone:'#79b8df',desc:'A graphite light court pairs a grounded red lacquer form with blue optical blades. Restrained material contrast and a calm center give the conversation room.',use:'Floor-level LED · dark material study'}
+ {name:'MV Light Court',tag:'REAL / VIRTUAL / MATERIAL',tone:'#79b8df',desc:'A graphite light court pairs a grounded red lacquer form with blue optical blades. Restrained material contrast and a calm center give the conversation room.',use:'Floor-level LED · dark material study'},
+ ...kineticPresets
 ];
 export const cues=[
  {name:'Space design',ko:'공간을 설계하다',en:'METAVERSE SPACE DESIGN',lab:'01 / SPACE',clip:'P2-S1-02',color:'#388fff'},

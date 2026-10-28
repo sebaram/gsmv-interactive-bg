@@ -22,6 +22,12 @@ export function authoringControls(container,{getState,getElements,commit:publish
  function select(id,screen='all'){id=elementEditTarget(getState(),getElements(),id);selected=id||'';const element=getElements().find(e=>e.id===id);if(element?.video){videoControls?.setScope(screen);commit(selectVideoElement(getState(),element.layerId));}else commit({...getState(),activeElement:id||null,editElements:id?true:getState().editElements,editVideos:false});}
  const outliner=elementList($('.author-element-list'),{select,toggleVisible:(id,visible)=>{const e=elementsNow().find(e=>e.id===id);if(e?.video)commit({...patchLayer(getState(),e.layerId,{enabled:visible}),showVideo:visible||getState().showVideo});else commit(patchElement(getState(),id,{visible}));},deleteElement:id=>deleteElement(id),contextMenu:(id,event)=>{event.preventDefault();openMenu(id,event.clientX,event.clientY,event.currentTarget.querySelector('.author-row-select'));}});
  $('#add-element-type').replaceChildren(...[...objectTypes,['video','Video element']].map(([value,title])=>new Option(title,value)));
+ const gallery=document.createElement('details');gallery.className='element-gallery';gallery.innerHTML='<summary>Browse element thumbnails</summary><div class="element-gallery-grid" aria-label="Add an element visually"></div>';
+ for(const [type,title] of [...objectTypes,['video','Video element']]){
+  const button=document.createElement('button'),image=document.createElement('img'),label=document.createElement('span');button.type='button';button.className='element-gallery-item';button.dataset.addType=type;button.setAttribute('aria-label','Add '+title);image.src='assets/element-thumbnails/'+type+(type==='video'?'.svg':'.jpg');image.alt='';image.width=88;image.height=72;image.loading='lazy';label.textContent=title.split(' · ')[0];button.append(image,label);
+  button.onclick=()=>{$('#add-element-type').value=type;$('#add-element').click();gallery.open=false;notify('Added '+label.textContent);};gallery.querySelector('.element-gallery-grid').append(button);
+ }
+ $('.author-add').append(gallery);
  function elementsNow(){const preset=presetEdits(getState()),elements=getElements().filter(e=>!isElementDeleted(getState(),e.id)&&(!e.custom||preset.objects.some(o=>o.id===e.id))&&(!e.owner||preset.objects.some(o=>o.id===e.owner))).map(e=>({...e,...e.base,...(e.custom?preset.objects.find(o=>o.id===e.id):preset.edits[e.id])})),byId=new Map(elements.map(e=>[e.id,e])),children=new Map();for(const e of elements)if(e.parentId)children.set(e.parentId,(children.get(e.parentId)||0)+1);return elements.map(e=>({...e,ungrouped:(e.custom?preset.objects.find(o=>o.id===e.id):preset.edits[e.id])?.ungrouped===true,partCount:children.get(e.id)||0,group:children.has(e.id),locked:elementEditTarget(getState(),byId,e.id)!==e.id}));}
  function deleteElement(id){id=elementEditTarget(getState(),getElements(),id);const e=elementsNow().find(e=>e.id===id);if(e)commit(e.video?removeLayer(getState(),e.layerId):removeElement(getState(),id));}
  function current(){return elementsNow().find(e=>e.id===selected);}
@@ -45,6 +51,7 @@ export function authoringControls(container,{getState,getElements,commit:publish
   $('#mv-variation').hidden=!element?.mv;
   $('#randomize-mv').disabled=!element?.mv;
   $('#add-element').disabled=$('#add-element-type').value==='video'?state.videoLayers.length>=8:preset.objects.length>=32;
+  for(const button of gallery.querySelectorAll('[data-add-type]'))button.disabled=button.dataset.addType==='video'?state.videoLayers.length>=8:preset.objects.length>=32;
   if(element?.mv)for(const key of ['seed','randomness'])if(document.activeElement!==$('#mv-'+key))$('#mv-'+key).value=element[key]??0;
   const animated=!!element?.animated;for(const id of ['speed','motionAmount'])document.getElementById(id).disabled=!animated;
   if(animated){document.getElementById('speed').value=element.motionSpeed??1;document.getElementById('motionAmount').value=element.motionAmount??1;document.getElementById('speed-value').textContent=(element.motionSpeed??1).toFixed(2)+'×';document.getElementById('motionAmount-value').textContent=(element.motionAmount??1).toFixed(2)+'×';}

@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
+import {objectTypes} from './authoring.js';
 test('public bundle works under a GitHub project path without exposing local media or Git',async()=>{
  const temp=await mkdtemp(join(tmpdir(),'gsmv-pages-')),root=dirname(fileURLToPath(import.meta.url));
  try{
@@ -22,6 +23,10 @@ test('public bundle works under a GitHub project path without exposing local med
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/floor-wall-variations.json'),'utf8')).looks.length,16);
   assert.equal(JSON.parse(await readFile(join(temp,'site/looks/research-meaning-variations.json'),'utf8')).looks.length,16);
   await access(join(temp,'site/meaning-ui.js'));
+  await access(join(temp,'site/preset-catalog.js'));
+  for(const [type] of objectTypes)assert.ok((await stat(join(temp,'site/assets/element-thumbnails/'+type+'.jpg'))).size>1000);
+  await access(join(temp,'site/assets/element-thumbnails/video.svg'));
+  for(const variant of [8,9,10,11])await access(join(temp,'site/previews/style-'+variant+'.jpg'));
   await access(join(temp,'site/docs/scene-meanings.md'));
   await access(join(temp,'site/floor-scenes.js'));
   assert.match(await readFile(join(temp,'site/scene.js'),'utf8'),/floor-scenes\.js\?v=[a-f0-9]{12}/);

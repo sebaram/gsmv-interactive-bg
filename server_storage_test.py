@@ -111,7 +111,7 @@ class ServerLibraryTests(unittest.TestCase):
 
     def test_floor_scene_projects_round_trip_authored_variations(self):
         self.login()
-        for variant in (6, 7):
+        for variant in (6, 7, 8, 9, 10, 11):
             look = {'variant': variant, 'authored': {str(variant): {
                 'edits': {'court-glass-front': {'motionSpeed': 0.4, 'size': 0.8}}, 'objects': []}},
                 'appearance': {str(variant): {'floor': 0.65, 'lighting': 0.8}}}
@@ -121,7 +121,7 @@ class ServerLibraryTests(unittest.TestCase):
             code, _, body = self.request('GET', '/api/projects/' + project['id'], authenticated=False)
             self.assertEqual(code, 200)
             self.assertEqual(json.loads(body)['look'], look)
-        self.assertEqual(self.request('POST', '/api/projects', {'name': 'Invalid', 'look': {'variant': 8}})[0], 400)
+        self.assertEqual(self.request('POST', '/api/projects', {'name': 'Invalid', 'look': {'variant': 12}})[0], 400)
 
     def test_private_paths_and_hosted_shared_state_are_unavailable(self):
         for route in ('/server_storage.py', '/serve.py', '/.git/config', '/data/library.sqlite3', '/api/state'):

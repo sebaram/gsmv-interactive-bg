@@ -24,12 +24,22 @@ Administrator sessions expire after 12 hours; logout revokes the session immedia
 | Soft Architecture | Pale arches, warm stone and floating blue/red forms. |
 | Serein Atelier | Grounded limestone alcoves, a low bench and slowly turning bronze leaves. |
 | MV Light Court | A graphite gallery, red lacquer monolith and blue optical blades. |
+| Co-presence | Interwoven volumetric ribbons around a shared core. |
+| Shared coordinates | Articulated portals with moving registration guides. |
+| Mutual response | Rippling surfaces with travelling signals and replies. |
+| Co-creation | Hinged pavilion bays and orbiting contribution panels. |
+
+All twelve designs appear in **Background presets**. The four kinetic designs are independent presets, so switching between them retains each one's authored edits. They render on every configured screen and preserve the current display setup and video layers.
+
+In **Add an element**, open **Browse element thumbnails** to see the artwork before adding it. Every graphic type has a thumbnail rendered from the actual 3D scene; Video uses a film icon. Clicking a thumbnail adds that type immediately. The dropdown and Insert shortcut remain available.
+
+The layer list groups artwork beneath collapsible parents using the configured screen names, such as **Left tiled wall** and **Front LED wall**. Multi-screen videos appear under **Shared across screens**, and videos without an assigned screen appear under **Unassigned**. Search uses the current parent screen after an object moves. Selecting a layer from the preview reveals its screen and object ancestors automatically.
 
 The original department signature is retained. The source identity and color guide are from [meta.kaist.ac.kr/logo](https://meta.kaist.ac.kr/logo); the supplied scenario decks and selected clips provide the video library.
 
 Serein Atelier and MV Light Court are composed for a floor-level **4.44 m × 2.5 m (16:9)** front LED wall, with a quiet center for seated and standing interviews. A shallow floor meets the lower screen edge; sculptures and low furniture remain grounded while their material faces turn slowly. Each configured display receives its own peripheral composition, including the 8:3 tiled wall. This is a staged view, not a tracked-camera calibration. Alcoves, sculptures and their parts remain editable, and each moving part supports independent speed and pause controls.
 
-The **Astra 01A–08B** collection provides two authored variations of every preset. In the live **Server library**, choose a named Astra look and select **Load selected look**; public loading needs no administrator login. Compare right/left sculpture placements, restrained/stronger palettes, Daylight/Evening Atelier and red/blue versus blue-only Light Court. Each look keeps its editable layers, independent motion and both display configurations. Videos start off and remain available separately. The collection is also in [looks/floor-wall-variations.json](looks/floor-wall-variations.json); `python scripts/compose-floor-looks.py` recreates it, and `python qa_floor_looks.py` renders its comparison images against the static test server.
+The **Astra 01A–08B** collection provides two authored variations of each original preset. In the live **Server library**, choose a named Astra look and select **Load selected look**; public loading needs no administrator login. Compare right/left sculpture placements, restrained/stronger palettes, Daylight/Evening Atelier and red/blue versus blue-only Light Court. Each look keeps its editable layers, independent motion and both display configurations. Videos start off and remain available separately. The collection is also in [looks/floor-wall-variations.json](looks/floor-wall-variations.json); `python scripts/compose-floor-looks.py` recreates it, and `python qa_floor_looks.py` renders its comparison images against the static test server.
 
 ### Meaning and research
 

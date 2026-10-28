@@ -34,13 +34,13 @@ test('front and left views have an exactly shared edge', () => {
 });
 
 test('floor-level presets retain authored parts and appearance through shared URLs',()=>{
- assert.deepEqual(variants.slice(6).map(v=>v.name),['Serein Atelier','MV Light Court']);
+ assert.deepEqual(variants.slice(6,8).map(v=>v.name),['Serein Atelier','MV Light Court']);
  for(const variant of [6,7]){
   const state=sanitize({variant,authored:{[variant]:{edits:{'court-glass-front':{x:83,size:.8,motionSpeed:.4}},objects:[]}},appearance:{[variant]:{floor:.65,lighting:.8}},videoLayers:[]});
   const loaded=decodeLook(encodeLook(state));
   assert.equal(loaded.variant,variant);assert.deepEqual(loaded.authored,state.authored);assert.deepEqual(loaded.appearance,state.appearance);assert.deepEqual(loaded.videoLayers,[]);
  }
- assert.equal(sanitize({variant:8}).variant,0);
+ assert.equal(sanitize({variant:12}).variant,0);
 });
 
 test('all sixteen floor-wall variations retain their authored composition in portable looks',()=>{
