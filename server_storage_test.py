@@ -67,12 +67,23 @@ class ServerLibraryTests(unittest.TestCase):
 
     def test_mutations_require_login_and_same_origin(self):
         self.assertEqual(self.request('POST', '/api/projects', {'name': 'Shoot', 'look': {'variant': 1}})[0], 401)
+
         self.assertEqual(self.request('POST', '/api/login', {'password': 'wrong'})[0], 401)
         self.login()
         self.assertEqual(self.request('POST', '/api/projects', {'name': 'Shoot', 'look': {'variant': 1}},
                                       {'Origin': 'https://attacker.example'})[0], 403)
         self.assertEqual(self.request('POST', '/api/logout', {})[0], 200)
         self.assertEqual(self.request('POST', '/api/projects', {'name': 'Shoot', 'look': {'variant': 1}})[0], 401)
+
+    def test_builtin_presets_cannot_be_written_even_by_an_administrator(self):
+        directory = self.site/'looks';directory.mkdir()
+        path = directory/'presets.json';original = b'{"presets":[{"name":"Original"}]}'
+        path.write_bytes(original)
+        self.login()
+        for route in ('/looks/presets.json', '/api/presets', '/api/presets/8'):
+            for method in ('POST', 'PUT', 'DELETE'):
+                self.assertEqual(self.request(method, route, {'name': 'Overwrite'})[0], 404)
+        self.assertEqual(path.read_bytes(), original)
 
     def test_projects_survive_reopening_and_preserve_server_media(self):
         self.login()

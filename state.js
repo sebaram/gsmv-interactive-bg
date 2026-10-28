@@ -4,7 +4,7 @@ import {sanitizeAppearance} from './appearance.js';
 import {kineticPresets} from './preset-catalog.js';
 export {appearanceFor,patchAppearance} from './appearance.js';
 export const KEY='gsmv-interview-walls-v1';
-export const variants=[
+export const variants=Object.freeze([
  {name:'Blue Hour',tag:'ORBITAL / IMMERSIVE',tone:'#90beff',desc:'Sculptural orbits in a deep blue atmosphere. A quiet, confident setting for faculty interviews.',use:'Recommended · faculty & opening'},
  {name:'Common Ground',tag:'REAL ↔ VIRTUAL',tone:'#ff9687',desc:'Red represents the real world; blue represents the virtual. Interwoven ribbons show their continuous exchange.',use:'Real ↔ virtual · shared experiences'},
  {name:'Soft Architecture',tag:'SPATIAL / EDITORIAL',tone:'#ddd3b9',desc:'Warm porcelain forms, architectural depth and soft light. An open, understated research studio.',use:'Spatial design · bright studio look'},
@@ -14,7 +14,7 @@ export const variants=[
  {name:'Serein Atelier',tag:'LIMESTONE / BRONZE / LIGHT',tone:'#d5bb92',desc:'A warm limestone atelier with a recessed alcove and slowly turning bronze leaves. Grounded architecture frames a quiet center for seated or standing interviews.',use:'Floor-level LED · warm architectural interview'},
  {name:'MV Light Court',tag:'REAL / VIRTUAL / MATERIAL',tone:'#79b8df',desc:'A graphite light court pairs a grounded red lacquer form with blue optical blades. Restrained material contrast and a calm center give the conversation room.',use:'Floor-level LED · dark material study'},
  ...kineticPresets
-];
+].map(Object.freeze));
 export const cues=[
  {name:'Space design',ko:'공간을 설계하다',en:'METAVERSE SPACE DESIGN',lab:'01 / SPACE',clip:'P2-S1-02',color:'#388fff'},
  {name:'Telepresence',ko:'사람을 연결하다',en:'3D TELEPRESENCE',lab:'02 / PEOPLE',clip:'P2-S2-02',color:'#7a9fff'},
@@ -68,4 +68,12 @@ export function panorama(s){
  const projected=screens.map(sc=>{const out={...sc,x,width:Math.round(h*screenAspect(sc)),height:h,config:sc};x+=out.width;return out;});
  const out={width:x,height:h,screens:projected};for(const sc of projected)out[sc.id]=sc;
  out.front??=projected[0];out.left??=projected[0];return out;
+}
+
+// Built-ins are code-owned. Artwork edits only belong to the working look.
+export function hasArtworkEdits(state){return Object.values(state.authored||{}).some(p=>p.objects?.length||Object.keys(p.edits||{}).length)||Object.values(state.appearance||{}).some(p=>Object.keys(p).length);}
+export function freshPresetDraft(raw,variant,now=currentTime()){
+ if(!Number.isInteger(variant)||variant<0||variant>=variants.length)throw new RangeError('Unknown built-in preset');
+ const state=sanitize(raw);
+ return sanitize({...state,variant,authored:{},appearance:{},activeElement:null,editElements:false,editVideos:false,offset:variant===5?10/Math.max(.1,state.motionAmount):0,epoch:now});
 }

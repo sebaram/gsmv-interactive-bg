@@ -1,9 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {variants,sanitize,createScreen} from './state.js';
+import {variants,sanitize,createScreen,freshPresetDraft} from './state.js';
 import {addElement,patchElement} from './authoring.js';
 import {patchAppearance} from './appearance.js';
 import {encodeLook,decodeLook} from './look-url.js';
+import {kineticPresets} from './preset-catalog.js';
+
+test('built-in definitions are immutable and reselecting a preset always creates fresh artwork',()=>{
+ const initial=sanitize({variant:8,brightness:55,branding:false,screens:[{id:'front',name:'Main',width:3840,height:2160},{id:'left',name:'Tiles',width:3840,height:2160}],videoLayers:[{id:'video-1',videoId:'clip'}],showVideo:true});
+ let edited=patchElement(initial,'preset-main',{size:2,visible:false});edited=addElement(edited,'text',{textHtml:'<p>Draft only</p>'});edited=patchAppearance(edited,{mode:'solid',backgroundColor:'#ff0000'});
+ edited.authored[9]={edits:{'preset-main':{x:30}},objects:[]};
+ const before=structuredClone(edited),fresh=freshPresetDraft(edited,8,1000);
+ assert.deepEqual(edited,before);assert.deepEqual(fresh.authored,{});assert.deepEqual(fresh.appearance,{});assert.equal(fresh.variant,8);assert.equal(fresh.activeElement,null);assert.equal(fresh.editElements,false);
+ assert.deepEqual(fresh.screens,initial.screens);assert.deepEqual(fresh.videoLayers,initial.videoLayers);assert.equal(fresh.brightness,55);
+ assert.equal(Object.isFrozen(variants),true);assert.ok(variants.every(Object.isFrozen));assert.equal(Object.isFrozen(kineticPresets),true);
+ assert.throws(()=>{variants[8].name='Overwritten';},TypeError);assert.equal(variants[8].name,'Co-presence');
+ assert.throws(()=>freshPresetDraft(initial,99),RangeError);
+});
 
 test('the four kinetic graphics are independent presets with portable authoring and appearance',()=>{
  assert.deepEqual(variants.slice(8).map(v=>v.name),['Co-presence','Shared coordinates','Mutual response','Co-creation']);

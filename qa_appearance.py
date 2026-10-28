@@ -9,7 +9,7 @@ def address(state):return BASE.split('#')[0]+'#look=v1.'+base64.urlsafe_b64encod
 def rendered(frame):return Image.open(io.BytesIO(base64.b64decode(frame.evaluate('document.querySelector("#scene").toDataURL().split(",")[1]')))).convert('RGB')
 def color(page,key,value):page.locator('#appearance-'+key+'-hex').fill(value);page.locator('#appearance-mode').focus()
 with sync_playwright() as p:
- b=p.chromium.launch(channel='chrome',headless=True);page=b.new_page(viewport={'width':1600,'height':1400});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ b=p.chromium.launch(channel='chrome',headless=True);page=b.new_page(viewport={'width':1600,'height':1400});errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda dialog:dialog.accept())
  page.goto(address({'variant':5,'brightness':100,'paused':True,'offset':15,'branding':False,'videoLayers':[]}));page.wait_for_function('window.METAStudio&&document.querySelectorAll(".paired iframe").length===2')
  frames=page.frames[1:];[f.wait_for_function('window.META&&document.body.dataset.ready==="true"') for f in frames];baseline=[rendered(f) for f in frames]
  page.locator('#appearance-mode').select_option('solid');color(page,'backgroundColor','#24784c');page.locator('#appearance-floor').fill('0');[f.wait_for_function('window.META.state.appearance[5]?.floor===0&&window.META.state.appearance[5]?.backgroundColor==="#24784c"') for f in frames];page.wait_for_timeout(120)
@@ -27,9 +27,11 @@ with sync_playwright() as p:
  page.locator('#appearance-floor').fill('1');page.wait_for_timeout(150);floor=rendered(frames[1]);page.locator('#appearance-floor').fill('0');page.wait_for_timeout(150);assert ImageChops.difference(floor,rendered(frames[1])).getbbox()
  # Background controls do not rebuild native video decoders or authored objects.
  page.locator('#clear-local-video').click();frames[1].wait_for_function('window.META.video?.ready>=2');frames[1].evaluate('window.originalDecoder=document.querySelector(".video-layer video")');page.locator('#appearance-lighting').fill('0.65');page.wait_for_timeout(150);assert frames[1].evaluate('window.originalDecoder===document.querySelector(".video-layer video")')
- settings=page.evaluate('window.METAStudio.state.appearance[5]');page.locator('[data-variant="1"]').click();page.wait_for_function('document.querySelector("#appearance-mode").value==="preset"');assert page.locator('#appearance-lighting').input_value()=='1';page.locator('[data-variant="5"]').click();assert page.locator('#appearance-lighting').input_value()=='0.65';assert page.evaluate('window.METAStudio.state.appearance[5]')==settings
- page.locator('#copy-look-link').click();fresh=b.new_context();restored=fresh.new_page();restored.goto(page.url);restored.wait_for_function('window.METAStudio');assert restored.evaluate('window.METAStudio.state.appearance[5]')==settings;fresh.close()
- print('PASS Glow, lights and floor change rendered pixels; contrast, decoder identity and per-preset saved settings work',flush=True)
+ settings=page.evaluate('window.METAStudio.state.appearance[5]');page.locator('#copy-look-link').click();saved_address=page.url
+ page.locator('[data-variant="1"]').click();page.wait_for_function('document.querySelector("#appearance-mode").value==="preset"');assert page.locator('#appearance-lighting').input_value()=='1';page.locator('[data-variant="5"]').click();assert page.locator('#appearance-lighting').input_value()=='1';assert page.evaluate('Object.keys(window.METAStudio.state.appearance).length')==0
+ page.goto(saved_address);page.wait_for_function('window.METAStudio.state.appearance[5]?.lighting===.65')
+ fresh=b.new_context();restored=fresh.new_page();restored.goto(saved_address);restored.wait_for_function('window.METAStudio');assert restored.evaluate('window.METAStudio.state.appearance[5]')==settings;fresh.close()
+ print('PASS Glow, lights and floor change rendered pixels; contrast, decoder identity and saved looks preserve appearance while built-ins stay pristine',flush=True)
  page.locator('#scene-appearance').screenshot(path=str(APP/'previews/qa-appearance-desktop.png'));page.set_viewport_size({'width':390,'height':844});page.locator('#scene-appearance').screenshot(path=str(APP/'previews/qa-appearance-mobile.png'));assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
  page.locator('#reset-appearance').click();assert page.evaluate('window.METAStudio.state.appearance[5]||null') is None;assert page.locator('#appearance-mode').input_value()=='preset';assert page.locator('#appearance-floor').input_value()=='1';assert page.evaluate('window.METAStudio.state.videoLayers.length')==1
  # After resetting, switching away and back must not compound light intensities.

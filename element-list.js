@@ -1,7 +1,7 @@
 // The list only rebuilds for structural changes, search or group expansion.
 // Frequent preview paints update row state without replacing focused controls.
 export function elementList(container,{select,toggleVisible,deleteElement,contextMenu}){
- container.innerHTML=`<div class="author-list-heading"><h4>Layers</h4><button type="button" class="subtle" id="clear-element-selection">Deselect</button></div><label class="author-search-label" for="element-search">Find a layer or part</label><input id="element-search" type="search" placeholder="Name, line, part or screen" autocomplete="off"><p class="note" id="element-list-status" role="status"></p><div id="element-list" aria-label="Preset elements"><ul></ul></div>`;
+ container.innerHTML=`<div class="author-list-heading"><h4>Layers</h4><button type="button" class="subtle" id="clear-element-selection">Deselect</button></div><label class="author-search-label" for="element-search">Find a layer or part</label><input id="element-search" type="search" placeholder="Name, line, part or screen" autocomplete="off"><p class="note" id="element-list-status" role="status"></p><div id="element-list" aria-label="Look elements"><ul></ul></div>`;
  const search=container.querySelector('#element-search'),list=container.querySelector('#element-list'),status=container.querySelector('#element-list-status'),clear=container.querySelector('#clear-element-selection');
  const expanded=new Set(),collapsedScreens=new Set(),rows=new Map();let elements=[],screens=[],selected='',previousSelection='',structure='',dirty=true;
  const children=new Map(),byId=new Map();
@@ -31,7 +31,7 @@ export function elementList(container,{select,toggleVisible,deleteElement,contex
   if(focus?.screen)list.querySelectorAll('.author-screen-toggle').forEach(b=>{if(b.dataset.screenId===focus.screen)b.focus({preventScroll:true});});
   else if(focus)rows.get(focus.id)?.row.querySelector('[data-action="'+focus.action+'"]')?.focus({preventScroll:true});
   status.textContent=query?`${[...rows.keys()].filter(id=>matching(byId.get(id))).length} matching elements. Parent groups show context.`:`${elements.length} elements. Expand a group to see its parts.`;
-  if(!tree.children.length){const empty=document.createElement('p');empty.className='note author-list-empty';empty.textContent=query?'No elements match your search.':'Preparing preset elements…';list.append(empty);}
+  if(!tree.children.length){const empty=document.createElement('p');empty.className='note author-list-empty';empty.textContent=query?'No elements match your search.':'Preparing look elements…';list.append(empty);}
  }
  function paint(nextElements,nextSelected,nextScreens){
   elements=nextElements;selected=nextSelected;screens=nextScreens;byId.clear();children.clear();for(const e of elements)byId.set(e.id,e);for(const e of elements){const parent=byId.has(e.parentId)?e.parentId:null;if(!children.has(parent))children.set(parent,[]);children.get(parent).push(e);}

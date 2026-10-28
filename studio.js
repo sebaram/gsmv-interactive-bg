@@ -1,4 +1,4 @@
-import {KEY,variants,cues,read,save,sanitize,setPaused,setSpeed,timeline,currentTime,screenAspect} from './state.js';
+import {KEY,variants,cues,read,save,sanitize,setPaused,setSpeed,timeline,currentTime,screenAspect,freshPresetDraft,hasArtworkEdits} from './state.js';
 import {connectSync,staticMode} from './sync.js';
 import {screenEditor} from './screens-ui.js';
 import {videoLibrary,chooseVideo} from './video-library.js';
@@ -15,7 +15,7 @@ const storedLook=read();let state=addressLook||sanitize({...storedLook,videoLaye
 const channel=new BroadcastChannel(KEY),$=s=>document.querySelector(s);
 const drafts=draftTracker(state);
 const draftStatus=document.createElement('p');draftStatus.id='look-edit-status';draftStatus.className='note draft-status';draftStatus.setAttribute('role','status');document.querySelector('.style-grid').before(draftStatus);
-function confirmReplace(name){return !drafts.dirty(state)||confirm('This look has unsaved edits. '+name+' will replace the current composition. Continue? Save a look or copy its link to keep these edits.');}
+function confirmReplace(name,customArtwork=false){return !(drafts.dirty(state)||customArtwork)||confirm((drafts.dirty(state)?'This look has unsaved edits. ':'This working look contains custom artwork. ')+name+' will replace the current composition. Continue? Save a look or copy its link to keep these edits.');}
 const buildVersion=document.querySelector('meta[name="studio-build"]')?.content||'';
 let addressTimer;
 function updateAddress(){clearTimeout(addressTimer);addressTimer=setTimeout(()=>{try{const hash=encodeLook(state);if(location.hash!==hash)history.replaceState(null,'',location.pathname+location.search+hash);}catch{}},180);}
@@ -31,13 +31,13 @@ const author=authoringControls($('#authoring-controls'),{getState:()=>state,getE
 const appearance=appearanceControls($('#scene-appearance'),{getState:()=>state,commit:next=>{state=next;publish();}});
 function loadLook(look,{project=null,label='Loading another look'}={}){if(!confirmReplace(label))return false;state=sanitize({...look,epoch:currentTime()});drafts.load(state,project);publish();return true;}
 const meaning=meaningPanel({getState:()=>state,loadLook,notify:toast});
-$('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
+$('.style-grid').innerHTML=variants.map((v,i)=>`<button type="button" class="style-card" data-preset-readonly="true" title="Start a new look from ${v.name}" data-variant="${i}" aria-pressed="false"><div class="thumb" style="background-image:url(previews/style-${i}.jpg)"><span class="chosen"></span></div><div class="card-copy"><strong>${v.name}</strong><small>${v.tag.toLowerCase()}</small></div></button>`).join('');
 function publish(){state=sanitize(state);save(state);channel.postMessage(state);paint();sync.send(state);}
 function paint(){
  drafts.visit(state);const dirty=drafts.dirty(state);draftStatus.textContent=dirty?'Unsaved edits. Save this look or copy its link before replacing it.':drafts.project?'Editing saved look: '+drafts.project.name:'Current composition has no new edits.';draftStatus.classList.toggle('unsaved',dirty);
  document.dispatchEvent(new Event('meta-look-state'));
  document.querySelectorAll('[data-variant]').forEach(el=>{const on=+el.dataset.variant===state.variant;el.classList.toggle('selected',on);el.setAttribute('aria-pressed',on);el.querySelector('.chosen').textContent=on?'✓':'';});
- $('#current-name').textContent=variants[state.variant].name;$('#style-description').textContent=researchMeaningActive(state)?sceneMeanings[state.variant].idea:variants[state.variant].desc;
+ $('#current-name').textContent=drafts.project?drafts.project.name+(dirty?' (unsaved)':''):variants[state.variant].name+(dirty||hasArtworkEdits(state)?' (draft)':'');$('#style-description').textContent=researchMeaningActive(state)?sceneMeanings[state.variant].idea:variants[state.variant].desc;
  $('#swatch').style.background=variants[state.variant].tone;
  const visible=state.showVideo?state.videoLayers.filter(l=>!videoNeedsFile(l)&&state.screens.some(sc=>videoVisibleOn(l,sc.id))).length:0;
  $('#clear-local-video').disabled=state.videoLayers.length>=8;$('#local-video').disabled=state.videoLayers.length>=8;
@@ -70,7 +70,7 @@ function paintOutputs(){
  if(staticMode){for(const link of document.querySelectorAll('a[href^="wall.html?"]')){const url=new URL(link.href);url.hash=encodeLook(state);link.href=url.href;}for(const input of net.querySelectorAll('input')){const url=new URL(input.value);url.hash=encodeLook(state);input.value=url.href;}}
  if(buildVersion){for(const link of document.querySelectorAll('a[href^="wall.html?"]')){const url=new URL(link.href);url.searchParams.set('v',buildVersion);link.href=url.href;}if(staticMode)for(const input of net.querySelectorAll('input')){const url=new URL(input.value);url.searchParams.set('v',buildVersion);input.value=url.href;}}
 }
-document.querySelectorAll('[data-variant]').forEach(el=>el.onclick=()=>{const variant=+el.dataset.variant;if(variant===state.variant)return;if(!confirmReplace('Switching to '+variants[variant].name))return;state={...state,variant};drafts.visit(state);drafts.leaveProject();if(state.variant===5){state.offset=10/Math.max(.1,state.motionAmount);state.epoch=currentTime();}publish();});
+document.querySelectorAll('[data-variant]').forEach(el=>el.onclick=()=>{const variant=+el.dataset.variant;if(!confirmReplace('Starting a fresh look from '+variants[variant].name,!drafts.project&&hasArtworkEdits(state)))return;state=freshPresetDraft(state,variant);drafts.load(state);publish();});
 for(const k of ['branding','headlines','interactive','calibration'])$('#'+k).onchange=e=>{state[k]=e.target.checked;publish();};
 for(const k of ['brightness'])$('#'+k).oninput=e=>{state[k]=+e.target.value;publish();};
 

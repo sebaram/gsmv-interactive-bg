@@ -24,8 +24,11 @@ with sync_playwright() as p:
         page.locator('#author-size').fill('0.85')
     page.locator('[data-variant="8"]').click()
     page.wait_for_function('window.METAStudio.state.variant===8')
-    assert page.evaluate('window.METAStudio.state.authored[8].edits["preset-main"].size')==.85
-    print('PASS Four independent kinetic preset cards keep per-preset edits',flush=True)
+    assert page.evaluate('Object.keys(window.METAStudio.state.authored).length')==0
+    assert page.locator('[data-preset-readonly="true"]').count()==12
+    page.locator('.author-row-select[data-element-id="preset-main"]').click();page.locator('#author-size').fill('1.5')
+    page.locator('[data-variant="8"]').click();page.wait_for_function('Object.keys(window.METAStudio.state.authored).length===0')
+    print('PASS Read-only preset cards create pristine drafts, including same-preset re-selection',flush=True)
 
     page.locator('.element-gallery>summary').click()
     choices=page.locator('[data-add-type]');assert choices.count()==12
