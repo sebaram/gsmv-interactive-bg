@@ -6,7 +6,7 @@ Real-time 3D backgrounds for interview shoots, with configurable display walls, 
 
 ## Server library
 
-At **mvbg.arrc.app**, open **Server library** below the on-set controls and sign in with the administrator password to save named looks, update/rename them, or delete them. Anyone can select and load a saved look. The existing **Save look** and **Load look** buttons still export/import JSON files; **Copy look link** still creates a bookmarkable arrangement.
+At **mvbg.arrc.app**, open **Saved looks** at the bottom of **Background presets** and sign in with the administrator password to save named looks, update/rename them, or delete them. Anyone can select and load a saved look. The existing **Save look** and **Load look** buttons still export/import JSON files; **Copy look link** still creates a bookmarkable arrangement.
 
 Under **Videos → Server videos**, signed-in administrators can upload MP4, MOV (ISO media container), or WebM files. Choose **Add to scene** on an uploaded item to use it. These videos have persistent server URLs, survive browser and server restarts, and play on other computers without choosing the file again. The separate **Add files** control keeps files in the current browser. Uploads are explicit; saving a look does not automatically upload local files. Defaults are 2 GiB per video and 20 GiB total media storage. Uploaded media and saved looks are publicly readable. A video used by a saved look cannot be deleted until that look is updated or deleted.
 

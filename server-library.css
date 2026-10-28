@@ -15,3 +15,5 @@
 #server-library-status,#server-media-status{overflow-wrap:anywhere}
 #server-upload-progress{width:100%;margin-top:10px;accent-color:var(--color-focus)}
 @media(max-width:540px){.server-media-row{flex-wrap:wrap}.server-media-row>span{flex-basis:100%}}
+
+.backgrounds>.server-library{margin-top:var(--space-md);padding-top:var(--space-md);gap:var(--space-sm)}.server-library h4{margin:0;font-size:var(--text-md);font-weight:500}.server-library>.note{font-size:var(--text-sm);color:var(--color-muted)}.server-library[aria-busy=true] #server-project-count{color:var(--color-cool)}.server-library form{grid-template-columns:minmax(0,1fr) auto;align-items:end}.server-library form button{min-height:40px}

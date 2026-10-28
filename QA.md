@@ -160,3 +160,7 @@ Primary sources were checked for the official logo's human/technology values, fa
 The four kinetic graphics have independent preset IDs8–11; IDs0–7 retain their meanings.89 JavaScript tests and9 storage tests pass, including authored-state/appearance URL persistence for all four added presets and server save/read support. The public-bundle test checks every element thumbnail and all four new preset images.
 
 `qa_preset_browser.py` verifies all twelve cards, per-preset edits, eleven loaded thumbnails, visual insertion and Insert, physical-screen parent rows, collapsing/revealing, search, moving a group between screens, shared/unassigned video parents, portable URLs and mobile fit. The search regression caught child parts reporting a group's previous screen; matching now follows the current root assignment. The thumbnail generator forces a fresh document per composition so hash-only navigation cannot capture stale artwork. Desktop and mobile chooser screenshots, screen grouping and actual new-preset renders were inspected. Existing grouped editing, all-twelve-preset authoring and unified video-element browser regressions pass.
+
+## Saved-look placement
+
+The hosted library now mounts below the preset grid before requesting server data. The isolated hosted-browser suite verifies its parent group, empty count, failed-session retry, save/rename/update/load, public playback and mobile bounds.89 JavaScript tests pass.
